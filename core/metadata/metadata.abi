@@ -1,0 +1,367 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.2",
+    "types": [],
+    "structs": [
+        {
+            "name": "achievement",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "from",
+                    "type": "name"
+                },
+                {
+                    "name": "count",
+                    "type": "uint8"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "addfeature",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "notify_account",
+                    "type": "name"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "addnotify",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "notify_accounts",
+                    "type": "name"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "badge_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "ipfs_hashes",
+                    "type": "ipfs_hash[]"
+                },
+                {
+                    "name": "rarity_counts",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "authorized",
+            "base": "",
+            "fields": [
+                {
+                    "name": "trusted_contract",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "badge",
+            "base": "",
+            "fields": [
+                {
+                    "name": "badge_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "notify_accounts",
+                    "type": "name[]"
+                },
+                {
+                    "name": "ipfs_hashes",
+                    "type": "ipfs_hash[]"
+                },
+                {
+                    "name": "rarity_counts",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "delfeature",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "notify_account",
+                    "type": "name"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "delnotify",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "notify_accounts",
+                    "type": "name"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "badge_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "ipfs_hashes",
+                    "type": "ipfs_hash[]"
+                },
+                {
+                    "name": "rarity_counts",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "initbadge",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "ipfs_image",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "ipfs_hash",
+            "base": "",
+            "fields": [
+                {
+                    "name": "key",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "notifyachiev",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "badge_name",
+                    "type": "name"
+                },
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "from",
+                    "type": "name"
+                },
+                {
+                    "name": "count",
+                    "type": "uint8"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "badge_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "notify_accounts",
+                    "type": "name[]"
+                }
+            ]
+        },
+        {
+            "name": "recognize",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "trusted_badge_contract",
+                    "type": "name"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "achievement",
+            "type": "achievement",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "addfeature",
+            "type": "addfeature",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "addnotify",
+            "type": "addnotify",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "delfeature",
+            "type": "delfeature",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "delnotify",
+            "type": "delnotify",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "initbadge",
+            "type": "initbadge",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "notifyachiev",
+            "type": "notifyachiev",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "recognize",
+            "type": "recognize",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "authorized",
+            "type": "authorized",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "badge",
+            "type": "badge",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "kv_tables": {},
+    "ricardian_clauses": [],
+    "variants": [],
+    "action_results": []
+}

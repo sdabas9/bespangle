@@ -1,0 +1,76 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.2",
+    "types": [],
+    "structs": [
+        {
+            "name": "aacollection",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "collection",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "aatemplate",
+            "base": "",
+            "fields": [
+                {
+                    "name": "badge_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "template_id",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "initcoll",
+            "base": "",
+            "fields": [
+                {
+                    "name": "org",
+                    "type": "name"
+                },
+                {
+                    "name": "collection_name",
+                    "type": "name"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "initcoll",
+            "type": "initcoll",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "aacollection",
+            "type": "aacollection",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "aatemplate",
+            "type": "aatemplate",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "kv_tables": {},
+    "ricardian_clauses": [],
+    "variants": [],
+    "action_results": []
+}
