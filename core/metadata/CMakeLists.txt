@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(metadata)
+set(ACCOUNT_PREFERENCES_CONTRACT ${ACCOUNT_PREFERENCES_CONTRACT})
+set(BILLING_CONTRACT ${BILLING_CONTRACT})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/metadata.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/metadata.hpp @ONLY)

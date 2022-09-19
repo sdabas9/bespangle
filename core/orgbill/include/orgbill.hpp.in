@@ -8,7 +8,7 @@ using namespace eosio;
 #define RAM_IN_BYTES_PER_SYS_TOKEN "ramrate"
 #define PER_USE_FIXED_FEES "protocolfees"
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata"
+#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
 
 CONTRACT orgbill : public contract {
   public:
