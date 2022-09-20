@@ -1,7 +1,4 @@
 # aabadge
 
-This example is to demonstrate a basic EOSIO smart contract, including
-
-- Define contract actions
-- Define a table
-- Perform read/write/remove operations on the table
+This contract has an action to init atomic assets collection for an org.
+This contract maintains template_id for a badge. When an account is issued a badge, this contracts creates a non transferrable token in atomic assets.
