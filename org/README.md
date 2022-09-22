@@ -1,6 +1,6 @@
 # org smart contract
 
-This smart contract allows an org to produce and to consume the produced badges.
+This smart contract allows an org to produce and to consume badges.
 
 
 ## Producers and Consumers
@@ -75,7 +75,7 @@ ACTION givesimple (name badge, name authorizer, name to, string memo );
 ```
 ACTION givegotcha (name badge, name from, name to, uint8_t amount, string memo );
 ```
-### 5 - Other details about rounds consumer
+### 5 - Rounds consumer setup
 Addtional info about rounds consumer contract - 
 
 To utilize features of Rounds Consumer, org needs to create a round, add badges and their corresponding scores and start the round. A round can be ended by calling endround action.

@@ -4,10 +4,10 @@
 #define SIMPLEBADGE_CONTRACT "sbadge.gm"
 #define GOTCHABADGE_CONTRACT "got"
 #define ORCHESTRATOR_CONTRACT "metadata"
-#define AA_BADGE_CONTRACT ""
-#define CUMULATIVE_CONTRACT ""
-#define ROUNDS_CONTACT ""
-#define ACCOUNT_PREFERENCES_CONTRACT ""
+#define AA_BADGE_CONTRACT "sdfsdf"
+#define CUMULATIVE_CONTRACT "sdfsdf"
+#define ROUNDS_CONTRACT "sdfsdf"
+#define ACCOUNT_PREFERENCES_CONTRACT "sdfsdf"
 
 using namespace std;
 using namespace eosio;
@@ -15,10 +15,6 @@ using namespace eosio;
 CONTRACT org : public contract {
   public:
     using contract::contract;
-    struct badge_count {
-      name badge;
-      uint16_t count;
-    };
 
 		/*
 		* Initializes system for the org.
@@ -28,7 +24,7 @@ CONTRACT org : public contract {
 		* @param checks_contract	This contract is notified when a badge is created and issued. Notified contract
                               can validate the inputs (which include creator, issued to, issued from) and terminate
                               the transaction if inputs are not in line with org expects.
-		* @param badges_types  This is list of source badge contracts that org recognizes as valid contracts. E.g. of 
+		* @param producers  This is list of source badge contracts that org recognizes as valid contracts. E.g. of 
                            this is Simple Badge contract and Gotcha Badge Contract.
                           
                           Simple badge contract generates badges which are meant to be issued by a person 
@@ -41,14 +37,14 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
     ACTION initsystem(name checks_contract, 
-      vector<name> badges_types, 
+      vector<name> producers, 
       name aacollection);
-
+    ACTION chkscontract (name checks_contract);
     /*
 		* 
     * Defines - a badge of type simple badge contract 
 		*
-		* This action creates a simple badge and features that the badge has subscribed to. All inputs can be
+		* This action creates a simple badge and consumers that the badge has subscribed to. All inputs can be
     * validated in checks_contract ( which is setup in initsystem action )
     * 
 		*
@@ -56,7 +52,7 @@ CONTRACT org : public contract {
 		* @param badge  Name of the badge. 
 		* @param ipfs_image ipfs image associated with the badge.
     * @param display_name Text for display purpose.
-    * @param features Vector of features that a badge has subscribed. Available feature set includes
+    * @param consumers Vector of consumers that a badge has subscribed. Available feature set includes
     *           1) Write to Atomic Asset as Non Transferrable Token. This is recommended to be used
     *               when org wants the badges to be stored granularly. For this to work, org must setup 
     *               a collection using initsystem action OR via initcoll in AA_BADGE_CONTRACT (handy when 
@@ -70,14 +66,14 @@ CONTRACT org : public contract {
       name badge, 
       string ipfs_image, 
       string display_name, 
-      vector<name> features);
+      vector<name> consumers);
     
     
     /*
 		* 
     * Defines - a badge of type gotcha badge contract 
 		*
-		* This action creates a gotcha badge and features that the badge has subscribed to. All inputs can be
+		* This action creates a gotcha badge and consumers that the badge has subscribed to. All inputs can be
     * validated in checks_contract ( which is setup in initsystem action )
     *
     * A gotcha badge is issued from member to member. Gotcha badge has two constraints supply_per_cycle and
@@ -91,7 +87,7 @@ CONTRACT org : public contract {
     * @param supply_per_cycle Supply per cycle_length
 		* @param ipfs_image ipfs image associated with the badge.
     * @param display_name Text for display purpose.
-    * @param features Vector of features that a badge has subscribed. Available feature set includes
+    * @param consumers Vector of consumers that a badge has subscribed. Available feature set includes
     *           1) Write to Atomic Asset as Non Transferrable Token. This is recommended to be used
     *               when org wants the badges to be stored granularly. For this to work, org must setup 
     *               a collection using initsystem action OR via initcoll in AA_BADGE_CONTRACT (handy when 

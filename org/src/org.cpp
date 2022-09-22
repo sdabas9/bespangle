@@ -3,8 +3,8 @@
 // todo
 // 1) remove check for init missing in settings for checks contract.
 
-  ACTION org::initsystem(name checks_contract, vector<name> badges_types, name aacollection) {
-    require_auth (org);
+  ACTION org::initsystem(name checks_contract, vector<name> producers, name aacollection) {
+    require_auth (get_self());
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),
@@ -14,18 +14,18 @@
     }.send();
 
 
-    for(auto i = 0; i < badges_types.size(); i++) {
+    for(auto i = 0; i < producers.size(); i++) {
       action {
       permission_level{get_self(), name("active")},
       name(ORCHESTRATOR_CONTRACT),
       name("recognize"),
       orchestrator_recognize_args {
         .org = get_self(),
-        .trusted_badge_contract = badges_types[i]}
+        .trusted_badge_contract = producers[i]}
       }.send();
     }
 
-    if(aacollection.to_string().size>0) {
+    if(aacollection.to_string().size()>0) {
       action {
       permission_level{get_self(), name("active")},
       name(AA_BADGE_CONTRACT),
@@ -53,7 +53,11 @@
     }
   }
 
-  ACTION org::initsimple (name creator, name badge, string ipfs_image, string display_name, vector<name> features) {
+  ACTION org::initsimple (name creator, 
+    name badge, 
+    string ipfs_image, 
+    string display_name, 
+    vector<name> consumers) {
     require_auth(creator);
 
     require_recipient(checkscontract());
@@ -65,21 +69,20 @@
       createsimple_args {
         .org = get_self(),
         .badge = badge,
-        .parent_badges = [],
         .ipfs_image = ipfs_image,
         .memo = display_name}
     }.send();
 
-    for (auto i = 0 ; i < features.size(); i++) {
+    for (auto i = 0 ; i < consumers.size(); i++) {
       action {
       permission_level{get_self(), name("active")},
       name(ORCHESTRATOR_CONTRACT),
       name("addfeature"),
-      createsimple_args {
+      orchestrator_addfeature_args {
         .org = get_self(),
         .badge_contract = name(SIMPLEBADGE_CONTRACT),
-        .badge_name = badge_name,
-        .notify_account = features[i],
+        .badge_name = badge,
+        .notify_account = consumers[i],
         .memo = display_name}
       }.send();
     }
@@ -92,7 +95,7 @@
     uint8_t supply_per_cycle, 
     string ipfs_image, 
     string display_name, 
-    vector<name> features) {
+    vector<name> consumers) {
 
     require_auth(creator);
     
@@ -112,16 +115,16 @@
         .memo = display_name }
     }.send();
 
-    for (auto i = 0 ; i < features.size(); i++) {
+    for (auto i = 0 ; i < consumers.size(); i++) {
       action {
       permission_level{get_self(), name("active")},
       name(ORCHESTRATOR_CONTRACT),
       name("addfeature"),
       orchestrator_addfeature_args {
         .org = get_self(),
-        .badge_contract = name(SIMPLEBADGE_CONTRACT),
-        .badge_name = badge_name,
-        .notify_account = features[i],
+        .badge_contract = name(GOTCHABADGE_CONTRACT),
+        .badge_name = badge,
+        .notify_account = consumers[i],
         .memo = display_name}
       }.send();
     }
@@ -176,8 +179,7 @@
         .org = get_self(),
         .round = round,
         .description = display_name,
-        .account_constrained = false,
-        .participating_accounts = []}
+        .account_constrained = false}
     }.send();
   }
 
