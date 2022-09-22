@@ -42,7 +42,7 @@ ACTION initsystem(name checks_contract,
       checks_contract - org authored contract to validate input fields of various actions. Mainly this can be used to check authority of action execution.
       badges_types - vector of producer contracts like simple badge contract and gotcha badge contract
       aacollection - atomic asset collection name
-      ```
+```
 
 ### 3 - Badge definition 
 With initial setup out of the way, next an org can define some simple badges and gotcha badge.
@@ -66,14 +66,15 @@ With initial setup out of the way, next an org can define some simple badges and
       vector<name> features);
 ```
 
-
-
-
 ### 4 - Badge Issuance
 With badge creation out of the way, members and issuing authority can start issue badges via actions.
-<ACTION givesimple>
-<ACTION givegotcha>
+```
+ACTION givesimple (name badge, name authorizer, name to, string memo );
+```
 
+```
+ACTION givegotcha (name badge, name from, name to, uint8_t amount, string memo );
+```
 ### 5 - Other details about rounds consumer
 Addtional info about rounds consumer contract - 
 
