@@ -1,6 +1,6 @@
-# org
+# org smart contract
 
-This smart contract allows an org to produce and to consume produced badges.
+This smart contract allows an org to produce and to consume the produced badges.
 
 
 ## Producers and Consumers
@@ -8,13 +8,13 @@ This smart contract allows an org to produce and to consume produced badges.
 Early dive into these two broad categories makes for easier understanding.
 
 ### Producer Badge Contracts
-Producers Badge Contracts produce the badges. 2 Producer Contracts are available -
+Producers Badge Contracts produce the badges. Two Producer Contracts are available -
 1) Simple Badge Contract - Creates a badge, which a person of authority in an org can issue to  members of org.
 2) Gotcha Badge Contact - Creates a badge which members of org can issue to other members. A gotcha badge comes with Supply Cap for a Time Duration Cycle. Supply Cap is restored at end of every Time Duration Cycle.
 
 ### Consumer Badge Contracts
 
-3 Consumers Contracts are  available -
+Three Consumers Contracts are available -
 
 1) Atomic Assets Consumer - This consumes badges at granular level in atomic asset standard. i.e. for every Badge a non transferrable asset is created in atomic assets standard. 
 2) Cumulative Consumer - This consumers badges at cumulative level. Same badges are added and stored as one record.
@@ -30,16 +30,43 @@ Deploy this contract and a validation contract similar to Eden Validation Contra
 
 Org would need to do some basic setup, which involves
 -Subscribing to the producer contracts.
--And Subscribe to a validation contract. Org needs to implement this to validate the input of actions. See Eden Validation Contract.
+-Subscribing to a validation contract. Org needs to implement this to validate the input of actions. See Eden Validation Contract.
 -If an org would want to subscribe to Atomic Asset as consumer for the badges, it would need to call this action.
 
 All this can be done via this action -
-<ACTION initsystem>
+```    
+ACTION initsystem(name checks_contract, 
+      vector<name> badges_types, 
+      name aacollection);
+
+      checks_contract - org authored contract to validate input fields of various actions. Mainly this can be used to check authority of action execution.
+      badges_types - vector of producer contracts like simple badge contract and gotcha badge contract
+      aacollection - atomic asset collection name
+      ```
 
 ### 3 - Badge definition 
 With initial setup out of the way, next an org can define some simple badges and gotcha badge.
-<ACTION initsimple>
-<ACTION initgotcha>
+```
+    ACTION initsimple (name creator, 
+      name badge, 
+      string ipfs_image, 
+      string display_name, 
+      vector<name> features);
+```
+
+
+```
+    ACTION initgotcha (name creator, 
+      name badge, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string ipfs_image, 
+      string display_name, 
+      vector<name> features);
+```
+
+
 
 
 ### 4 - Badge Issuance
