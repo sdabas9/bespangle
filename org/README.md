@@ -13,9 +13,7 @@ Producers Badge Contracts produce the badges. Two Producer Contracts are availab
 - Gotcha Badge Contact - Creates a badge which members of org can issue to other members. A gotcha badge comes with Supply Cap for a Time Duration Cycle. Supply Cap is restored at end of every Time Duration Cycle.
 
 ### Consumer Badge Contracts
-
 Three Consumers Contracts are available -
-
 - Atomic Assets Consumer - This consumes badges at granular level in atomic asset standard. i.e. for every Badge a non transferrable asset is created in atomic assets standard. 
 - Cumulative Consumer - This consumes badges at cumulative level. Same badges are added and stored as one record.
 - Rounds Consumer - This consumer accumulate badges and their corresponding scores from the start to the end of the round. Start and End of round are triggered by calling actions.
@@ -39,13 +37,14 @@ ACTION initsystem(name checks_contract,
       vector<name> producers, 
       name aacollection);
 
-      checks_contract - org authored contract to validate input fields of various actions. Mainly this can be used to check authority of action execution.
+      checks_contract - org authored contract to validate input fields of various actions. 
+                        Mainly this can be used to check authority of action execution.
       producers - vector of producer contracts like simple badge contract and gotcha badge contract
       aacollection - atomic asset collection name
 ```
 
 ### 3 - Badge definition 
-With initial setup out of the way, next an org can define some simple badges and gotcha badge.
+With initial setup out of the way, next an org can define some simple badges and gotcha badges using below actions.
 ```
 ACTION initsimple (name creator, 
       name badge, 
@@ -81,7 +80,7 @@ ACTION initgotcha (name creator,
 ```
 
 ### 4 - Badge Issuance
-With badge creation out of the way, members and issuing authority can start issue badges via actions.
+With badge definition done, members and issuing authority can start issue badges via following actions.
 ```
 ACTION givesimple (name badge, name authorizer, name to, string memo );
 
@@ -145,7 +144,7 @@ ACTION endround (name authorizer, name round);
 
 For accounts to interact with badges following actions are available 
 
-### 1 - Opt in to receive badges
+#### 1 - Opt in to receive badges
 ```
 ACTION accntoptin(name account);
 
@@ -153,7 +152,7 @@ ACTION accntoptin(name account);
     
 ```
 
-### 2 - opt out 
+#### 2 - opt out 
 ```
 ACTION accntoptout(name account, string memo);
 
