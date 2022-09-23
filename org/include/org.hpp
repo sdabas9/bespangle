@@ -137,11 +137,7 @@ CONTRACT org : public contract {
     * @param round -  name of the round 
 		* @param display_name - display name of the round.
     */ 
-    ACTION initround (name authorizor, name round, string display_name);
-
-    ACTION startround (name authorizor, name round);
-
-    ACTION endround (name authorizer, name round);
+    ACTION initround (name authorizer, name round, string display_name);
 
     ACTION addbdgetornd (name authorizer,
       name round, 
@@ -150,6 +146,12 @@ CONTRACT org : public contract {
       uint16_t balance_based_scoring_weight,
       name source_based_scoring_type,
       uint16_t source_based_scoring_weight);
+
+    ACTION startround (name authorizer, name round);
+
+    ACTION endround (name authorizer, name round);
+
+
 
     ACTION accntoptin(name account);
     ACTION accntoptout(name account, string memo);

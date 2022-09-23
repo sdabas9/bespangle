@@ -47,7 +47,7 @@ ACTION initsystem(name checks_contract,
 ### 3 - Badge definition 
 With initial setup out of the way, next an org can define some simple badges and gotcha badge.
 ```
-    ACTION initsimple (name creator, 
+ACTION initsimple (name creator, 
       name badge, 
       string ipfs_image, 
       string display_name, 
@@ -62,7 +62,7 @@ With initial setup out of the way, next an org can define some simple badges and
 
 
 ```
-    ACTION initgotcha (name creator, 
+ACTION initgotcha (name creator, 
       name badge, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
@@ -93,6 +93,7 @@ ACTION givesimple (name badge, name authorizer, name to, string memo );
 
 ```
 ACTION givegotcha (name badge, name from, name to, uint8_t amount, string memo );
+
       badge - name of gotcha badge to be issued.
       from - issuer
       to - beneficiary
@@ -101,9 +102,63 @@ ACTION givegotcha (name badge, name from, name to, uint8_t amount, string memo )
 
 ```
 ### 5 - Rounds consumer setup
-Addtional info about rounds consumer contract - 
 
-To utilize features of Rounds Consumer, org needs to create a round, add badges and their corresponding scores and start the round. A round can be ended by calling endround action.
+For badge Subscribing to rounds consumer, following additional steps are needed - 
 
-Account that receives the badges, need to opt in to receive badges from an org. This can be done via action -
+#### 1) create a round
+Creates a new round in init status.
+```
+ACTION initround (name authorizor, name round, string display_name);
+```
+
+#### 2) add a badge and add scoring method.
+```
+ACTION addbdgetornd (name authorizer,
+      name round, 
+      uint64_t badge_id, 
+      name balance_based_scoring_type, 
+      uint16_t balance_based_scoring_weight,
+      name source_based_scoring_type,
+      uint16_t source_based_scoring_weight);
+
+      authorizer - authorized account to add a badge for scoring.
+      round - name of the round
+      balance_based_scoring_type - linear or fibonacci.
+      balance_based_scoring_weight - wt of balance_based_scoring_type
+      source_based_scoring_type - linear or fibonacci
+      source_based_scoring_weight - wt of source_based_scoring_weight
+      
+```
+
+#### 3) start a round
+Start a round by calling this action.
+```
+ACTION startround (name authorizer, name round);
+```
+
+#### 4) end a round
+End a round by calling this action.
+```
+ACTION endround (name authorizer, name round);
+```
+
+
+For accounts to interact with badges following actions are available 
+
+### 1 - Opt in to receive badges
+```
+ACTION accntoptin(name account);
+
+      account - account opting in to receive badges from org.
+    
+```
+
+### 2 - opt out 
+```
+ACTION accntoptout(name account, string memo);
+
+      account - account opting out of system.
+```
+
+
 
