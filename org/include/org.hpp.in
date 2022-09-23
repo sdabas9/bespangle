@@ -1,13 +1,13 @@
 #include <eosio/eosio.hpp>
 #include <eosio/system.hpp>
 
-#define SIMPLEBADGE_CONTRACT "simplebadge"
-#define GOTCHABADGE_CONTRACT "gotchabadge"
-#define ORCHESTRATOR_CONTRACT "metadata"
-#define AABADGE_CONTRACT "aabadge"
-#define CUMULATIVE_CONTRACT "cumulative"
-#define ROUNDS_CONTRACT "rounds"
-#define ACCOUNT_PREFERENCES_CONTRACT "userprefs"
+#cmakedefine SIMPLEBADGE_CONTRACT "@SIMPLEBADGE_CONTRACT@"
+#cmakedefine GOTCHABADGE_CONTRACT "@GOTCHABADGE_CONTRACT@"
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#cmakedefine AABADGE_CONTRACT "@AABADGE_CONTRACT@"
+#cmakedefine CUMULATIVE_CONTRACT "@CUMULATIVE_CONTRACT@"
+#cmakedefine ROUNDS_CONTRACT "@ROUNDS_CONTRACT@"
+#cmakedefine ACCOUNT_PREFERENCES_CONTRACT "@ACCOUNT_PREFERENCES_CONTRACT@"
 
 using namespace std;
 using namespace eosio;

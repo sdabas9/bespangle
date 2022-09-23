@@ -28,7 +28,7 @@
     if(aacollection.to_string().size()>0) {
       action {
       permission_level{get_self(), name("active")},
-      name(AA_BADGE_CONTRACT),
+      name(AABADGE_CONTRACT),
       name("initcoll"),
       aa_initcoll_args {
         .org = get_self(),
