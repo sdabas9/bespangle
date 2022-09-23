@@ -15,8 +15,8 @@ Producers Badge Contracts produce the badges. Two Producer Contracts are availab
 ### Consumer Badge Contracts
 Three Consumers Contracts are available -
 - Atomic Assets Consumer - This consumes badges at granular level in atomic asset standard. i.e. for every Badge a non transferrable asset is created in atomic assets standard. 
-- Cumulative Consumer - This consumes badges at cumulative level. Same badges are added and stored as one record.
-- Rounds Consumer - This consumer accumulate badges and their corresponding scores from the start to the end of the round. Start and End of round are triggered by calling actions.
+- Cumulative Consumer - This consumes badges at cumulative level for an account. Same badges are added and stored as one record.
+- Rounds Consumer - This consumer accumulate badges and their corresponding scores for an account from the start to the end of the round. Start and End of round are triggered by calling actions.
 
 ## Usage
 
@@ -27,9 +27,9 @@ Deploy this contract and a validation contract similar to Eden Validation Contra
 ### 2 - Initialize org contract
 
 Org would need to do some basic setup, which involves
--Subscribing to the producer contracts.
--Subscribing to a validation contract. Org needs to implement this to validate the input of actions. See Eden Validation Contract.
--Optionally give atomic asset collection name if org wishes to subscribe to atomic asset consumer.
+- Subscribing to the producer contracts.
+- Subscribing to a validation contract. Org needs to implement this to validate the input of actions. See Eden Validation Contract.
+- Optionally give atomic asset collection name if org wishes to subscribe to atomic asset consumer.
 
 All this can be done via this action -
 ```    
