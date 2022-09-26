@@ -85,7 +85,7 @@
         .notify_account = consumers[i],
         .memo = display_name}
       }.send();
-    }
+    } 
   }
 
   ACTION org::initgotcha (name creator, 
@@ -103,7 +103,7 @@
     
     action {
       permission_level{get_self(), name("active")},
-      name("GOTCHABADGE_CONTRACT"),
+      name(GOTCHABADGE_CONTRACT),
       name("create"),
       creategotcha_args {
         .org = get_self(),
@@ -132,7 +132,6 @@
 
   ACTION org::givegotcha (name badge, name from, name to, uint8_t amount, string memo ) {
     require_auth(from);
-    
     require_recipient(checkscontract());
 
     action {
@@ -150,7 +149,7 @@
 
   }
 
-  ACTION org::givesimple (name authorizer, name to, name badge, string memo ) {
+  ACTION org::givesimple (name badge, name authorizer, name to, string memo ) {
     require_auth(authorizer);
 
     require_recipient(checkscontract());
@@ -158,8 +157,8 @@
     action {
       permission_level{get_self(), name("active")},
       name(SIMPLEBADGE_CONTRACT),
-      name("give"),
-      givesimple_args {
+      name("issue"),
+      issuesimple_args {
         .org = get_self(),
         .to = to,
         .badge = badge,
@@ -238,31 +237,3 @@
     }.send();
   }
 
-  ACTION org::accntoptin(name account) {
-    require_auth(account);
-    require_recipient(checkscontract()); 
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(ACCOUNT_PREFERENCES_CONTRACT),
-      name("allow"),
-      accountprefs_allow_args {
-        .account = account,
-        .org = get_self()}
-    }.send(); 
-  }
-  
-  ACTION org::accntoptout(name account, string memo) {
-    require_auth(account);
-    require_recipient(checkscontract());  
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(ACCOUNT_PREFERENCES_CONTRACT),
-      name("unallow"),
-      accountprefs_unallow_args {
-        .account = account,
-        .org = get_self(),
-        .memo = memo}
-    }.send();
-  }

@@ -30,7 +30,7 @@ CONTRACT rounds : public contract {
       bool account_constrained,
       vector<name> participating_accounts);
 
-    ACTION activeround (name org, name round);
+    ACTION startround (name org, name round);
     ACTION endround (name org, name round);
     ACTION pauseround (name org, name round);
     ACTION resumeround (name org, name round);
@@ -139,7 +139,8 @@ CONTRACT rounds : public contract {
 
   void balance_based_linear_score (name org, uint64_t scoremeta_id, name account, uint8_t count, uint64_t wt) {
     scores_table _scores (get_self(), org.value);
-      
+        
+  
     auto score_account_index = _scores.get_index<name("scoreaccount")>();
     uint128_t score_account_key = ((uint128_t) scoremeta_id) << 64 | account.value;
     auto score_account_iterator = score_account_index.find (score_account_key);
@@ -151,7 +152,7 @@ CONTRACT rounds : public contract {
         row.account = account;
         row.score = count * wt;
         row.balance_count = count;
-      });  
+      }); 
     }
     else {
       score_account_index.modify(score_account_iterator, get_self(), [&](auto& row) {

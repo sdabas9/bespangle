@@ -151,12 +151,6 @@ CONTRACT org : public contract {
 
     ACTION endround (name authorizer, name round);
 
-
-
-    ACTION accntoptin(name account);
-    ACTION accntoptout(name account, string memo);
-
-
   private:
 
     TABLE settings {
@@ -222,7 +216,7 @@ CONTRACT org : public contract {
       string memo;
     };
 
-    struct givesimple_args {
+    struct issuesimple_args {
       name org;
       name to;
       name badge;
@@ -257,15 +251,5 @@ CONTRACT org : public contract {
       uint16_t source_based_scoring_weight;
     };
 
-    struct accountprefs_allow_args {
-      name account;
-      name org;
-    };
-    
-    struct accountprefs_unallow_args {
-      name account;
-      name org;
-      string memo;
-    };
 
 };
