@@ -100,7 +100,7 @@ ACTION rounds::createround (name org,
 
 }
 
-ACTION rounds::activeround (name org, name round) {
+ACTION rounds::startround (name org, name round) {
   require_auth(org);
   rounds_table _rounds( _self, org.value );
   auto rounds_itr = _rounds.find(round.value);

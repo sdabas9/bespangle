@@ -50,7 +50,12 @@
       }.send();
   }
 
-  ACTION gotchabadge::give (name org, name badge, name from, name to, uint8_t amount, string memo ) {
+  ACTION gotchabadge::give (name org, 
+    name badge, 
+    name from, 
+    name to, 
+    uint8_t amount, 
+    string memo ) {
     require_auth(org);
 
     check(from != to, "can not be same - from, to");

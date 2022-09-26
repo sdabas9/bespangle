@@ -36,7 +36,10 @@
   }
 
 
-  ACTION simplebadge::issue (name org, name to, name badge, string memo ) {
+  ACTION simplebadge::issue (name org, 
+    name to, 
+    name badge, 
+    string memo ) {
     require_auth(org);
     require_recipient(to);
 

@@ -104,7 +104,7 @@ void aabadge::notifyinit(
       .max_supply = 0,
       .immutable_data = mdata}
     }.send();
-  } 
+  }
 }
 
 void aabadge::updatebadge(
