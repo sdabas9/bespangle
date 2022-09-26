@@ -142,7 +142,7 @@ ACTION endround (name authorizer, name round);
 ```
 
 
-For accounts to interact with badges following actions are available 
+For accounts to interact with badges following actions are available in userprefs smart contract.
 
 #### 1 - Opt in to receive badges
 ```
