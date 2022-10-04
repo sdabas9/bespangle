@@ -3,8 +3,10 @@
 // todo
 // 1) remove check for init missing in settings for checks contract.
 
-  ACTION org::initsystem(name checks_contract, vector<name> producers, name aacollection) {
-    require_auth (get_self());
+  ACTION org::initsystem(name org, name checks_contract, vector<name> producers, name aacollection) {
+    require_auth (org);
+    require_recipient(ORCHESTRATOR_CONTRACT);
+    require_recipient(AABADGE_CONTRACT);
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),
@@ -12,29 +14,6 @@
       chkscontract_args {
         .checks_contract = checks_contract}
     }.send();
-
-
-    for(auto i = 0; i < producers.size(); i++) {
-      action {
-      permission_level{get_self(), name("active")},
-      name(ORCHESTRATOR_CONTRACT),
-      name("recognize"),
-      orchestrator_recognize_args {
-        .org = get_self(),
-        .trusted_badge_contract = producers[i]}
-      }.send();
-    }
-
-    if(aacollection.to_string().size()>0) {
-      action {
-      permission_level{get_self(), name("active")},
-      name(AABADGE_CONTRACT),
-      name("initcoll"),
-      aa_initcoll_args {
-        .org = get_self(),
-        .collection_name = aacollection}
-      }.send();
-    }
   }
 
   ACTION org::chkscontract (name checks_contract) {
@@ -54,6 +33,7 @@
   }
 
   ACTION org::initsimple (name creator, 
+    name org,
     name badge, 
     string ipfs_image, 
     string display_name, 
