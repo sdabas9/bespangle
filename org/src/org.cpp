@@ -55,9 +55,10 @@
 
   ACTION org::initsimple (name creator, 
     name badge, 
-    string ipfs_image, 
-    string display_name, 
-    vector<name> consumers) {
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    vector<name> consumers,
+    string memo) {
     require_auth(creator);
 
     require_recipient(checkscontract());
@@ -69,8 +70,9 @@
       createsimple_args {
         .org = get_self(),
         .badge = badge,
-        .ipfs_image = ipfs_image,
-        .memo = display_name}
+        .offchain_lookup_data = offchain_lookup_data,
+        .onchain_lookup_data = onchain_lookup_data,
+        .memo = memo}
     }.send();
 
     for (auto i = 0 ; i < consumers.size(); i++) {
@@ -83,7 +85,7 @@
         .badge_contract = name(SIMPLEBADGE_CONTRACT),
         .badge_name = badge,
         .notify_account = consumers[i],
-        .memo = display_name}
+        .memo = memo}
       }.send();
     } 
   }
@@ -93,9 +95,10 @@
     time_point_sec starttime, 
     uint64_t cycle_length, 
     uint8_t supply_per_cycle, 
-    string ipfs_image, 
-    string display_name, 
-    vector<name> consumers) {
+    string offchain_lookup_data, 
+    string onchain_lookup_data,
+    vector<name> consumers,
+    string memo) {
 
     require_auth(creator);
     
@@ -111,8 +114,9 @@
         .starttime = starttime,
         .cycle_length = cycle_length,
         .supply_per_cycle = supply_per_cycle,
-        .ipfsimage = ipfs_image,
-        .memo = display_name }
+        .offchain_lookup_data = offchain_lookup_data,
+        .onchain_lookup_data = onchain_lookup_data,
+        .memo = memo }
     }.send();
 
     for (auto i = 0 ; i < consumers.size(); i++) {
@@ -125,9 +129,79 @@
         .badge_contract = name(GOTCHABADGE_CONTRACT),
         .badge_name = badge,
         .notify_account = consumers[i],
-        .memo = display_name}
+        .memo = memo}
       }.send();
     }
+  }
+
+  ACTION org::defineseries (name creator, name family) {
+    require_auth(creator);
+    require_recipient(checkscontract());
+
+    action {
+      permission_level{get_self(), name("active")},
+      name("seriesbadge"),
+      name("define"),
+      defineseries_args {
+        .org = get_self(),
+        .family = family
+      }
+    }.send();
+  }
+
+  ACTION org::initseriesbdg (name creator, 
+    name family, 
+    name badge, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data,
+    vector<name> consumers,
+    string memo) {
+
+    require_auth(creator);
+    require_recipient(checkscontract());
+
+    action {
+      permission_level{get_self(), name("active")},
+      name(SERIESBADGE_CONTRACT),
+      name("createnext"),
+      series_createnext_args {
+        .org = get_self(),
+        .family = family,
+        .badge = badge,
+        .offchain_lookup_data = offchain_lookup_data,
+        .onchain_lookup_data = onchain_lookup_data,
+        .memo = memo
+      }
+    }.send();
+
+    for (auto i = 0 ; i < consumers.size(); i++) {
+      action {
+      permission_level{get_self(), name("active")},
+      name(ORCHESTRATOR_CONTRACT),
+      name("addfeature"),
+      orchestrator_addfeature_args {
+        .org = get_self(),
+        .badge_contract = name(SERIESBADGE_CONTRACT),
+        .badge_name = badge,
+        .notify_account = consumers[i],
+        .memo = memo}
+      }.send();
+    }
+  }
+
+  ACTION org::givelatestsb (name issuer, name family, name to, string memo) {
+    require_auth(issuer);
+    require_recipient(checkscontract());
+    action {
+    permission_level{get_self(), name("active")},
+    name(SERIESBADGE_CONTRACT),
+    name("issuelatest"),
+    issue_latestseries_args {
+      .org = get_self(),
+      .family = family,
+      .to = to,
+      .memo = memo }
+    }.send();
   }
 
   ACTION org::givegotcha (name badge, name from, name to, uint8_t amount, string memo ) {

@@ -127,6 +127,7 @@ CONTRACT metadata : public contract {
       vector<name> notify_accounts;
       vector<ipfs_hash> ipfs_hashes;
       uint32_t rarity_counts;
+      string description;
       auto primary_key() const {return badge_id; }
       uint128_t contract_badge_key() const {
         return ((uint128_t) badge_contract.value) << 64 | badge_name.value;

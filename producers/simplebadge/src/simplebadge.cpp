@@ -8,7 +8,7 @@
     // 5) add action to update details json.
 
 
-  ACTION simplebadge::create (name org, name badge, vector<name> parent_badges, string ipfs_image, string memo) {
+  ACTION simplebadge::create (name org, name badge, vector<name> parent_badges, string offchain_lookup_data, string onchain_lookup_data, string memo) {
     require_auth(org);
     
     badge_table _badge (_self, org.value);
@@ -30,7 +30,8 @@
         .org = org,
         .badge_contract = get_self(),
         .badge_name = badge,
-        .ipfs_image = ipfs_image,
+        .offchain_lookup_data = offchain_lookup_data,
+        .onchain_lookup_data = onchain_lookup_data,
         .memo = memo }
     }.send();
   }

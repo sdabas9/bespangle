@@ -11,9 +11,9 @@ ACTION metadata::recognize (name org, name trusted_contract) {
   });
 }
 
-ACTION metadata::initbadge (name org, name badge_contract, name badge_name, string ipfs_image, string memo) {
+ACTION metadata::initbadge (name org, name badge_contract, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
   check_authorization(org, badge_contract);
-  init(org, badge_contract, badge_name, ipfs_image);
+  init(org, badge_contract, badge_name, offchain_lookup_data, onchain_lookup_data, memo);
 
 }
 
@@ -35,7 +35,8 @@ ACTION metadata::addfeature (name org, name badge_contract, name badge_name, nam
   contract_badge_index.modify(contract_badge_iterator, get_self(), [&](auto& row){
     row.notify_accounts = new_notify_accounts;
   });
-
+  // image
+  // display name
   action {
     permission_level{get_self(), name("active")},
     get_self(),
@@ -47,7 +48,8 @@ ACTION metadata::addfeature (name org, name badge_contract, name badge_name, nam
       .notify_account = notify_account,
       .memo = memo,
       .badge_id = contract_badge_iterator->badge_id,
-      .ipfs_hashes = contract_badge_iterator->ipfs_hashes,
+      .offchain_lookup_data = contract_badge_iterator->offchain_lookup_data,
+      .onchain_lookup_data = contract_badge_iterator->onchain_lookup_data,
       .rarity_counts = contract_badge_iterator->rarity_counts
       }
   }.send();
@@ -61,7 +63,8 @@ ACTION metadata::addnotify(
   name notify_account,
   string memo, 
   uint64_t badge_id, 
-  vector<ipfs_hash> ipfs_hashes,
+  string offchain_lookup_data,
+  string onchain_lookup_data,
   uint32_t rarity_counts) {
     require_auth(get_self());
     require_recipient (notify_account); 
@@ -96,7 +99,8 @@ ACTION metadata::delfeature (name org, name badge_contract, name badge_name, nam
       .notify_account = notify_account,
       .memo = memo,
       .badge_id = contract_badge_iterator->badge_id,
-      .ipfs_hashes = contract_badge_iterator->ipfs_hashes,
+      .offchain_lookup_data = contract_badge_iterator->offchain_lookup_data,
+      .onchain_lookup_data = contract_badge_iterator->onchain_lookup_data,
       .rarity_counts = contract_badge_iterator->rarity_counts
       }
   }.send();
@@ -109,7 +113,8 @@ ACTION metadata::delnotify(
   name notify_account,
   string memo, 
   uint64_t badge_id, 
-  vector<ipfs_hash> ipfs_hashes,
+  string offchain_lookup_data,
+  string onchain_lookup_data,
   uint32_t rarity_counts) {
     require_auth(get_self());
     require_recipient (notify_account); 

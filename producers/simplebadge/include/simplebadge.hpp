@@ -9,7 +9,12 @@ CONTRACT simplebadge : public contract {
   public:
     using contract::contract;
 
-    ACTION create (name org, name badge, vector<name> parent_badges, string ipfs_image, string memo);
+    ACTION create (name org, 
+      name badge, 
+      vector<name> parent_badges, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
 
     ACTION issue (name org, name to, name badge, string memo );
 
@@ -36,7 +41,8 @@ CONTRACT simplebadge : public contract {
       name org; 
       name badge_contract; 
       name badge_name;
-      string ipfs_image; 
+      string offchain_lookup_data; 
+      string onchain_lookup_data; 
       string memo;
     }; 
 

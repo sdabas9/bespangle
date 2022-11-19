@@ -8,6 +8,7 @@
 #define CUMULATIVE_CONTRACT "cumulative"
 #define ROUNDS_CONTRACT "rounds"
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs"
+#define SERIESBADGE_CONTRACT "seriesbadge"
 
 using namespace std;
 using namespace eosio;
@@ -64,9 +65,10 @@ CONTRACT org : public contract {
 
     ACTION initsimple (name creator, 
       name badge, 
-      string ipfs_image, 
-      string display_name, 
-      vector<name> consumers);
+      string offchain_lookup_data, 
+      string onchain_lookup_data,
+      vector<name> consumers,
+      string memo);
     
     
     /*
@@ -102,9 +104,10 @@ CONTRACT org : public contract {
       time_point_sec starttime, 
       uint64_t cycle_length, 
       uint8_t supply_per_cycle, 
-      string ipfs_image, 
-      string display_name, 
-      vector<name> features);
+      string offchain_lookup_data, 
+      string onchain_lookup_data,
+      vector<name> consumers,
+      string memo);
 
     /*
     * Gives a simple badge from authorizer to member
@@ -151,6 +154,18 @@ CONTRACT org : public contract {
 
     ACTION endround (name authorizer, name round);
 
+    ACTION defineseries (name creator, name family);
+
+    ACTION initseriesbdg (name creator, 
+      name family, 
+      name badge, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data,
+      vector<name> consumers,
+      string memo);
+    
+    ACTION givelatestsb (name issuer, name family, name to, string memo);
+
   private:
 
     TABLE settings {
@@ -193,7 +208,8 @@ CONTRACT org : public contract {
       name org;
       name badge;
       vector<name> parent_badges;
-      string ipfs_image;
+      string offchain_lookup_data; 
+      string onchain_lookup_data;
       string memo;
     };
 
@@ -203,7 +219,29 @@ CONTRACT org : public contract {
       time_point_sec starttime;
       uint64_t cycle_length;
       uint8_t supply_per_cycle;
-      string ipfsimage;
+      string offchain_lookup_data; 
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct series_createnext_args {
+      name org;
+      name family;
+      name badge;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct defineseries_args {
+      name org;
+      name family;
+    };
+
+    struct issue_latestseries_args {
+      name org;
+      name family;
+      name to;
       string memo;
     };
 
