@@ -3,19 +3,12 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing"
-#define ACCOUNT_PREFERENCES_CONTRACT "userprefs"
+#define BILLING_CONTRACT "billing11111"
+#define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 
 CONTRACT metadata : public contract {
   public:
     using contract::contract;
-
-  struct pair {
-    string key;
-    string value;
-  };
-
-
  
   ACTION recognize (name org, name trusted_badge_contract);
 

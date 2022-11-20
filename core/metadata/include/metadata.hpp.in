@@ -9,18 +9,14 @@ using namespace eosio;
 CONTRACT metadata : public contract {
   public:
     using contract::contract;
-
-  struct ipfs_hash {
-    string key;
-    string value;
-  };
  
   ACTION recognize (name org, name trusted_badge_contract);
-  
+
   ACTION initbadge (name org, 
     name badge_contract, 
-    name badge_name, 
-    string ipfs_image, 
+    name badge_name,
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
     string memo);
 
   ACTION addfeature (name org, 
@@ -35,8 +31,9 @@ CONTRACT metadata : public contract {
     name badge_name,
     name notify_accounts,
     string memo, 
-    uint64_t badge_id, 
-    vector<ipfs_hash> ipfs_hashes,
+    uint64_t badge_id,  
+    string offchain_lookup_data,
+    string onchain_lookup_data,
     uint32_t rarity_counts); 
 
   ACTION delfeature (name org, 
@@ -51,8 +48,9 @@ CONTRACT metadata : public contract {
     name badge_name,
     name notify_accounts,
     string memo, 
-    uint64_t badge_id, 
-    vector<ipfs_hash> ipfs_hashes,
+    uint64_t badge_id,
+    string offchain_lookup_data,
+    string onchain_lookup_data,
     uint32_t rarity_counts); 
   
   ACTION achievement (name org,
@@ -105,7 +103,8 @@ CONTRACT metadata : public contract {
       name notify_account;
       string memo;
       uint64_t badge_id;
-      vector<ipfs_hash> ipfs_hashes;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
       uint64_t rarity_counts;
     };
 
@@ -125,9 +124,9 @@ CONTRACT metadata : public contract {
       name badge_contract;
       name badge_name;
       vector<name> notify_accounts;
-      vector<ipfs_hash> ipfs_hashes;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
       uint32_t rarity_counts;
-      string description;
       auto primary_key() const {return badge_id; }
       uint128_t contract_badge_key() const {
         return ((uint128_t) badge_contract.value) << 64 | badge_name.value;
@@ -151,22 +150,22 @@ CONTRACT metadata : public contract {
       check(false, "action does not have authorization of any trusted contract");
     }
 
-    void init (name org, name badge_contract, name badge_name, string ipfs_image) {
+    void init (name org, name badge_contract, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
       badge_table _badge( _self, org.value );
       auto contract_badge_index = _badge.get_index<name("contractbadge")>();
       uint128_t contract_badge_key = ((uint128_t) badge_contract.value) << 64 | badge_name.value;
       auto contract_badge_iterator = contract_badge_index.find (contract_badge_key);
       check(contract_badge_iterator == contract_badge_index.end(), "<badge> already exists for <contract> ");
-      vector<ipfs_hash> ipfs_hashes;
-      ipfs_hashes.push_back ( ipfs_hash {
+      /* ipfs_hashes.push_back ( ipfs_hash {
         .key = "img",
         .value = ipfs_image
-      });
+      }); */
       _badge.emplace(get_self(), [&](auto& row){
         row.badge_id = _badge.available_primary_key();
         row.badge_contract = badge_contract;
         row.badge_name = badge_name;
-        row.ipfs_hashes = ipfs_hashes;
+        row.offchain_lookup_data = offchain_lookup_data;
+        row.onchain_lookup_data = onchain_lookup_data;
         row.rarity_counts = 0;
       });
      // deduct_credit (org, 291 + ipfs_image.length(), "native init : <org> <contract> <badge>");

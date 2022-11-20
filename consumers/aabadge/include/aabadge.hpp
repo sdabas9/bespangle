@@ -5,8 +5,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata"
+#define BILLING_CONTRACT "billing11111"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata1111"
 #define ATOMIC_ASSETS_CONTRACT "atomicassets"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
@@ -18,11 +18,6 @@ using namespace eosio;
 CONTRACT aabadge : public contract {
   public:
     using contract::contract;
-
-    struct pair {
-      string key;
-      string value;
-    };
     
     struct createtemplate_args {
       name authorized_creator;
