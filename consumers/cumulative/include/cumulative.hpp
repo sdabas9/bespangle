@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing11111"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata1111"
+#define BILLING_CONTRACT "billing"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
 CONTRACT cumulative : public contract {
