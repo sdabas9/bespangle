@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing"
-#define ACCOUNT_PREFERENCES_CONTRACT "userprefs"
+#define BILLING_CONTRACT "billing11111"
+#define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 
 CONTRACT metadata : public contract {
   public:
