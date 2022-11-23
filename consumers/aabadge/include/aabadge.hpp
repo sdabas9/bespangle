@@ -5,8 +5,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata"
+#define BILLING_CONTRACT "billing11111"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
 #define ATOMIC_ASSETS_CONTRACT "atomicassets"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
@@ -18,11 +18,6 @@ using namespace eosio;
 CONTRACT aabadge : public contract {
   public:
     using contract::contract;
-
-    struct ipfs_hash {
-      string key;
-      string value;
-    };
     
     struct createtemplate_args {
       name authorized_creator;
@@ -71,7 +66,8 @@ CONTRACT aabadge : public contract {
       name notify_account,
       string memo, 
       uint64_t badge_id, 
-      vector<ipfs_hash> ipfs_hashes,
+      string offchain_lookup_data,
+      string onchain_lookup_data,
       uint32_t rarity_counts);
 
     [[eosio::on_notify(ATOMIC_ASSETS_CREATE_TEMPLATE_NOTIFICATION)]] void updatebadge(

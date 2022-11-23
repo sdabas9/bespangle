@@ -3,11 +3,14 @@
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CREATE "nftcircle.gm::createsimple"
-#define SIMPLEBADGE_GIVE "nftcircle.gm::givesimple"
-#define SERIESBADGE_DEFINE "nftcircle.gm::givesimple"
-#define SERIESBADGE_CREATE "nftcircle.gm::givesimple"
-#define SERIESBADGE_GIVE "nftcircle.gm::givesimple"
+#cmakedefine EDEN_ORG_INTERFACE_CONTRACT "@SIMPLEBADGE_CREATE@"
+
+#define SIMPLEBADGE_CREATE EDEN_ORG_INTERFACE_CONTRACT"::initsimple"
+#define SIMPLEBADGE_GIVE EDEN_ORG_INTERFACE_CONTRACT"::givesimple"
+#define SERIESBADGE_DEFINE EDEN_ORG_INTERFACE_CONTRACT"::defineseries"
+#define SERIESBADGE_CREATE EDEN_ORG_INTERFACE_CONTRACT"::initseriesbdg"
+#define SERIESBADGE_GIVE EDEN_ORG_INTERFACE_CONTRACT"::givelatestsb"
+
 
 CONTRACT edenvalidate : public contract {
   public:

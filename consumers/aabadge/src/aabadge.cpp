@@ -1,4 +1,6 @@
 #include <aabadge.hpp>
+#include <json.hpp>
+using json = nlohmann::json;
 
 ACTION aabadge::initcoll (name org, name collection_name) {
   require_auth( org );
@@ -38,7 +40,8 @@ ACTION aabadge::initcoll (name org, name collection_name) {
   schema_format.push_back(FORMAT{.name = "badge",.type = "string"});
   schema_format.push_back(FORMAT{.name = "badge_id",.type = "string"});
   schema_format.push_back(FORMAT{.name = "img",.type = "string"});
-  
+  schema_format.push_back(FORMAT{.name = "offchain_lookup_data",.type = "string"});
+  schema_format.push_back(FORMAT{.name = "onchain_lookup_data",.type = "string"});
 
   action {
     permission_level{get_self(), name("active")},
@@ -59,7 +62,8 @@ void aabadge::notifyinit(
     name notify_account,
     string memo, 
     uint64_t badge_id, 
-    vector<ipfs_hash> ipfs_hashes,
+    string offchain_lookup_data,
+    string onchain_lookup_data,
     uint32_t rarity_counts) {
       
   ATTRIBUTE_MAP mdata = {};
@@ -67,19 +71,20 @@ void aabadge::notifyinit(
   auto itr = _aacollection.find(org.value); 
   check (itr != _aacollection.end(), "Initialize a collection for your org using initcoll action.");
   name collection = itr->collection;
-  string ipfs_image;
-  for( auto i = 0; i < ipfs_hashes.size(); i++) {
-    // todo? can img tag not exist?
-    if (ipfs_hashes[i].key == "img") {
-      ipfs_image = ipfs_hashes[i].value;
-    }
-  }
+
+
+  auto offchain_info = json::parse(offchain_lookup_data);
+  auto onchain_info = json::parse(onchain_lookup_data);
+  string ipfs_image = offchain_info["img"];
+  string display_name = onchain_info["name"];
 
   mdata["badge"] = string(badge_name.to_string());
   mdata["badge_id"] = to_string(badge_id);
   mdata["contract"] = string(badge_contract.to_string());
   mdata["img"] = ipfs_image;
-  mdata["name"] = memo;
+  mdata["name"] = display_name;
+  mdata["offchain_lookup_data"] = offchain_lookup_data;
+  mdata["onchain_lookup_data"] = onchain_lookup_data;
 
   // todo? check if template already exists, update mdata then
   // have a notifyupdate

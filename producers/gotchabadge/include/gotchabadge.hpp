@@ -4,7 +4,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
 
 CONTRACT gotchabadge : public contract {
   public:
@@ -15,7 +15,8 @@ CONTRACT gotchabadge : public contract {
       time_point_sec starttime, 
       uint64_t cycle_length, 
       uint8_t supply_per_cycle, 
-      string ipfsimage, 
+      string offchain_lookup_data,
+      string onchain_lookup_data,
       string memo);
       
     ACTION give (name org, 
@@ -69,7 +70,8 @@ CONTRACT gotchabadge : public contract {
       name org; 
       name badge_contract; 
       name badge_name;
-      string ipfs_image; 
+      string offchain_lookup_data; 
+      string onchain_lookup_data; 
       string memo;
     }; 
 

@@ -13,7 +13,8 @@
     time_point_sec starttime, 
     uint64_t cycle_length, 
     uint8_t supply_per_cycle, 
-    string ipfs_image, 
+    string offchain_lookup_data,
+    string onchain_lookup_data,  
     string memo) {
 
       require_auth(org);
@@ -45,7 +46,8 @@
           .org = org,
           .badge_contract = get_self(),
           .badge_name = badge,
-          .ipfs_image = ipfs_image,
+          .offchain_lookup_data = offchain_lookup_data,
+          .onchain_lookup_data = offchain_lookup_data,
           .memo = memo}
       }.send();
   }
