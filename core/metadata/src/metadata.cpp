@@ -142,7 +142,7 @@ ACTION metadata::delnotify(
 
 ACTION metadata::achievement (name org, name badge_contract, name badge_name, name account, name from, uint8_t count, string memo) {
   check_authorization (org, badge_contract);
-  check_account_prefs (org, account);
+  //check_account_prefs (org, account);
   
   badge_table _badge( _self, org.value );
   auto contract_badge_index = _badge.get_index<name("contractbadge")>();

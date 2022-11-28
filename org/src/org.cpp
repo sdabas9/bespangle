@@ -3,45 +3,10 @@
 // todo
 // 1) remove check for init missing in settings for checks contract.
 
-  ACTION org::initsystem(name org, name checks_contract, vector<name> producers, name aacollection) {
-    require_auth (org);
-    action {
-      permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("chkscontract"),
-      chkscontract_args {
-        .org = org,
-        .checks_contract = checks_contract}
-    }.send(); 
-
-
-    for(auto i = 0; i < producers.size(); i++) {
-      action {
-      permission_level{get_self(), name("active")},
-      name(ORCHESTRATOR_CONTRACT),
-      name("recognize"),
-      orchestrator_recognize_args {
-        .org = org,
-        .trusted_badge_contract = producers[i]}
-      }.send();
-    }
-
-    if(aacollection.to_string().size()>0) {
-      action {
-      permission_level{get_self(), name("active")},
-      name(AABADGE_CONTRACT),
-      name("initcoll"),
-      aa_initcoll_args {
-        .org = org,
-        .collection_name = aacollection}
-      }.send();
-    }
-  }
-
   ACTION org::chkscontract (name org, name checks_contract) {
-    check(has_auth(org) || has_auth(get_self()), "Unauthorized access");
+    require_auth(org);
     checks_table _checks( get_self(), get_self().value );
-    auto itr = _checks.find(org);
+    auto itr = _checks.find(org.value);
     if(itr == _checks.end()) {
       _checks.emplace(org, [&](auto& row) {
         row.org = org;
@@ -64,7 +29,7 @@
     string memo) {
     require_auth(creator);
 
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
 
 
     action {
@@ -128,7 +93,7 @@
 
     require_auth(creator);
     
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
     
     action {
       permission_level{get_self(), name("active")},
@@ -175,9 +140,9 @@
 
   }
 
-  ACTION org::defineseries (name creator, name family) {
+  ACTION org::defineseries (name org, name creator, name family) {
     require_auth(creator);
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
 
     action {
       permission_level{get_self(), name("active")},
@@ -190,7 +155,7 @@
     }.send();
   }
 
-  ACTION org::initseriesbdg (name creator, 
+  ACTION org::initseriesbdg (name org, name creator, 
     name family, 
     name badge, 
     string offchain_lookup_data, 
@@ -199,7 +164,7 @@
     string memo) {
 
     require_auth(creator);
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
 
     action {
       permission_level{get_self(), name("active")},
@@ -230,9 +195,9 @@
     }
   }
 
-  ACTION org::givelatestsb (name issuer, name family, name to, string memo) {
+  ACTION org::givelatestsb (name org, name issuer, name family, name to, string memo) {
     require_auth(issuer);
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
     action {
     permission_level{get_self(), name("active")},
     name(SERIESBADGE_CONTRACT),
@@ -247,7 +212,7 @@
 
   ACTION org::givegotcha (name org, name badge, name from, name to, uint8_t amount, string memo ) {
     require_auth(from);
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
 
     action {
       permission_level{get_self(), name("active")},
@@ -266,13 +231,13 @@
 
   ACTION org::ngivegotch (name org, name badge, name from, name to, uint8_t amount, string memo) {
     require_auth(get_self());
-    require_recipient(GOTCHABADGE_CONTRACT);
+    require_recipient(name(GOTCHABADGE_CONTRACT));
   }
 
   ACTION org::givesimple (name org, name badge, name authorizer, name to, string memo ) {
     require_auth(authorizer);
 
-    require_recipient(checkscontract());
+    require_recipient(checkscontract(org));
 
     action {
       permission_level{get_self(), name("active")},
@@ -291,75 +256,4 @@
     require_recipient(name(SIMPLEBADGE_CONTRACT));
   }
 
-  ACTION org::initround (name org, name authorizer, name round, string display_name) {
-    require_auth(authorizer);
-    require_recipient(checkscontract());
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(ROUNDS_CONTRACT),
-      name("createround"),
-      createround_args {
-        .org = org,
-        .round = round,
-        .description = display_name,
-        .account_constrained = false}
-    }.send();
-  }
-
-  ACTION org::startround (name org, name authorizer, name round) {
-    require_auth(authorizer);
-    require_recipient(checkscontract());
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(ROUNDS_CONTRACT),
-      name("startround"),
-      startround_args {
-        .org = org,
-        .round = round}
-    }.send();
-  }
-  
-  ACTION org::endround (name org, name authorizer, name round) {
-    require_auth(authorizer);
-    require_recipient(checkscontract());
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(ROUNDS_CONTRACT),
-      name("endround"),
-      endround_args {
-        .org = org,
-        .round = round}
-    }.send();
-  }
-
-  ACTION org::addbdgetornd (name org,
-    name authorizer,
-    name round, 
-    uint64_t badge_id, 
-    name balance_based_scoring_type, 
-    uint16_t balance_based_scoring_weight,
-    name source_based_scoring_type,
-    uint16_t source_based_scoring_weight) {
-    
-    require_auth(authorizer);
-    require_recipient(checkscontract());  
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(ROUNDS_CONTRACT),
-      name("addscoremeta"),
-      addscoremeta_args {
-        .org = org,
-        .round = round,
-        .badge_id = badge_id,
-        .balance_based_scoring_type = balance_based_scoring_type,
-        .balance_based_scoring_weight =balance_based_scoring_weight,
-        .source_based_scoring_type = source_based_scoring_type,
-        .source_based_scoring_weight = source_based_scoring_weight
-        }
-    }.send();
-  }
 
