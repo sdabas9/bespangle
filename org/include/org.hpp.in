@@ -17,30 +17,7 @@ CONTRACT org : public contract {
   public:
     using contract::contract;
 
-		/*
-		* Initializes system for the org.
-		*
-		* This action registers the params need for the system to work. Details about params below.
-		*
-		* @param checks_contract	This contract is notified when a badge is created and issued. Notified contract
-                              can validate the inputs (which include creator, issued to, issued from) and terminate
-                              the transaction if inputs are not in line with org expects.
-		* @param producers  This is list of source badge contracts that org recognizes as valid contracts. E.g. of 
-                           this is Simple Badge contract and Gotcha Badge Contract.
-                          
-                          Simple badge contract generates badges which are meant to be issued by a person 
-                          of authority in an org.
-
-                          Gotcha badge contract generated badges which are meant to be issued by members to members.
-
-		* @param aacollection This is atomic asset collection name. This can be left blank if org does not wish to use atomic assets
-                          related features. Atomic assets feature enables storing badges granularly.
-		* @return no return value.
-		*/
-    ACTION initsystem(name checks_contract, 
-      vector<name> producers, 
-      name aacollection);
-    ACTION chkscontract (name checks_contract);
+    ACTION chkscontract (name org, name checks_contract);
     /*
 		* 
     * Defines - a badge of type simple badge contract 
@@ -63,7 +40,7 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
 
-    ACTION initsimple (name creator, 
+    ACTION initsimple (name org, name creator, 
       name badge, 
       vector<name> parent_badges,
       string offchain_lookup_data, 
@@ -100,7 +77,8 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
 
-    ACTION initgotcha (name creator, 
+    ACTION initgotcha (name org,
+      name creator, 
       name badge, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
@@ -119,7 +97,11 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givesimple (name badge, name authorizer, name to, string memo );
+    ACTION givesimple (name org,
+     name badge, 
+     name authorizer, 
+     name to, 
+     string memo );
     
     /*
     * Gives a gotcha badge from member to member. Inputs must be validated in checks_contract
@@ -131,33 +113,19 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givegotcha (name badge, name from, name to, uint8_t amount, string memo );
+    ACTION givegotcha (name org, 
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount, 
+      string memo );
 
     
-    /*
-    * Initialize a new round. In a round, scores for subscriber badged are accumulated from the start status to the end status. 
-    *
-    * @param authorizor	- authorizer must be validated in checks_contract 
-    * @param round -  name of the round 
-		* @param display_name - display name of the round.
-    */ 
-    ACTION initround (name authorizer, name round, string display_name);
 
-    ACTION addbdgetornd (name authorizer,
-      name round, 
-      uint64_t badge_id, 
-      name balance_based_scoring_type, 
-      uint16_t balance_based_scoring_weight,
-      name source_based_scoring_type,
-      uint16_t source_based_scoring_weight);
 
-    ACTION startround (name authorizer, name round);
+    ACTION defineseries (name org, name creator, name family);
 
-    ACTION endround (name authorizer, name round);
-
-    ACTION defineseries (name creator, name family);
-
-    ACTION initseriesbdg (name creator, 
+    ACTION initseriesbdg (name org, name creator, 
       name family, 
       name badge, 
       string offchain_lookup_data, 
@@ -165,20 +133,55 @@ CONTRACT org : public contract {
       vector<name> consumers,
       string memo);
     
-    ACTION givelatestsb (name issuer, name family, name to, string memo);
+    ACTION givelatestsb (name org, name issuer, name family, name to, string memo);
+
+    ACTION ninitsimpl (name org,
+      name badge, 
+      vector<name> parent_badges,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+    ACTION ngivesimpl(name org,
+      name to, 
+      name badge, 
+      string memo );
+
+    ACTION naddfeatur (name org, 
+      name badge_contract, 
+      name badge_name, 
+      name notify_account, 
+      string memo);
+
+    ACTION ninitgotch (name org, 
+      name badge, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data,
+      vector<name> consumers,
+      string memo);
+
+     ACTION ngivegotch (name org,
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount,
+      string memo);
 
   private:
 
-    TABLE settings {
-      uint64_t id;
+    TABLE checks {
+      name org;
       name checks_contract;
-      auto primary_key() const { return id; }
+      auto primary_key() const { return org.value; }
     };
-    typedef multi_index<name("settings"), settings> settings_table;
+    typedef multi_index<name("checks"), checks> checks_table;
 
-    name checkscontract() {
-      settings_table _settings( get_self(), get_self().value );
-      auto itr = _settings.require_find(1, "init missing");
+    name checkscontract(name org) {
+      checks_table _checks( get_self(), get_self().value );
+      auto itr = _checks.require_find(org.value, "checks contract missing");
       return itr->checks_contract;
     }
     

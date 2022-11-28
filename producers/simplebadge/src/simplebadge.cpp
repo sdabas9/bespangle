@@ -7,21 +7,65 @@
     // 4) add action to update image json.
     // 5) add action to update details json.
 
+  void simplebadge::extcreate (name org, 
+    name badge, 
+    vector<name> parent_badges, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    string memo) {
+  
+    action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("create"),
+      create_args {
+        .org = org,
+        .badge = badge,
+        .parent_badges = parent_badges,
+        .offchain_lookup_data = offchain_lookup_data,
+        .onchain_lookup_data = onchain_lookup_data,
+        .memo = memo }
+    }.send();  
+  }
+
+  void simplebadge::extissue (name org, 
+    name to, 
+    name badge, 
+    string memo) {
+
+    action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("issue"),
+      issue_args {
+        .org = org,
+        .to = to,
+        .badge = badge,
+        .memo = memo}
+    }.send(); 
+
+  }
 
   ACTION simplebadge::create (name org, name badge, vector<name> parent_badges, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-    require_auth(org);
+    require_auth(get_self());
+    
     
     badge_table _badge (_self, org.value);
     auto badge_itr = _badge.find(badge.value);
+    
 
     check(badge_itr == _badge.end(), "<contractname><actionname> : <badge> already exists");
     for(auto i = 0; i < parent_badges.size(); i++) { 
       auto parentbadge_itr = _badge.require_find(parent_badges[i].value, "<parent badge> not found");
     }
-    _badge.emplace(org, [&](auto& row) {
+    _badge.emplace(get_self(), [&](auto& row) {
       row.badge = badge;
       row.parent_badges = parent_badges;
     });
+    uint32_t bytes = 100;
+    
+    deduct_credit (org, bytes, memo);
+
     action {
       permission_level{get_self(), name("active")},
       name(ORCHESTRATOR_CONTRACT_NAME),
@@ -41,7 +85,7 @@
     name to, 
     name badge, 
     string memo ) {
-    require_auth(org);
+    require_auth(get_self());
     require_recipient(to);
 
     badge_table _badge (_self, org.value);

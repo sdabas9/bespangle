@@ -17,8 +17,28 @@ ACTION metadata::initbadge (name org, name badge_contract, name badge_name, stri
 
 }
 
+void metadata::naddfeatur (name org, 
+  name badge_contract,
+  name badge_name,
+  name notify_account,
+  string memo) {
+
+  action {
+    permission_level{get_self(), name("active")},
+    get_self(),
+    name("addfeature"),
+    local_addfeature_args {
+      .org = org,
+      .badge_contract = badge_contract,
+      .badge_name = badge_name,
+      .notify_account = notify_account,
+      .memo = memo
+      }
+  }.send();
+}
+
 ACTION metadata::addfeature (name org, name badge_contract, name badge_name, name notify_account, string memo) {
-  require_auth(org);
+  require_auth(get_self());
   
   badge_table _badge( _self, org.value );
   auto contract_badge_index = _badge.get_index<name("contractbadge")>();
@@ -122,7 +142,7 @@ ACTION metadata::delnotify(
 
 ACTION metadata::achievement (name org, name badge_contract, name badge_name, name account, name from, uint8_t count, string memo) {
   check_authorization (org, badge_contract);
-  check_account_prefs (org, account);
+  //check_account_prefs (org, account);
   
   badge_table _badge( _self, org.value );
   auto contract_badge_index = _badge.get_index<name("contractbadge")>();
