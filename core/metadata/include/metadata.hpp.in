@@ -5,6 +5,9 @@ using namespace eosio;
 
 #cmakedefine BILLING_CONTRACT "@BILLING_CONTRACT@"
 #cmakedefine ACCOUNT_PREFERENCES_CONTRACT "@ACCOUNT_PREFERENCES_CONTRACT@"
+#cmakedefine ORG_INTERFACE_CONTRACT "@ORG_INTERFACE_CONTRACT@"
+
+#define ADD_FEATURE_NOTIFICATION ORG_INTERFACE_CONTRACT"::naddfeatur"
 
 CONTRACT metadata : public contract {
   public:
@@ -20,6 +23,12 @@ CONTRACT metadata : public contract {
     string memo);
 
   ACTION addfeature (name org, 
+    name badge_contract,
+    name badge_name,
+    name notify_account,
+    string memo);
+  
+  [[eosio::on_notify(ADD_FEATURE_NOTIFICATION)]] void naddfeatur (name org, 
     name badge_contract,
     name badge_name,
     name notify_account,
@@ -111,6 +120,14 @@ CONTRACT metadata : public contract {
     struct checkallow_args {
       name org;
       name account;
+    };
+
+    struct local_addfeature_args {
+      name org; 
+      name badge_contract;
+      name badge_name;
+      name notify_account;
+      string memo;
     };
 
     TABLE authorized {

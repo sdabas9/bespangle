@@ -37,7 +37,7 @@ CONTRACT org : public contract {
                           related features. Atomic assets feature enables storing badges granularly.
 		* @return no return value.
 		*/
-    ACTION initsystem(name checks_contract, 
+    ACTION initsystem(name org, name checks_contract, 
       vector<name> producers, 
       name aacollection);
     ACTION chkscontract (name checks_contract);
@@ -63,7 +63,7 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
 
-    ACTION initsimple (name creator, 
+    ACTION initsimple (name org, name creator, 
       name badge, 
       vector<name> parent_badges,
       string offchain_lookup_data, 
@@ -119,7 +119,7 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givesimple (name badge, name authorizer, name to, string memo );
+    ACTION givesimple (name org, name badge, name authorizer, name to, string memo );
     
     /*
     * Gives a gotcha badge from member to member. Inputs must be validated in checks_contract
@@ -166,6 +166,31 @@ CONTRACT org : public contract {
       string memo);
     
     ACTION givelatestsb (name issuer, name family, name to, string memo);
+
+    ACTION ninitsimpl (name org,
+      name badge, 
+      vector<name> parent_badges,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+  ACTION ngivesimpl(name org, name to, name badge, string memo );
+
+  ACTION naddfeatur (name org, 
+    name badge_contract, 
+    name badge_name, 
+    name notify_account, 
+    string memo);
+  
+  ACTION org::ninitgotch (name org, 
+    name badge, 
+    time_point_sec starttime, 
+    uint64_t cycle_length, 
+    uint8_t supply_per_cycle, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data,
+    vector<name> consumers,
+    string memo);
 
   private:
 

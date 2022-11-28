@@ -37,10 +37,10 @@ CONTRACT org : public contract {
                           related features. Atomic assets feature enables storing badges granularly.
 		* @return no return value.
 		*/
-    ACTION initsystem(name checks_contract, 
+    ACTION initsystem(name org, name checks_contract, 
       vector<name> producers, 
       name aacollection);
-    ACTION chkscontract (name checks_contract);
+    ACTION chkscontract (name org, name checks_contract)
     /*
 		* 
     * Defines - a badge of type simple badge contract 
@@ -63,7 +63,7 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
 
-    ACTION initsimple (name creator, 
+    ACTION initsimple (name org, name creator, 
       name badge, 
       vector<name> parent_badges,
       string offchain_lookup_data, 
@@ -100,7 +100,8 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
 
-    ACTION initgotcha (name creator, 
+    ACTION initgotcha (name org,
+      name creator, 
       name badge, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
@@ -119,7 +120,11 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givesimple (name badge, name authorizer, name to, string memo );
+    ACTION givesimple (name org,
+     name badge, 
+     name authorizer, 
+     name to, 
+     string memo );
     
     /*
     * Gives a gotcha badge from member to member. Inputs must be validated in checks_contract
@@ -131,7 +136,12 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givegotcha (name badge, name from, name to, uint8_t amount, string memo );
+    ACTION givegotcha (name org, 
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount, 
+      string memo );
 
     
     /*
@@ -167,19 +177,54 @@ CONTRACT org : public contract {
     
     ACTION givelatestsb (name issuer, name family, name to, string memo);
 
+    ACTION ninitsimpl (name org,
+      name badge, 
+      vector<name> parent_badges,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+    ACTION ngivesimpl(name org,
+      name to, 
+      name badge, 
+      string memo );
+
+    ACTION naddfeatur (name org, 
+      name badge_contract, 
+      name badge_name, 
+      name notify_account, 
+      string memo);
+
+    ACTION ninitgotch (name org, 
+      name badge, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data,
+      vector<name> consumers,
+      string memo);
+
+     ACTION ngivegotch (name org,
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount,
+      string memo);
+
   private:
 
-    TABLE settings {
-      uint64_t id;
+    TABLE checks {
+      name org;
       name checks_contract;
-      auto primary_key() const { return id; }
+      auto primary_key() const { return org.value; }
     };
-    typedef multi_index<name("settings"), settings> settings_table;
+    typedef multi_index<name("checks"), checks> checks_table;
 
-    name checkscontract() {
-      settings_table _settings( get_self(), get_self().value );
-      auto itr = _settings.require_find(1, "init missing");
-      return itr->checks_contract;
+    name checkscontract(name org) {
+      checks_table _checks( get_self(), get_self().value );
+      auto itr = _checks.require_find(org, "checks contract missing");
+      retun itr->checks_contract;
     }
     
 

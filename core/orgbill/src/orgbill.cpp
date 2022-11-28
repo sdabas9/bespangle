@@ -12,7 +12,7 @@
 
 ACTION orgbill::recognize (name trusted_contract) {
   require_auth (get_self());
-  authorized_contracts_table _authorized_contracts( _self, _self );
+  authorized_contracts_table _authorized_contracts( get_self(), get_self().value );
   auto itr = _authorized_contracts.find(trusted_contract.value);
   check(itr == _authorized_contracts.end(), "<trusted_contract> already authorized to issues badges");
   _authorized_contracts.emplace(get_self(), [&](auto& row){
@@ -44,9 +44,9 @@ void orgbill::buycredits(name from, name to, asset quantity, string memo) {
   credits_table _credits(get_self(), get_self().value);
   auto itr = _credits.find(name(memo).value);
   uint32_t credits_bought = token_amount_to_credits (quantity.amount);
-
+  uint32_t max_credit_balance = getvalue(name(MAX_CREDIT_BALANCE)); 
   if(itr == _credits.end()) {
-    check(credits_bought <= 10000, "can not buy more than 10000 credits");
+    check(credits_bought <= max_credit_balance, "can not buy more than 10000 credits");
     _credits.emplace(get_self(), [&](auto& row) {
       row.org = name(memo);
       row.total_credits = credits_bought;
@@ -54,46 +54,22 @@ void orgbill::buycredits(name from, name to, asset quantity, string memo) {
     });
   } else {
     _credits.modify(itr, get_self(), [&](auto& row) {
-      check(row.total_credits + credits_bought <= 10000, "can not hold more than 10000 credits");
+      check(row.total_credits + credits_bought <= max_credit_balance, "can not hold more than 10000 credits");
       row.total_credits = row.total_credits + credits_bought;
     });
   }
 }
 
-ACTION orgbill::syscredits(name org) {
-  check_authorization( org, contract);
-  uint32_t credits = getvalue(name(PER_USE_FIXED_FEES));
+ACTION orgbill::protocolfees(name org, name feature) {
+  require_auth(name(ORCHESTRATOR_CONTRACT_NAME));
+  uint32_t credits = getvalue(feature);
   deduct_credit (org, credits);
 }
 
 ACTION orgbill::ramcredits(name org, name contract, uint64_t bytes, string memo) {
-  check_authorization( org, contract);
+  check_authorization(contract);
   uint32_t credits = bytes_to_credits(bytes);
   deduct_credit (org, credits);
-}
-
-void deduct_credit (name org, uint32_t credits) {
-  credits_table _credits(get_self(), get_self().value);
-  auto credits_itr = _credits.find(org.value);
-  
-  check(itr != _credits.end(), "<org> never registered for credits");
-  check(itr->total_credits - itr->used_credits - credits >= 0, "Credits exhausted for <org>");
-  
-  _credits.modify(itr, get_self(), [&](auto& row) {
-    row.used_credits = row.used_credits + credits_needed;
-  });
-
-  if(itr->total_credits / (itr->used_credits + credits_needed) < .9) {
-    action {
-      permission_level{get_self(), name("active")},
-      get_self(),
-      name("notify"),
-      notify_args {
-        .org = billed_org,
-        .total_credits = itr->total_credits,
-        .used_credits = itr->used_credits + credits_needed}
-    }.send();
-  } 
 }
 
 ACTION orgbill::notify (name org, uint32_t total_credits, uint32_t used_credits) {

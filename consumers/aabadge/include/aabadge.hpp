@@ -57,6 +57,13 @@ CONTRACT aabadge : public contract {
       vector <FORMAT> schema_format;
     };
 
+    struct ramcredits_arg {
+      name org;
+      name contract;
+      uint64_t bytes;
+      string memo;
+    };
+
     ACTION initcoll(name org, name collection_name);
 
     [[eosio::on_notify(NEW_BADGE_SUBSCRIPTION_NOTIFICATION)]] void notifyinit(
@@ -108,4 +115,17 @@ CONTRACT aabadge : public contract {
     typedef multi_index<name("aacollection"), aacollection,
     indexed_by<name("colkey"), const_mem_fun<aacollection, uint64_t, &aacollection::collection_key>>
     > aacollection_table;
+    
+    void deduct_credit (name org, uint32_t bytes, string memo) {
+      action {
+        permission_level{get_self(), name("active")},
+        name(BILLING_CONTRACT),
+        name("ramcredits"),
+        ramcredits_arg {
+          .org = org,
+          .contract = get_self(),
+          .bytes = bytes,
+          .memo = memo}
+      }.send();
+    } 
 };

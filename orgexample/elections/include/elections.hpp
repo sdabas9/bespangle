@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define EDEN_ORG_INTERFACE_CONTRACT "edenbadgeint"
+#define EDEN_ORG_INTERFACE_CONTRACT "org"
 
 CONTRACT elections : public contract {
   public:
