@@ -12,7 +12,7 @@ AABADGE_CONTRACT="aabadge11111"
 ATOMIC_ASSETS_CONTRACT="atomicassets"
 ROUNDS_CONTRACT="rounds111111"
 CUMULATIVE_CONTRACT="cumulative11"
-
+AANFT_CONTRACT="aanft1111111"
 ORG_INTERFACE_CONTRACT="organization"
 
 CLEOS_URL="http://jungle4.cryptolions.io"
@@ -63,6 +63,11 @@ cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DBILLING_CONTRACT=$
 eosio-cpp -abigen -I ./include -R ./resource -contract aabadge -o aabadge.wasm src/aabadge.cpp
 cd ../..
 
+cd consumers/aanft
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DBILLING_CONTRACT=$BILLING_CONTRACT -DATOMIC_ASSETS_CONTRACT=$ATOMIC_ASSETS_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract aanft -o aanft.wasm src/aanft.cpp
+cd ../..
+
 cd org
 cmake . -DSIMPLEBADGE_CONTRACT=$SIMPLEBADGE_CONTRACT -DGOTCHABADGE_CONTRACT=$GOTCHABADGE_CONTRACT -DORCHESTRATOR_CONTRACT=$ORCHESTRATOR_CONTRACT -DAABADGE_CONTRACT=$AABADGE_CONTRACT -DCUMULATIVE_CONTRACT=$CUMULATIVE_CONTRACT -DROUNDS_CONTRACT=$ROUNDS_CONTRACT -DACCOUNT_PREFERENCES_CONTRACT=$ACCOUNT_PREFERENCES_CONTRACT -DSERIESBADGE_CONTRACT=$SERIESBADGE_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract org -o org.wasm src/org.cpp
@@ -88,6 +93,9 @@ cleos -u $CLEOS_URL set account permission $SERIESBADGE_CONTRACT active --add-co
 
 cleos -u $CLEOS_URL set contract $AABADGE_CONTRACT consumers/aabadge aabadge.wasm aabadge.abi -p $AABADGE_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $AABADGE_CONTRACT active --add-code -p $AABADGE_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $AANFT_CONTRACT consumers/aanft aanft.wasm aanft.abi -p $AANFT_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $AANFT_CONTRACT active --add-code -p $AANFT_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $CUMULATIVE_CONTRACT consumers/cumulative cumulative.wasm cumulative.abi -p $CUMULATIVE_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $CUMULATIVE_CONTRACT active --add-code -p $CUMULATIVE_CONTRACT@active
