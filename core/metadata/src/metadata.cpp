@@ -1,6 +1,5 @@
 #include <metadata.hpp>
 
-
 ACTION metadata::recognize (name org, name trusted_contract) {
   require_auth (org);
   authorized_contracts_table _authorized_contracts( _self, org.value );
@@ -9,6 +8,12 @@ ACTION metadata::recognize (name org, name trusted_contract) {
   _authorized_contracts.emplace(get_self(), [&](auto& row){
     row.trusted_contract = trusted_contract;
   });
+}
+
+ACTION metadata::isrecognized (name org, name contract) {
+  authorized_contracts_table _authorized_contracts( _self, org.value );
+  auto itr = _authorized_contracts.find(contract.value);
+  check(itr != _authorized_contracts.end(), "<contract> is not recognized for <org>");
 }
 
 ACTION metadata::initbadge (name org, name badge_contract, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
