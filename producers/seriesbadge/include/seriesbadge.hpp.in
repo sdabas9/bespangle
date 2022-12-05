@@ -60,4 +60,9 @@ CONTRACT seriesbadge : public contract {
       string memo;
     }; 
 
+    struct isrecognized_args {
+      name org;
+      name contract;
+    };  
+
 };

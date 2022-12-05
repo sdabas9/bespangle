@@ -17,6 +17,16 @@ using json = nlohmann::json;
     auto metadata_itr = _metadata.find(family.value);
 
     check(metadata_itr == _metadata.end(), "<contractname><actionname> : <family> already exists");
+    
+    action {
+      permission_level{get_self(), name("active")},
+      name(ORCHESTRATOR_CONTRACT_NAME),
+      name("isrecognized"),
+      isrecognized_args {
+        .org = org,
+        .contract = get_self()}
+    }.send();
+    
     _metadata.emplace(org, [&](auto& row) {
       row.family = family;
       row.seq_id = 0;

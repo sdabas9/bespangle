@@ -15,6 +15,8 @@ CONTRACT metadata : public contract {
  
   ACTION recognize (name org, name trusted_badge_contract);
 
+  ACTION isrecognized (name org, name contract); 
+
   ACTION initbadge (name org, 
     name badge_contract, 
     name badge_name,
