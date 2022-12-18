@@ -9,6 +9,7 @@
 #cmakedefine ROUNDS_CONTRACT "@ROUNDS_CONTRACT@"
 #cmakedefine ACCOUNT_PREFERENCES_CONTRACT "@ACCOUNT_PREFERENCES_CONTRACT@"
 #cmakedefine SERIESBADGE_CONTRACT "@SERIESBADGE_CONTRACT@"
+#cmakedefine ASYNC_CONTRACT "@ASYNC_CONTRACT@"
 
 using namespace std;
 using namespace eosio;
@@ -18,6 +19,11 @@ CONTRACT org : public contract {
     using contract::contract;
 
     ACTION chkscontract (name org, name checks_contract);
+
+    ACTION processasync (name org, name action, name authorizer);
+
+    ACTION processsync (name org, name action, name authorizer);
+
     /*
 		* 
     * Defines - a badge of type simple badge contract 
@@ -163,12 +169,18 @@ CONTRACT org : public contract {
       vector<name> consumers,
       string memo);
 
-     ACTION ngivegotch (name org,
+    ACTION ngivegotch (name org,
       name badge, 
       name from, 
       name to, 
       uint8_t amount,
       string memo);
+    
+    ACTION agivesimpl(name org, 
+      name to, 
+      name badge, 
+      string memo);
+
 
   private:
 
@@ -179,12 +191,27 @@ CONTRACT org : public contract {
     };
     typedef multi_index<name("checks"), checks> checks_table;
 
+    TABLE processmode {
+      name action;
+      bool async;
+      auto primary_key() const { return action.value; }
+    };
+    typedef multi_index<name("processmode"), processmode> processmode_table;
+
     name checkscontract(name org) {
       checks_table _checks( get_self(), get_self().value );
       auto itr = _checks.require_find(org.value, "checks contract missing");
       return itr->checks_contract;
     }
     
+    bool is_async(name org, name action) {
+      processmode_table _processmode( get_self(), org.value );
+      auto itr = _processmode.find(action.value);
+      if(itr == _processmode.end()) {
+        return false;
+      }
+      return itr->async;
+    }
 
     struct orchestrator_recognize_args {
       name org;
@@ -291,6 +318,13 @@ CONTRACT org : public contract {
       uint16_t balance_based_scoring_weight;
       name source_based_scoring_type;
       uint16_t source_based_scoring_weight;
+    };
+
+    struct qgivesimpl_args {
+      name org;
+      name to;
+      name badge;
+      string memo;
     };
 
 
