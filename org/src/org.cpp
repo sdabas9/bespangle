@@ -19,6 +19,40 @@
     }
   }
 
+  ACTION org::processsync (name org, name action, name authorizer) {
+    require_auth(authorizer); 
+    require_recipient(checkscontract(org));
+    processmode_table _processmode( get_self(), org.value);
+    auto itr = _processmode.find(action.value);
+    if( itr == _processmode.end()) {
+      _processmode.emplace(org, [&](auto& row) {
+        row.action = action;
+        row.async = false;
+      });      
+    } else {
+      _processmode.modify(itr, org,[&](auto& row) {
+        row.async = false;
+      });    
+    }
+  }
+
+  ACTION org::processasync (name org, name action, name authorizer) {
+    require_auth(authorizer); 
+    require_recipient(checkscontract(org));
+    processmode_table _processmode( get_self(), org.value);
+    auto itr = _processmode.find(action.value);
+    if( itr == _processmode.end()) {
+      _processmode.emplace(org, [&](auto& row) {
+        row.action = action;
+        row.async = true;
+      });      
+    } else {
+      _processmode.modify(itr, org,[&](auto& row) {
+        row.async = true;
+      });    
+    }
+  }
+
   ACTION org::initsimple (name org,
     name creator, 
     name badge, 
@@ -239,7 +273,20 @@
 
     require_recipient(checkscontract(org));
 
-    action {
+    if(is_async(org, name("givesimple"))) {
+      action {
+      permission_level{get_self(), name("active")},
+      name(ASYNC_CONTRACT),
+      name("qgivesimpl"),
+      qgivesimpl_args {
+        .org = org,
+        .to = to,
+        .badge = badge,
+        .memo = memo }
+      }.send();
+
+    } else {
+      action {
       permission_level{get_self(), name("active")},
       name(get_self()),
       name("ngivesimpl"),
@@ -248,12 +295,28 @@
         .to = to,
         .badge = badge,
         .memo = memo }
-    }.send();
+      }.send();
+    }
+
   }
 
   ACTION org::ngivesimpl(name org, name to, name badge, string memo ) {
     require_auth(get_self());
     require_recipient(name(SIMPLEBADGE_CONTRACT));
+  }
+
+  ACTION org::agivesimpl(name org, name to, name badge, string memo ) {
+    require_auth(name(ASYNC_CONTRACT));
+    action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("ngivesimpl"),
+    issuesimple_args {
+      .org = org,
+      .to = to,
+      .badge = badge,
+      .memo = memo }
+    }.send();
   }
 
 
