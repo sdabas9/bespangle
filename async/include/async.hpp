@@ -80,6 +80,7 @@ CONTRACT async : public contract {
     int process_give_simple(name org, int process_max) {
       int processed = 0;
       givesimple_table _givesimple(get_self(), org.value);
+      check(_givesimple.begin() != _givesimple.end(), "No records to process"); 
       for(int i = 0 ; i < process_max; i++) {
         
         auto itr = _givesimple.begin();
