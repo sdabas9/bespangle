@@ -2,6 +2,8 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
+
+
 ACTION aanft::initcoll (name org, name collection_name) {
   require_auth( org );
   aacollection_table _aacollection ( _self, _self.value);
@@ -40,6 +42,7 @@ ACTION aanft::initcoll (name org, name collection_name) {
   schema_format.push_back(FORMAT{.name = "badge",.type = "string"});
   schema_format.push_back(FORMAT{.name = "badge_id",.type = "string"});
   schema_format.push_back(FORMAT{.name = "img",.type = "string"});
+  schema_format.push_back(FORMAT{.name = "mint_id",.type = "string"});
   schema_format.push_back(FORMAT{.name = "offchain_lookup_data",.type = "string"});
   schema_format.push_back(FORMAT{.name = "onchain_lookup_data",.type = "string"});
 
@@ -75,7 +78,7 @@ void aanft::notifyinit(
 
   auto offchain_info = json::parse(offchain_lookup_data);
   auto onchain_info = json::parse(onchain_lookup_data);
-  string ipfs_image = offchain_info["nft_img"];
+  string ipfs_image = offchain_info["img"];
   string display_name = onchain_info["name"];
 
   mdata["badge"] = string(badge_name.to_string());
@@ -94,6 +97,7 @@ void aanft::notifyinit(
 
     _aatemplate.emplace(get_self(), [&](auto& row){
       row.badge_id = badge_id;
+      row.mint_id = 0;
     });
 
     action {
@@ -155,8 +159,13 @@ void aanft::notifyachiev (name org,
 
   std::map <std::string, ATOMIC_ATTRIBUTE> immutable_data;
   std::map <std::string, ATOMIC_ATTRIBUTE> mutable_data;
+  
   vector<asset> tokens_to_back;
   for (auto i = 0; i < count; i++) {
+    immutable_data["mint_id"] = to_string(template_itr->mint_id + 1);
+    _aatemplate.modify(template_itr, get_self(), [&](auto& row){
+      row.mint_id = row.mint_id + 1;
+    });
     action {
       permission_level{get_self(), name("active")},
       name(ATOMIC_ASSETS_CONTRACT),

@@ -95,6 +95,7 @@ CONTRACT aanft : public contract {
     TABLE aatemplate {
       uint64_t badge_id;
       uint32_t  template_id;
+      uint64_t mint_id;
       auto primary_key() const { return badge_id; }
     };
     typedef multi_index<name("aatemplate"), aatemplate> aatemplate_table;
