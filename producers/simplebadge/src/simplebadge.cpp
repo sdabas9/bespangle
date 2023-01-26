@@ -80,6 +80,20 @@
     }.send();
   }
 
+  ACTION simplebadge::issue (name org, 
+    name from,
+    name to, 
+    name badge, 
+    string memo );
+    // issuance pattern
+    // from org to account
+    // from account1 to account2 .. controlled via rules.
+    // from account1 to account1 .. controlled via whitelist.
+
+    // asset class metadata pattern.
+    // series 
+
+    // single asset metadata pattern.
 
   ACTION simplebadge::issue (name org, 
     name to, 

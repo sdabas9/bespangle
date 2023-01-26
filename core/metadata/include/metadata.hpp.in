@@ -6,6 +6,8 @@ using namespace eosio;
 #cmakedefine BILLING_CONTRACT "@BILLING_CONTRACT@"
 #cmakedefine ACCOUNT_PREFERENCES_CONTRACT "@ACCOUNT_PREFERENCES_CONTRACT@"
 #cmakedefine ORG_INTERFACE_CONTRACT "@ORG_INTERFACE_CONTRACT@"
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+
 
 #define ADD_FEATURE_NOTIFICATION ORG_INTERFACE_CONTRACT"::naddfeatur"
 
@@ -222,5 +224,13 @@ CONTRACT metadata : public contract {
           .org = org,
           .account = account }
       }.send();
+    }
+
+    uint64_t get_badge_id (name org, name issuing_contract, name assetname) {
+      badge_table _badge(name(ORCHESTRATOR_CONTRACT), org.value);
+      auto contract_badge_index = _badge.get_index<name("contractbadge")>();
+      uint128_t contract_badge_key = ((uint128_t) issuing_contract.value) << 64 | assetname.value;
+      auto contract_badge_iterator = contract_badge_index.require_find (contract_badge_key, "Could not find Contract, badge ");
+      return contract_badge_iterator->badge_id;
     }
 };

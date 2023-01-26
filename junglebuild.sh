@@ -15,6 +15,10 @@ CUMULATIVE_CONTRACT="cumulative11"
 AANFT_CONTRACT="aanft2222222"
 ORG_INTERFACE_CONTRACT="organization"
 ASYNC_CONTRACT="async1111111"
+ROLLUP_CONTRACT="rollup111111"
+CLAIMASSET_CONTRACT="claimasset11"
+NOTIFICATION_CONTRACT="notification11"
+TAP_CONTRACT="tap111111111"
 
 CLEOS_URL="http://jungle4.cryptolions.io"
 
@@ -33,6 +37,10 @@ cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract orgbill -o orgbill.wasm src/orgbill.cpp
 cd ../..
 
+cd core/notification
+cmake . -DORG_INTERFACE_CONTRACT_NAME=$ORG_INTERFACE_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DROLLUP_CONTRACT_NAME=$ROLLUP_CONTRACT -DCLAIMASSET_CONTRACT_NAME=$CLAIMASSET_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract notification -o notification.wasm src/notification.cpp
+cd ../..
 
 cd producers/simplebadge
 cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DORG_INTERFACE_CONTRACT_NAME=$ORG_INTERFACE_CONTRACT -DBILLING_CONTRACT=$BILLING_CONTRACT
@@ -47,6 +55,11 @@ cd ../..
 cd producers/seriesbadge
 cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract seriesbadge -o seriesbadge.wasm src/seriesbadge.cpp
+cd ../..
+
+cd producers/claimasset
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DNOTIFICATION_CONTRACT_NAME=$NOTIFICATION_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract claimasset -o claimasset.wasm src/claimasset.cpp
 cd ../..
 
 cd consumers/cumulative
@@ -67,6 +80,16 @@ cd ../..
 cd consumers/aanft
 cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DBILLING_CONTRACT=$BILLING_CONTRACT -DATOMIC_ASSETS_CONTRACT=$ATOMIC_ASSETS_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract aanft -o aanft.wasm src/aanft.cpp
+cd ../..
+
+cd consumers/rollup
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DCLAIMASSET_CONTRACT_NAME=$CLAIMASSET_CONTRACT -DNOTIFICATION_CONTRACT_NAME=$NOTIFICATION_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract rollup -o rollup.wasm src/rollup.cpp
+cd ../..
+
+cd consumers/tap
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract tap -o tap.wasm src/tap.cpp
 cd ../..
 
 cd org
@@ -114,3 +137,15 @@ cleos -u $CLEOS_URL set account permission $ORG_INTERFACE_CONTRACT active --add-
 
 cleos -u $CLEOS_URL set contract $ASYNC_CONTRACT async async.wasm async.abi -p $ASYNC_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $ASYNC_CONTRACT active --add-code -p $ASYNC_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $CLAIMASSET_CONTRACT claimasset claimasset.wasm claimasset.abi -p $CLAIMASSET_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $CLAIMASSET_CONTRACT active --add-code -p $CLAIMASSET_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $NOTIFICATION_CONTRACT notification notification.wasm notification.abi -p $NOTIFICATION_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $NOTIFICATION_CONTRACT active --add-code -p $NOTIFICATION_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $ROLLUP_CONTRACT rollup rollup.wasm rollup.abi -p $ROLLUP_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $ROLLUP_CONTRACT active --add-code -p $ROLLUP_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $TAP_CONTRACT tap tap.wasm tap.abi -p $TAP_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $TAP_CONTRACT active --add-code -p $TAP_CONTRACT@active

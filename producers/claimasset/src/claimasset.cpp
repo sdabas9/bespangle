@@ -7,7 +7,7 @@
     // 4) add action to update image json.
     // 5) add action to update details json.
 
-  void claimasset::ecreate (name org, 
+  void claimasset::ncreate (name org, 
     name assetname, 
     string offchain_lookup_data, 
     string onchain_lookup_data, 
@@ -26,7 +26,7 @@
     }.send();  
   }
 
-  void claimasset::eaddclaimer (name org, name account, name assetname, uint64_t account_cap) {
+  void claimasset::naddclaimer (name org, name account, name assetname, uint64_t account_cap) {
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),

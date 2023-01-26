@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(claimasset)
+set(ORCHESTRATOR_CONTRACT_NAME ${ORCHESTRATOR_CONTRACT_NAME})
+set(NOTIFICATION_CONTRACT_NAME ${NOTIFICATION_CONTRACT_NAME})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/claimasset.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/claimasset.hpp @ONLY)

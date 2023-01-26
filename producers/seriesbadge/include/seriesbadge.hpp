@@ -12,6 +12,7 @@ CONTRACT seriesbadge : public contract {
     ACTION define(name org, name family);
     ACTION createnext(name org, name family, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo);
     ACTION issuelatest(name org, name family, name to, string memo);
+    ACTION haslatest(name org, name family, name badge, name account);
 
   private:
     TABLE metadata {

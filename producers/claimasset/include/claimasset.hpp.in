@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
-#define NOTIFICATION_CONTRACT_NAME "notification"
+#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine NOTIFICATION_CONTRACT_NAME "@NOTIFICATION_CONTRACT_NAME@"
 #define NOTIFICATION_CONTRACT_CREATE NOTIFICATION_CONTRACT_NAME"::ninitsimpl"
 
 CONTRACT claimasset : public contract {
