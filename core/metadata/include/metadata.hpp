@@ -6,9 +6,11 @@ using namespace eosio;
 #define BILLING_CONTRACT "billing11111"
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 #define ORG_INTERFACE_CONTRACT "organization"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata"
+/* #undef ORCHESTRATOR_CONTRACT */
+#define NOTIFICATION_CONTRACT "notification"
 
-#define ADD_FEATURE_NOTIFICATION ORG_INTERFACE_CONTRACT"::naddfeatur"
+
+#define ADD_FEATURE_NOTIFICATION NOTIFICATION_CONTRACT"::addfeature"
 
 CONTRACT metadata : public contract {
   public:
@@ -223,13 +225,5 @@ CONTRACT metadata : public contract {
           .org = org,
           .account = account }
       }.send();
-    }
-
-    uint64_t get_badge_id (name org, name issuing_contract, name assetname) {
-      badge_table _badge(name(ORCHESTRATOR_CONTRACT), org.value);
-      auto contract_badge_index = _badge.get_index<name("contractbadge")>();
-      uint128_t contract_badge_key = ((uint128_t) issuing_contract.value) << 64 | assetname.value;
-      auto contract_badge_iterator = contract_badge_index.require_find (contract_badge_key, "Could not find Contract, badge ");
-      return contract_badge_iterator->badge_id;
     }
 };

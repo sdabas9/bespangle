@@ -6,9 +6,10 @@ using namespace eosio;
 
 
 #define ORG_INTERFACE_CONTRACT_NAME "organization"
-#define ROLLUP_CONTRACT_NAME "rollup"
-#define SIMPLEBADGE_CONTRACT_NAME "sacontract"
-#define CLAIMASSET_CONTRACT_NAME "claimasset"
+#define ROLLUP_CONTRACT_NAME "rollup111111"
+#define SIMPLEBADGE_CONTRACT_NAME "simplebadge2"
+#define CLAIMASSET_CONTRACT_NAME "claimasset11"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
 
 // initsimple notifications
 #define ORG_INTERFACE_SIMPLE_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ninitsimpl"
@@ -23,7 +24,8 @@ using namespace eosio;
 // create claimasset notification
 #define ORG_INTERFACE_CREATE_CLAIM_ASSET_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::create"
 
-
+// add feature notification
+#define ORG_INTERFACE_ADD_FEATURE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::naddfeatur" 
 
 CONTRACT notification : public contract {
   public:
@@ -39,11 +41,13 @@ CONTRACT notification : public contract {
     [[eosio::on_notify(ORG_INTERFACE_SIMPLE_ISSUE_NOTIFICATION)]] void asimpleissue (name org, 
       name to, 
       name badge,
+      uint8_t amount,
       string memo);
       
     [[eosio::on_notify(ROLLUP_SIMPLE_ISSUE_NOTIFICATION)]] void bsimpleissue (name org, 
       name to, 
-      name badge, 
+      name badge,
+      uint8_t amount, 
       string memo);
 
     [[eosio::on_notify(ROLLUP_ADD_CLAIMER_NOTIFICATION)]] void aaddclaimer (name org, 
@@ -57,6 +61,12 @@ CONTRACT notification : public contract {
       string onchain_lookup_data, 
       string memo);
 
+    [[eosio::on_notify(ORG_INTERFACE_ADD_FEATURE_NOTIFICATION)]] void aaddfeature (name org, 
+      name badge_contract,
+      name badge_name,
+      name notify_account,
+      string memo);
+
     ACTION initsimple(name org, 
       name badge, 
       vector<name> parent_badges, 
@@ -64,7 +74,7 @@ CONTRACT notification : public contract {
       string onchain_lookup_data, 
       string memo);
 
-    ACTION issuesimple(name org, name to, name badge, string memo );
+    ACTION givesimple(name org, name to, name badge, uint8_t amount, string memo );
 
     ACTION addclaimer(name org, name account, name assetname, uint64_t account_cap);
 
@@ -72,6 +82,12 @@ CONTRACT notification : public contract {
       name assetname,
       string offchain_lookup_data, 
       string onchain_lookup_data, 
+      string memo);
+
+    ACTION addfeature(name org, 
+      name badge_contract,
+      name badge_name,
+      name notify_account,
       string memo);
 
   private:
@@ -89,6 +105,7 @@ CONTRACT notification : public contract {
       name org;
       name to;
       name badge; 
+      uint8_t amount;
       string memo;
     };
 
@@ -105,6 +122,14 @@ CONTRACT notification : public contract {
       name account;
       name assetname; 
       uint64_t account_cap;
+    };
+
+    struct addfeature_args {
+      name org;
+      name badge_contract;
+      name badge_name;
+      name notify_account;
+      string memo;
     };
 };
 

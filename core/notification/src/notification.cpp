@@ -25,16 +25,17 @@ void notification::ainitsimple (name org,
 void notification::asimpleissue (name org, 
   name to, 
   name badge,
+  uint8_t amount,
   string memo) {
-
   action {
     permission_level{get_self(), name("active")},
     name(get_self()),
-    name("issuesimple"),
+    name("givesimple"),
     issue_args {
       .org = org,
       .to = to,
       .badge = badge,
+      .amount = amount,
       .memo = memo}
   }.send(); 
 
@@ -42,17 +43,19 @@ void notification::asimpleissue (name org,
   
 void notification::bsimpleissue (name org, 
   name to, 
-  name badge, 
+  name badge,
+  uint8_t amount, 
   string memo) {
   
   action {
     permission_level{get_self(), name("active")},
     name(get_self()),
-    name("issuesimple"),
+    name("givesimple"),
     issue_args {
       .org = org,
       .to = to,
       .badge = badge,
+      .amount = amount,
       .memo = memo}
   }.send(); 
 
@@ -98,6 +101,24 @@ void notification::ainitclaim (name org,
 
 }
 
+void notification::aaddfeature (name org, 
+      name badge_contract,
+      name badge_name,
+      name notify_account,
+      string memo) {
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("addfeature"),
+    addfeature_args {
+      .org = org,
+      .badge_contract = badge_contract,
+      .badge_name = badge_name,
+      .notify_account = notify_account,
+      .memo = memo }
+  }.send();     
+}
+
 ACTION notification::initsimple(name org, 
   name badge, 
   vector<name> parent_badges, 
@@ -108,7 +129,7 @@ ACTION notification::initsimple(name org,
   require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
 }
 
-ACTION notification::issuesimple(name org, name to, name badge, string memo ) {
+ACTION notification::givesimple(name org, name to, name badge, uint8_t amount, string memo ) {
   require_auth(get_self());
   require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
 }
@@ -125,6 +146,15 @@ ACTION notification::initclaim(name org,
   string memo) {
   require_auth(get_self());
   require_recipient(name(CLAIMASSET_CONTRACT_NAME));
+}
+
+ACTION notification::addfeature(name org, 
+      name badge_contract,
+      name badge_name,
+      name notify_account,
+      string memo) {
+  require_auth(get_self());
+  require_recipient(name(ORCHESTRATOR_CONTRACT_NAME)); 
 }
 
 

@@ -10,6 +10,7 @@
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 #define SERIESBADGE_CONTRACT "seriesbadge1"
 #define ASYNC_CONTRACT "async1111111"
+#define NOTIFICATION_CONTRACT "notification"
 
 using namespace std;
 using namespace eosio;
@@ -148,9 +149,11 @@ CONTRACT org : public contract {
       string onchain_lookup_data, 
       string memo);
 
+    // action notifying simplebadge contract. starts with "n"
     ACTION ngivesimpl(name org,
       name to, 
-      name badge, 
+      name badge,
+      uint8_t amount, 
       string memo );
 
     ACTION naddfeatur (name org, 
@@ -289,6 +292,7 @@ CONTRACT org : public contract {
       name org;
       name to;
       name badge;
+      uint8_t amount;
       string memo;
     };
 

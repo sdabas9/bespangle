@@ -4,7 +4,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 #define NEW_BADGE_SUBSCRIPTION_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::addnotify"
 

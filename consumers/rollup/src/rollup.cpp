@@ -14,35 +14,68 @@
 
       activators_table _activators( _self, org.value );
       auto activators_itr = _activators.find(badge_id);
-      for(auto i = 0; i < activators_itr->active_emissions.size(); i++) { 
-        activators(org, activators_itr->active_emissions[i], account, badge_contract, badge_name, count); 
+      if(activators_itr != _activators.end()) {
+        for(auto i = 0; i < activators_itr->active_emissions.size(); i++) { 
+          activators(org, activators_itr->active_emissions[i], account, badge_contract, badge_name, count); 
+        }
       }
+
       emitters_table _emitters( _self, org.value );
       auto emitters_itr = _emitters.find(badge_id);
-      for(auto i = 0; i < emitters_itr->active_emissions.size(); i++) { 
-        emitters(org, emitters_itr->active_emissions[i], account, badge_contract, badge_name, count); 
+      if(emitters_itr != _emitters.end()) {
+        for(auto i = 0; i < emitters_itr->active_emissions.size(); i++) { 
+          emitters(org, emitters_itr->active_emissions[i], account, badge_contract, badge_name, count); 
+        }
       }
+
     }
 
-    ACTION rollup::issuesimple (name org, name to, name badge, string memo) {
+    ACTION rollup::givesimple (name org, name to, name badge, uint8_t amount, string memo) {
       require_auth(get_self());
-      require_recipient(name(NOTIFICATION_CONTRACT));
+      require_recipient(name(NOTIFICATION_CONTRACT_NAME));
     }
 
     ACTION rollup::addclaimer (name org, name account, name assetname, uint64_t account_cap) {
       require_auth(get_self());
-      require_recipient(name(NOTIFICATION_CONTRACT));
+      require_recipient(name(NOTIFICATION_CONTRACT_NAME));
     }
 
     ACTION rollup::createrollup (name org,
       name emission_name,
       std::map<asset_contract_name, uint16_t> activator_criteria,
       std::map<asset_contract_name, uint16_t> emitter_criteria,
-      std::map<asset_contract_name, uint16_t> emit_assets,
-      bool cyclic_activator,
-      bool cyclic_emitter) {
+      std::map<asset_contract_name, uint8_t> emit_assets,
+      bool cyclic_from_activator,
+      bool cyclic_from_emitter) {
 
-      require_auth(get_self());
+      require_auth(org);
+      
+      if(cyclic_from_activator && cyclic_from_emitter) {
+        check(false, "Cyclic emission should start from either activator or emitter. Only select 1 of cyclic_from_activator or cyclic_from_emitter as true");
+      }
+
+      check(emitter_criteria.size() > 0, "emitter_criteria should have atleast 1 entry ");
+      check(emit_assets.size() > 0, "emit_assets should have atleast 1 entry ");
+
+      if(cyclic_from_activator) {
+        check(activator_criteria.size() > 0, "activator_criteria should have atleast 1 entry when cyclic_from_activator is true");
+      }
+
+      uint64_t badge_id;
+      for (const auto& [key, value] : activator_criteria) { 
+        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        check( !emitter_criteria.contains(key), "cant handle if activator_criteria and emitter_criteria have same asset");
+      }
+
+      for (const auto& [key, value] : emitter_criteria) { 
+        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        check( !emit_assets.contains(key), "cant handle if emitter_criteria and emit_assets has same asset");
+      }
+
+      for (const auto& [key, value] : emit_assets) { 
+        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+      } 
+
       emissions_table _emissions( _self, org.value );
       auto itr = _emissions.find(emission_name.value);
       check(itr == _emissions.end(), "Rollup with this name already exist.");
@@ -51,26 +84,17 @@
         row.activator_criteria = activator_criteria;
         row.emitter_criteria = emitter_criteria;
         row.emit_assets = emit_assets;
-        row.cyclic_activator = cyclic_activator;
-        row.cyclic_emitter = cyclic_emitter;
+        row.cyclic_from_activator = cyclic_from_activator;
+        row.cyclic_from_emitter = cyclic_from_emitter;
         row.status = name("init");
       }); 
 
-      uint64_t badge_id;
-      for (const auto& [key, value] : activator_criteria) { 
-        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
-      }
 
-      for (const auto& [key, value] : emitter_criteria) { 
-        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
-      }
 
-      for (const auto& [key, value] : emit_assets) { 
-        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
-      }  
     }
 
     ACTION rollup::activate (name org, name emission_name) {
+      require_auth(org);
       emissions_table _emissions( _self, org.value );
       auto emissions_itr = _emissions.require_find(emission_name.value, "emission not defined");
       check(emissions_itr->status == name("init"), "rollup not in init state");
@@ -121,9 +145,10 @@
     }
 
     ACTION rollup::deactivate (name org, name emission_name) {
+      require_auth(org);
       emissions_table _emissions( _self, org.value );
       auto emissions_itr = _emissions.require_find(emission_name.value, "emission not defined");
-      check(emissions_itr->status == name("init") || emissions_itr->status == name("activate"), "emission not in init/activated state");
+      check(emissions_itr->status == name("init") || emissions_itr->status == name("activated"), "emission not in init/activated state");
 
       _emissions.modify(emissions_itr, get_self(), [&](auto& row){
         row.status = name("deactivated");

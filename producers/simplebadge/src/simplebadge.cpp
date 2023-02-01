@@ -30,9 +30,9 @@
 
   void simplebadge::extissue (name org, 
     name to, 
-    name badge, 
+    name badge,
+    uint8_t amount, 
     string memo) {
-
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),
@@ -41,6 +41,7 @@
         .org = org,
         .to = to,
         .badge = badge,
+        .amount = amount,
         .memo = memo}
     }.send(); 
 
@@ -81,23 +82,9 @@
   }
 
   ACTION simplebadge::issue (name org, 
-    name from,
     name to, 
-    name badge, 
-    string memo );
-    // issuance pattern
-    // from org to account
-    // from account1 to account2 .. controlled via rules.
-    // from account1 to account1 .. controlled via whitelist.
-
-    // asset class metadata pattern.
-    // series 
-
-    // single asset metadata pattern.
-
-  ACTION simplebadge::issue (name org, 
-    name to, 
-    name badge, 
+    name badge,
+    uint8_t amount, 
     string memo ) {
     require_auth(get_self());
     require_recipient(to);
@@ -120,22 +107,24 @@
           _helper_queue.push(parent_itr->parent_badges[i]);
       }
     }
-
-    for (auto i = 0 ; i < all_badges.size() ; i++ ) {
-      action {
-        permission_level{get_self(), name("active")},
-        name(ORCHESTRATOR_CONTRACT_NAME),
-        name("achievement"),
-        achievement_args {
-          .org = org,
-          .badge_contract = get_self(),
-          .badge_name = all_badges[i],
-          .account = to,
-          .from = org,
-          .count = 1,
-          .memo = memo }
-      }.send();
+    for(auto j = 0; j < amount; j++) {
+        for (auto i = 0 ; i < all_badges.size() ; i++ ) {
+          action {
+            permission_level{get_self(), name("active")},
+            name(ORCHESTRATOR_CONTRACT_NAME),
+            name("achievement"),
+            achievement_args {
+              .org = org,
+              .badge_contract = get_self(),
+              .badge_name = all_badges[i],
+              .account = to,
+              .from = org,
+              .count = 1,
+              .memo = memo }
+          }.send();
+        }
     }
+
     
   }
 

@@ -43,15 +43,15 @@ CONTRACT rollup : public contract {
       name emission_name,
       std::map<asset_contract_name, uint16_t> activator_criteria,
       std::map<asset_contract_name, uint16_t> emitter_criteria,
-      std::map<asset_contract_name, uint16_t> emit_assets,
-      bool cyclic_activator,
-      bool cyclic_emitter);
+      std::map<asset_contract_name, uint8_t> emit_assets,
+      bool cyclic_from_activator,
+      bool cyclic_from_emitter);
 
     ACTION activate (name org, name emission_name);
 
     ACTION deactivate (name org, name emission_name);
 
-    ACTION issuesimple (name org, name to, name badge, string memo);
+    ACTION givesimple (name org, name to, name badge, uint8_t amount, string memo);
 
     ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap);
 
@@ -69,10 +69,10 @@ CONTRACT rollup : public contract {
       name emission_name;
       std::map<asset_contract_name, uint16_t> activator_criteria;
       std::map<asset_contract_name, uint16_t> emitter_criteria;
-      std::map<asset_contract_name, uint16_t> emit_assets;
+      std::map<asset_contract_name, uint8_t> emit_assets;
       name status; // INIT, ACTIVATE, DEACTIVATE
-      bool cyclic_activator;
-      bool cyclic_emitter;
+      bool cyclic_from_activator;
+      bool cyclic_from_emitter;
       auto primary_key() const { return emission_name.value; }
     };
     typedef multi_index<name("emissions"), emissions> emissions_table;
@@ -132,6 +132,7 @@ CONTRACT rollup : public contract {
       name org;
       name to;
       name badge; 
+      uint8_t amount;
       string memo;
     };
 
@@ -142,18 +143,19 @@ CONTRACT rollup : public contract {
       uint64_t account_cap;
     };
 
-    void invoke_action ( name org, std::map<asset_contract_name, uint16_t> emit_assets ,name to) {
+    void invoke_action ( name org, std::map<asset_contract_name, uint8_t> emit_assets ,name to) {
 
       for (const auto& [key, value] : emit_assets) {
         if(key.issuing_contract == name(SIMPLEBADGE_CONTRACT_NAME)) {
           action {
             permission_level{get_self(), name("active")},
             name(get_self()),
-            name("issuesimple"),
+            name("givesimple"),
             issue_args {
               .org = org,
               .to = to,
               .badge = key.asset_name,
+              .amount = value,
               .memo = "issued from rollup consumer"}
           }.send(); 
         } else if (key.issuing_contract == name(CLAIMASSET_CONTRACT_NAME)) {
@@ -245,9 +247,10 @@ CONTRACT rollup : public contract {
           if(start_emitter) {
             row.emission_status = EMITTER_START;
             expanded_activator_status.clear();
+          } else {
+            row.emission_status = ACTIVATOR_IN_PROGESS;
           }
           row.expanded_activator_status = expanded_activator_status;
-          row.emission_status = ACTIVATOR_IN_PROGESS;
         });
       }
     }
@@ -283,9 +286,9 @@ CONTRACT rollup : public contract {
 
         _accounts.emplace(get_self(), [&](auto& row){
           if(emit) {
-            if(emissions_itr->cyclic_activator) {
+            if(emissions_itr->cyclic_from_activator) {
               row.emission_status = ACTIVATOR_START;
-            } else if (emissions_itr->cyclic_emitter) {
+            } else if (emissions_itr->cyclic_from_emitter) {
               row.emission_status = EMITTER_START;
             } else {
               row.emission_status = EMITTED;
@@ -311,9 +314,9 @@ CONTRACT rollup : public contract {
 
         account_emission_index.modify(account_emission_iterator, get_self(), [&](auto& row){
         if(emit) {
-          if(emissions_itr->cyclic_activator) {
+          if(emissions_itr->cyclic_from_activator) {
             row.emission_status = ACTIVATOR_START;
-          } else if (emissions_itr->cyclic_emitter) {
+          } else if (emissions_itr->cyclic_from_emitter) {
             row.emission_status = EMITTER_START;
           } else {
             row.emission_status = EMITTED;

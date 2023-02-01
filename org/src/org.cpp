@@ -101,7 +101,7 @@
     string onchain_lookup_data, 
     string memo) {
     require_auth(get_self());
-    require_recipient(name(SIMPLEBADGE_CONTRACT));
+    require_recipient(name(NOTIFICATION_CONTRACT));
 
   }
 
@@ -111,7 +111,7 @@
     name notify_account, 
     string memo) {
     require_auth(get_self());
-    require_recipient(name(ORCHESTRATOR_CONTRACT));
+    require_recipient(name(NOTIFICATION_CONTRACT));
   }
 
   ACTION org::initgotcha (name org,
@@ -294,15 +294,16 @@
         .org = org,
         .to = to,
         .badge = badge,
+        .amount = 1,
         .memo = memo }
       }.send();
     }
 
   }
 
-  ACTION org::ngivesimpl(name org, name to, name badge, string memo ) {
+  ACTION org::ngivesimpl(name org, name to, name badge, uint8_t amount, string memo ) {
     require_auth(get_self());
-    require_recipient(name(SIMPLEBADGE_CONTRACT));
+    require_recipient(name(NOTIFICATION_CONTRACT));
   }
 
   ACTION org::agivesimpl(name org, name to, name badge, string memo ) {
@@ -315,6 +316,7 @@
       .org = org,
       .to = to,
       .badge = badge,
+      .amount = 1,
       .memo = memo }
     }.send();
   }
