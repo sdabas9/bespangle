@@ -10,6 +10,7 @@
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 #define SERIESBADGE_CONTRACT "seriesbadge1"
 #define ASYNC_CONTRACT "async1111111"
+#define CLAIMASSET_CONTRACT "claimasset11"
 #define NOTIFICATION_CONTRACT "notification"
 
 using namespace std;
@@ -55,7 +56,43 @@ CONTRACT org : public contract {
       vector<name> consumers,
       string memo);
     
-    
+    ACTION initcasset(name org, 
+      name creator,
+      name assetname,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      vector<name> consumers,
+      string memo);
+
+    ACTION addclaimer(name org, 
+      name authorizer, 
+      name account, 
+      name assetname, 
+      uint64_t account_cap, 
+      string memo);
+
+    ACTION claimasset(name org, 
+      name to, 
+      name assetname, 
+      string memo );
+
+    ACTION ninitcasse(name org, 
+      name assetname,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+    ACTION naddclaime(name org, 
+      name account, 
+      name assetname, 
+      uint64_t account_cap, 
+      string memo);
+
+    ACTION nclaimasse(name org, 
+      name to, 
+      name assetname, 
+      string memo );
+
     /*
 		* 
     * Defines - a badge of type gotcha badge contract 
@@ -331,5 +368,27 @@ CONTRACT org : public contract {
       string memo;
     };
 
+    struct create_claim_asset_args {
+      name org;
+      name assetname;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct add_claimer_args {
+      name org;
+      name account;
+      name assetname;
+      uint64_t account_cap;
+      string memo;
+    };
+
+    struct claim_asset_args {
+      name org;
+      name to;
+      name assetname;
+      string memo;
+    };
 
 };

@@ -5,22 +5,30 @@ using namespace eosio;
 
 #cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
 #cmakedefine NOTIFICATION_CONTRACT_NAME "@NOTIFICATION_CONTRACT_NAME@"
-#define NOTIFICATION_CONTRACT_CREATE NOTIFICATION_CONTRACT_NAME"::ninitsimpl"
+#define NOTIFICATION_CONTRACT_CREATE NOTIFICATION_CONTRACT_NAME"::initcasset"
+#define NOTIFICATION_CONTRACT_ADD_CLAIMER NOTIFICATION_CONTRACT_NAME"::addclaimer"
+#define NOTIFICATION_CONTRACT_CLAIM NOTIFICATION_CONTRACT_NAME"::claimasset"
 
 CONTRACT claimasset : public contract {
   public:
     using contract::contract;
 
-    [[eosio::on_notify(NOTIFICATION_CONTRACT_CREATE)]] void naddclaimer (name org, 
+    [[eosio::on_notify(NOTIFICATION_CONTRACT_ADD_CLAIMER)]] void naddclaimer (name org, 
       name account, 
       name assetname, 
-      uint64_t account_cap);
+      uint64_t account_cap,
+      string memo);
 
     [[eosio::on_notify(NOTIFICATION_CONTRACT_CREATE)]] void ncreate (name org, 
       name assetname, 
       string offchain_lookup_data, 
       string onchain_lookup_data, 
       string memo);
+    
+    [[eosio::on_notify(NOTIFICATION_CONTRACT_CLAIM)]] void nclaim(name org, 
+      name to, 
+      name assetname, 
+      string memo );
 
     ACTION create (name org, 
       name assetname,
@@ -30,7 +38,7 @@ CONTRACT claimasset : public contract {
 
     ACTION claim (name org, name to, name assetname, string memo );
 
-    ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap);
+    ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo);
 
   private:
     TABLE metadata {
@@ -68,6 +76,7 @@ CONTRACT claimasset : public contract {
       name account;
       name assetname; 
       uint64_t account_cap;
+      string memo;
     };
 
     struct achievement_args {
@@ -93,6 +102,13 @@ CONTRACT claimasset : public contract {
       name org;
       name contract;
       uint64_t bytes;
+      string memo;
+    };
+
+    struct claim_args {
+      name org;
+      name to;
+      name assetname;
       string memo;
     };
     

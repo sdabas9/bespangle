@@ -35,7 +35,7 @@
       require_recipient(name(NOTIFICATION_CONTRACT_NAME));
     }
 
-    ACTION rollup::addclaimer (name org, name account, name assetname, uint64_t account_cap) {
+    ACTION rollup::addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo) {
       require_auth(get_self());
       require_recipient(name(NOTIFICATION_CONTRACT_NAME));
     }

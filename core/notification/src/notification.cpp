@@ -22,6 +22,16 @@ void notification::ainitsimple (name org,
 
 }
 
+ACTION notification::initsimple(name org, 
+  name badge, 
+  vector<name> parent_badges, 
+  string offchain_lookup_data, 
+  string onchain_lookup_data, 
+  string memo) {
+  require_auth(get_self());
+  require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
+}
+
 void notification::asimpleissue (name org, 
   name to, 
   name badge,
@@ -61,12 +71,16 @@ void notification::bsimpleissue (name org,
 
 }
 
-
+ACTION notification::givesimple(name org, name to, name badge, uint8_t amount, string memo ) {
+  require_auth(get_self());
+  require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
+}
 
 void notification::aaddclaimer (name org, 
   name account, 
   name assetname, 
-  uint64_t account_cap) {
+  uint64_t account_cap,
+  string memo) {
 
   action {
     permission_level{get_self(), name("active")},
@@ -76,9 +90,35 @@ void notification::aaddclaimer (name org,
       .org = org,
       .account = account,
       .assetname = assetname,
-      .account_cap = account_cap }
+      .account_cap = account_cap,
+      .memo = memo }
   }.send(); 
 
+}
+
+void notification::baddclaimer (name org, 
+  name account, 
+  name assetname, 
+  uint64_t account_cap,
+  string memo) {
+
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("addclaimer"),
+    addclaimer_args {
+      .org = org,
+      .account = account,
+      .assetname = assetname,
+      .account_cap = account_cap,
+      .memo = memo }
+  }.send(); 
+
+}
+
+ACTION notification::addclaimer(name org, name account, name assetname, uint64_t account_cap, string memo) {
+  require_auth(get_self());
+  require_recipient(name(CLAIMASSET_CONTRACT_NAME));
 }
 
 void notification::ainitclaim (name org, 
@@ -90,7 +130,7 @@ void notification::ainitclaim (name org,
   action {
     permission_level{get_self(), name("active")},
     name(get_self()),
-    name("initclaim"),
+    name("initcasset"),
     create_claimasset_args {
       .org = org,
       .assetname = assetname,
@@ -99,6 +139,39 @@ void notification::ainitclaim (name org,
       .memo = memo }
   }.send();  
 
+}
+
+ACTION notification::initcasset(name org, 
+  name assetname,
+  string offchain_lookup_data, 
+  string onchain_lookup_data, 
+  string memo) {
+  require_auth(get_self());
+  require_recipient(name(CLAIMASSET_CONTRACT_NAME));
+}
+
+void notification::aclaimasset(name org, 
+      name to, 
+      name assetname, 
+      string memo ) {
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("claimasset"),
+    claimasset_args {
+      .org = org,
+      .to = to,
+      .assetname = assetname,
+      .memo = memo }
+  }.send();  
+}
+
+ACTION notification::claimasset(name org, 
+  name to, 
+  name assetname, 
+  string memo ) {
+  require_auth(get_self());
+  require_recipient(name(CLAIMASSET_CONTRACT_NAME));
 }
 
 void notification::aaddfeature (name org, 
@@ -119,35 +192,6 @@ void notification::aaddfeature (name org,
   }.send();     
 }
 
-ACTION notification::initsimple(name org, 
-  name badge, 
-  vector<name> parent_badges, 
-  string offchain_lookup_data, 
-  string onchain_lookup_data, 
-  string memo) {
-  require_auth(get_self());
-  require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
-}
-
-ACTION notification::givesimple(name org, name to, name badge, uint8_t amount, string memo ) {
-  require_auth(get_self());
-  require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
-}
-
-ACTION notification::addclaimer(name org, name account, name assetname, uint64_t account_cap) {
-  require_auth(get_self());
-  require_recipient(name(CLAIMASSET_CONTRACT_NAME));
-}
-
-ACTION notification::initclaim(name org, 
-  name assetname,
-  string offchain_lookup_data, 
-  string onchain_lookup_data, 
-  string memo) {
-  require_auth(get_self());
-  require_recipient(name(CLAIMASSET_CONTRACT_NAME));
-}
-
 ACTION notification::addfeature(name org, 
       name badge_contract,
       name badge_name,
@@ -156,5 +200,4 @@ ACTION notification::addfeature(name org,
   require_auth(get_self());
   require_recipient(name(ORCHESTRATOR_CONTRACT_NAME)); 
 }
-
 

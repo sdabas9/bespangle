@@ -53,7 +53,7 @@ CONTRACT rollup : public contract {
 
     ACTION givesimple (name org, name to, name badge, uint8_t amount, string memo);
 
-    ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap);
+    ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo);
 
   private:
 
@@ -141,6 +141,7 @@ CONTRACT rollup : public contract {
       name account;
       name assetname; 
       uint64_t account_cap;
+      string memo;
     };
 
     void invoke_action ( name org, std::map<asset_contract_name, uint8_t> emit_assets ,name to) {
@@ -167,7 +168,8 @@ CONTRACT rollup : public contract {
               .org = org,
               .account = to,
               .assetname = key.asset_name,
-              .account_cap = 1 }
+              .account_cap = value,
+              .memo = "issued from rollup consumer" }
           }.send(); 
         }
 

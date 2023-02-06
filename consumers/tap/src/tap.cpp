@@ -42,7 +42,7 @@
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "Somethings wrong, should not have reached here");
     
-    check(itr->pause != false, "Distribution paused");
+    check(itr->pause == false, "Distribution paused");
     
     if(itr->supply_bound) {
       check(itr->current_supply + count <= itr->supplycap, "Exceeded max supply");

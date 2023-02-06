@@ -26,7 +26,7 @@
     }.send();  
   }
 
-  void claimasset::naddclaimer (name org, name account, name assetname, uint64_t account_cap) {
+  void claimasset::naddclaimer (name org, name account, name assetname, uint64_t account_cap, string memo) {
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),
@@ -35,7 +35,24 @@
         .org = org,
         .account = account,
         .assetname = assetname,
-        .account_cap = account_cap }
+        .account_cap = account_cap,
+        .memo = memo }
+    }.send(); 
+  }
+
+  void claimasset::nclaim(name org, 
+      name to, 
+      name assetname, 
+      string memo ) {
+    action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("claim"),
+      claim_args {
+        .org = org,
+        .to = to,
+        .assetname = assetname,
+        .memo = memo }
     }.send(); 
   }
   
@@ -71,7 +88,7 @@
  
 
   ACTION claimasset::claim (name org, name account, name assetname, string memo ) {
-    require_auth(account);
+    require_auth(get_self());
     metadata_table _metadata (_self, org.value);
     auto metadata_itr = _metadata.require_find(assetname.value, "no asset named <assetname> is created");
     
@@ -103,7 +120,7 @@
     }.send();
   }
 
-  ACTION claimasset::addclaimer (name org, name account, name assetname, uint64_t account_cap) {
+  ACTION claimasset::addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo) {
     require_auth(get_self());
     
     claimlist_table _claimlist (get_self(), org.value);
