@@ -19,6 +19,7 @@ ROLLUP_CONTRACT="rollup111111"
 CLAIMASSET_CONTRACT="claimasset11"
 NOTIFICATION_CONTRACT="notification"
 TAP_CONTRACT="tap111111111"
+CHECKS_CONTRACT="checks111111"
 
 CLEOS_URL="http://jungle4.cryptolions.io"
 
@@ -40,6 +41,11 @@ cd ../..
 cd core/notification
 cmake . -DORG_INTERFACE_CONTRACT_NAME=$ORG_INTERFACE_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DROLLUP_CONTRACT_NAME=$ROLLUP_CONTRACT -DCLAIMASSET_CONTRACT_NAME=$CLAIMASSET_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract notification -o notification.wasm src/notification.cpp
+cd ../..
+
+cd core/checks
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DCUMULATIVE_CONTRACT_NAME=$CUMULATIVE_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract checks -o checks.wasm src/checks.cpp
 cd ../..
 
 cd producers/simplebadge
@@ -149,3 +155,6 @@ cleos -u $CLEOS_URL set account permission $ROLLUP_CONTRACT active --add-code -p
 
 cleos -u $CLEOS_URL set contract $TAP_CONTRACT consumers/tap tap.wasm tap.abi -p $TAP_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $TAP_CONTRACT active --add-code -p $TAP_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $CHECKS_CONTRACT core/checks checks.wasm checks.abi -p $CHECKS_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $CHECKS_CONTRACT active --add-code -p $CHECKS_CONTRACT@active
