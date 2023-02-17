@@ -10,6 +10,8 @@
 #cmakedefine ACCOUNT_PREFERENCES_CONTRACT "@ACCOUNT_PREFERENCES_CONTRACT@"
 #cmakedefine SERIESBADGE_CONTRACT "@SERIESBADGE_CONTRACT@"
 #cmakedefine ASYNC_CONTRACT "@ASYNC_CONTRACT@"
+#cmakedefine CLAIMASSET_CONTRACT "@CLAIMASSET_CONTRACT@"
+#cmakedefine NOTIFICATION_CONTRACT "@NOTIFICATION_CONTRACT@"
 
 using namespace std;
 using namespace eosio;
@@ -54,7 +56,43 @@ CONTRACT org : public contract {
       vector<name> consumers,
       string memo);
     
-    
+    ACTION initcasset(name org, 
+      name creator,
+      name assetname,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      vector<name> consumers,
+      string memo);
+
+    ACTION addclaimer(name org, 
+      name authorizer, 
+      name account, 
+      name assetname, 
+      uint64_t account_cap, 
+      string memo);
+
+    ACTION claimasset(name org, 
+      name to, 
+      name assetname, 
+      string memo );
+
+    ACTION ninitcasse(name org, 
+      name assetname,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+    ACTION naddclaime(name org, 
+      name account, 
+      name assetname, 
+      uint64_t account_cap, 
+      string memo);
+
+    ACTION nclaimasse(name org, 
+      name to, 
+      name assetname, 
+      string memo );
+
     /*
 		* 
     * Defines - a badge of type gotcha badge contract 
@@ -148,9 +186,11 @@ CONTRACT org : public contract {
       string onchain_lookup_data, 
       string memo);
 
+    // action notifying simplebadge contract. starts with "n"
     ACTION ngivesimpl(name org,
       name to, 
-      name badge, 
+      name badge,
+      uint8_t amount, 
       string memo );
 
     ACTION naddfeatur (name org, 
@@ -289,6 +329,7 @@ CONTRACT org : public contract {
       name org;
       name to;
       name badge;
+      uint8_t amount;
       string memo;
     };
 
@@ -327,5 +368,27 @@ CONTRACT org : public contract {
       string memo;
     };
 
+    struct create_claim_asset_args {
+      name org;
+      name assetname;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct add_claimer_args {
+      name org;
+      name account;
+      name assetname;
+      uint64_t account_cap;
+      string memo;
+    };
+
+    struct claim_asset_args {
+      name org;
+      name to;
+      name assetname;
+      string memo;
+    };
 
 };

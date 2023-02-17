@@ -9,6 +9,19 @@ using json = nlohmann::json;
     // 3) put profiles contract name in a global constant
     // 4) add action to update image json.
     // 5) add action to update details json.
+    // []
+    // []
+    // []
+
+  // parent -
+  // family - 
+  // limit - 
+  // action1, action2, action3
+  // 
+  // issue (badge, from, to)
+  // hasauth (badge, from, to)
+  // rules (onetime, recurring)
+  // 
 
 
   ACTION seriesbadge::define(name org, name family) {

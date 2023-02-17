@@ -1,0 +1,115 @@
+#include <eosio/eosio.hpp>
+
+using namespace std;
+using namespace eosio;
+
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define NOTIFICATION_CONTRACT_NAME "notification"
+#define NOTIFICATION_CONTRACT_CREATE NOTIFICATION_CONTRACT_NAME"::initcasset"
+#define NOTIFICATION_CONTRACT_ADD_CLAIMER NOTIFICATION_CONTRACT_NAME"::addclaimer"
+#define NOTIFICATION_CONTRACT_CLAIM NOTIFICATION_CONTRACT_NAME"::claimasset"
+
+CONTRACT claimasset : public contract {
+  public:
+    using contract::contract;
+
+    [[eosio::on_notify(NOTIFICATION_CONTRACT_ADD_CLAIMER)]] void naddclaimer (name org, 
+      name account, 
+      name assetname, 
+      uint64_t account_cap,
+      string memo);
+
+    [[eosio::on_notify(NOTIFICATION_CONTRACT_CREATE)]] void ncreate (name org, 
+      name assetname, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+    
+    [[eosio::on_notify(NOTIFICATION_CONTRACT_CLAIM)]] void nclaim(name org, 
+      name to, 
+      name assetname, 
+      string memo );
+
+    ACTION create (name org, 
+      name assetname,
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+    ACTION claim (name org, name to, name assetname, string memo );
+
+    ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo);
+
+  private:
+    TABLE metadata {
+      name assetname; // consumer as aanft2222222
+      auto primary_key() const { return assetname.value; }
+    };
+    typedef multi_index<name("metadata"), metadata> metadata_table;
+
+    TABLE claimlist {
+      uint64_t id;
+      name account;
+      name assetname;
+      uint64_t claimed_amount;
+      uint64_t account_cap;
+      auto primary_key() const { return id; }
+
+      uint128_t account_assetname_key() const {
+        return ((uint128_t) account.value) << 64 | assetname.value;
+      }
+    };
+    typedef multi_index<name("claimlist"), claimlist,
+    indexed_by<name("accountasset"), const_mem_fun<claimlist, uint128_t, &claimlist::account_assetname_key>>    
+    > claimlist_table;
+
+    struct create_args {
+      name org;
+      name assetname;
+      string offchain_lookup_data; 
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct addclaimer_args {
+      name org;
+      name account;
+      name assetname; 
+      uint64_t account_cap;
+      string memo;
+    };
+
+    struct achievement_args {
+      name org;
+      name badge_contract;
+      name badge_name;
+      name account;
+      name from;
+      uint8_t count;
+      string memo;
+    };
+
+    struct initbadge_args {
+      name org; 
+      name badge_contract; 
+      name badge_name;
+      string offchain_lookup_data; 
+      string onchain_lookup_data; 
+      string memo;
+    };
+
+    struct ramcredits_arg {
+      name org;
+      name contract;
+      uint64_t bytes;
+      string memo;
+    };
+
+    struct claim_args {
+      name org;
+      name to;
+      name assetname;
+      string memo;
+    };
+    
+};

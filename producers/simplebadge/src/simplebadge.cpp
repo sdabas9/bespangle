@@ -30,9 +30,9 @@
 
   void simplebadge::extissue (name org, 
     name to, 
-    name badge, 
+    name badge,
+    uint8_t amount, 
     string memo) {
-
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),
@@ -41,6 +41,7 @@
         .org = org,
         .to = to,
         .badge = badge,
+        .amount = amount,
         .memo = memo}
     }.send(); 
 
@@ -80,10 +81,10 @@
     }.send();
   }
 
-
   ACTION simplebadge::issue (name org, 
     name to, 
-    name badge, 
+    name badge,
+    uint8_t amount, 
     string memo ) {
     require_auth(get_self());
     require_recipient(to);
@@ -106,22 +107,24 @@
           _helper_queue.push(parent_itr->parent_badges[i]);
       }
     }
-
-    for (auto i = 0 ; i < all_badges.size() ; i++ ) {
-      action {
-        permission_level{get_self(), name("active")},
-        name(ORCHESTRATOR_CONTRACT_NAME),
-        name("achievement"),
-        achievement_args {
-          .org = org,
-          .badge_contract = get_self(),
-          .badge_name = all_badges[i],
-          .account = to,
-          .from = org,
-          .count = 1,
-          .memo = memo }
-      }.send();
+    for(auto j = 0; j < amount; j++) {
+        for (auto i = 0 ; i < all_badges.size() ; i++ ) {
+          action {
+            permission_level{get_self(), name("active")},
+            name(ORCHESTRATOR_CONTRACT_NAME),
+            name("achievement"),
+            achievement_args {
+              .org = org,
+              .badge_contract = get_self(),
+              .badge_name = all_badges[i],
+              .account = to,
+              .from = org,
+              .count = 1,
+              .memo = memo }
+          }.send();
+        }
     }
+
     
   }
 

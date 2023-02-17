@@ -4,11 +4,11 @@ using namespace std;
 using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
-#define ORG_INTERFACE_CONTRACT_NAME "organization"
+#define NOTIFICATION_CONTRACT "notification"
 #define BILLING_CONTRACT "billing11111"
 
-#define SIMPLE_BADGE_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ninitsimpl"
-#define SIMPLE_BADGE_ISSUANCE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ngivesimpl"
+#define SIMPLE_BADGE_CREATE_NOTIFICATION NOTIFICATION_CONTRACT"::initsimple"
+#define SIMPLE_BADGE_ISSUANCE_NOTIFICATION NOTIFICATION_CONTRACT"::givesimple"
 
 CONTRACT simplebadge : public contract {
   public:
@@ -23,7 +23,8 @@ CONTRACT simplebadge : public contract {
 
     [[eosio::on_notify(SIMPLE_BADGE_ISSUANCE_NOTIFICATION)]] void extissue (name org, 
       name to, 
-      name badge, 
+      name badge,
+      uint8_t amount, 
       string memo);
 
     ACTION create (name org, 
@@ -33,7 +34,7 @@ CONTRACT simplebadge : public contract {
       string onchain_lookup_data, 
       string memo);
 
-    ACTION issue (name org, name to, name badge, string memo );
+    ACTION issue (name org, name to, name badge, uint8_t amount, string memo );
 
 
   private:
@@ -57,6 +58,7 @@ CONTRACT simplebadge : public contract {
       name org;
       name to;
       name badge; 
+      uint8_t amount;
       string memo;
     };
 

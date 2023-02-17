@@ -1,11 +1,9 @@
 #include <gotchabadge.hpp>
 // todos
-// toggle write to aa.
-// pause issuance.
-// resume issuance.
 // auth contracts
 // change duration.
 // change supply per duration.
+// number of cycles
 
 
   ACTION gotchabadge::create (name org, 

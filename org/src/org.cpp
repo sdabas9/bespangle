@@ -101,7 +101,7 @@
     string onchain_lookup_data, 
     string memo) {
     require_auth(get_self());
-    require_recipient(name(SIMPLEBADGE_CONTRACT));
+    require_recipient(name(NOTIFICATION_CONTRACT));
 
   }
 
@@ -111,7 +111,7 @@
     name notify_account, 
     string memo) {
     require_auth(get_self());
-    require_recipient(name(ORCHESTRATOR_CONTRACT));
+    require_recipient(name(NOTIFICATION_CONTRACT));
   }
 
   ACTION org::initgotcha (name org,
@@ -294,15 +294,16 @@
         .org = org,
         .to = to,
         .badge = badge,
+        .amount = 1,
         .memo = memo }
       }.send();
     }
 
   }
 
-  ACTION org::ngivesimpl(name org, name to, name badge, string memo ) {
+  ACTION org::ngivesimpl(name org, name to, name badge, uint8_t amount, string memo ) {
     require_auth(get_self());
-    require_recipient(name(SIMPLEBADGE_CONTRACT));
+    require_recipient(name(NOTIFICATION_CONTRACT));
   }
 
   ACTION org::agivesimpl(name org, name to, name badge, string memo ) {
@@ -315,8 +316,120 @@
       .org = org,
       .to = to,
       .badge = badge,
+      .amount = 1,
       .memo = memo }
     }.send();
+  }
+
+  ACTION org::initcasset(name org, 
+    name creator,
+    name assetname,
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    vector<name> consumers,
+    string memo) {
+    
+    require_auth(creator);
+
+    require_recipient(checkscontract(org));
+
+
+    action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("ninitcasse"),
+    create_claim_asset_args {
+      .org = org,
+      .assetname = assetname,
+      .offchain_lookup_data = offchain_lookup_data,
+      .onchain_lookup_data = onchain_lookup_data,
+      .memo = memo}
+    }.send();
+
+    for (auto i = 0 ; i < consumers.size(); i++) {
+      action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("naddfeatur"),
+      orchestrator_addfeature_args {
+        .org = org,
+        .badge_contract = name(CLAIMASSET_CONTRACT),
+        .badge_name = assetname,
+        .notify_account = consumers[i],
+        .memo = memo}
+      }.send();
+    }
+  }
+
+  ACTION org::addclaimer(name org, 
+    name authorizer, 
+    name account, 
+    name assetname, 
+    uint64_t account_cap, 
+    string memo) {
+    require_auth(authorizer);
+
+    require_recipient(checkscontract(org));
+
+    action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("naddclaime"),
+    add_claimer_args {
+      .org = org,
+      .account = account,
+      .assetname = assetname,
+      .account_cap = account_cap,
+      .memo = memo}
+    }.send();
+
+  }
+
+  ACTION org::claimasset(name org, 
+    name to, 
+    name assetname, 
+    string memo ) {
+
+    require_auth(to);
+
+    require_recipient(checkscontract(org));
+    
+    action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("nclaimasse"),
+    claim_asset_args {
+      .org = org,
+      .to = to,
+      .assetname = assetname,
+      .memo = memo}
+    }.send();
+  }
+
+  ACTION org::ninitcasse(name org, 
+    name assetname,
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    string memo) {
+    require_auth(get_self());
+    require_recipient(name(NOTIFICATION_CONTRACT));
+  }
+
+  ACTION org::naddclaime(name org, 
+    name account, 
+    name assetname, 
+    uint64_t account_cap, 
+    string memo) {
+    require_auth(get_self());
+    require_recipient(name(NOTIFICATION_CONTRACT));
+  }
+
+  ACTION org::nclaimasse(name org, 
+    name to, 
+    name assetname, 
+    string memo ) {
+    require_auth(get_self());
+    require_recipient(name(NOTIFICATION_CONTRACT));
   }
 
 

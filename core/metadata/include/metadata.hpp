@@ -6,8 +6,11 @@ using namespace eosio;
 #define BILLING_CONTRACT "billing11111"
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 #define ORG_INTERFACE_CONTRACT "organization"
+/* #undef ORCHESTRATOR_CONTRACT */
+#define NOTIFICATION_CONTRACT "notification"
 
-#define ADD_FEATURE_NOTIFICATION ORG_INTERFACE_CONTRACT"::naddfeatur"
+
+#define ADD_FEATURE_NOTIFICATION NOTIFICATION_CONTRACT"::addfeature"
 
 CONTRACT metadata : public contract {
   public:
