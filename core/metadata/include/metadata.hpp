@@ -3,9 +3,9 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing11111"
-#define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
-#define ORG_INTERFACE_CONTRACT "organization"
+#define BILLING_CONTRACT "billing.rep"
+#define ACCOUNT_PREFERENCES_CONTRACT "userpref.rep"
+#define ORG_INTERFACE_CONTRACT "orgint.rep"
 /* #undef ORCHESTRATOR_CONTRACT */
 #define NOTIFICATION_CONTRACT "notification"
 
