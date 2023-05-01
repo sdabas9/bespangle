@@ -8,7 +8,7 @@ using namespace eosio;
 #define RAM_IN_BYTES_PER_SYS_TOKEN "ramrate"
 #define MAX_CREDIT_BALANCE "maxcredits"
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata.rep"
 
 CONTRACT orgbill : public contract {
   public:
