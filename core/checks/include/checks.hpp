@@ -3,9 +3,9 @@
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CONTRACT_NAME "simplep.rep"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata.rep"
-#define CUMULATIVE_CONTRACT_NAME "aggc.rep"
+#define SIMPLEBADGE_CONTRACT_NAME "simplebadge2"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define CUMULATIVE_CONTRACT_NAME "cumulative11"
 
 CONTRACT checks : public contract {
   public:

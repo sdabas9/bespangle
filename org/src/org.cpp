@@ -268,6 +268,25 @@
     require_recipient(name(GOTCHABADGE_CONTRACT));
   }
 
+  ACTION org::simplebatch (name org, name badge, name authorizer, vector<name> to, string memo) {
+    require_auth(authorizer);
+    require_recipient(checkscontract(org));
+
+    for( auto i = 0; i < to.size(); i++ ) {
+      action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("ngivesimpl"),
+      issuesimple_args {
+        .org = org,
+        .to = to[i],
+        .badge = badge,
+        .amount = 1,
+        .memo = memo }
+      }.send();
+    }
+  }
+
   ACTION org::givesimple (name org, name badge, name authorizer, name to, string memo ) {
     require_auth(authorizer);
 
@@ -301,11 +320,6 @@
 
   }
 
-  ACTION org::ngivesimpl(name org, name to, name badge, uint8_t amount, string memo ) {
-    require_auth(get_self());
-    require_recipient(name(NOTIFICATION_CONTRACT));
-  }
-
   ACTION org::agivesimpl(name org, name to, name badge, string memo ) {
     require_auth(name(ASYNC_CONTRACT));
     action {
@@ -320,6 +334,12 @@
       .memo = memo }
     }.send();
   }
+
+  ACTION org::ngivesimpl(name org, name to, name badge, uint8_t amount, string memo ) {
+    require_auth(get_self());
+    require_recipient(name(NOTIFICATION_CONTRACT));
+  }
+
 
   ACTION org::initcasset(name org, 
     name creator,
