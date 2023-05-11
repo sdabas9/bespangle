@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORG_INTERFACE_CONTRACT "orgint.rep"
+#define ORG_INTERFACE_CONTRACT "organization"
 
 CONTRACT async : public contract {
   public:

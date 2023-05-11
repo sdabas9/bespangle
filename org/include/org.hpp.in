@@ -220,6 +220,12 @@ CONTRACT org : public contract {
       name to, 
       name badge, 
       string memo);
+    
+    ACTION simplebatch (name org, 
+      name badge, 
+      name authorizer, 
+      vector<name> to, 
+      string memo);
 
 
   private:

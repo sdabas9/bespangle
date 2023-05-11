@@ -1,15 +1,15 @@
 #include <eosio/eosio.hpp>
 #include <eosio/system.hpp>
 
-#define SIMPLEBADGE_CONTRACT "simplep.rep"
-#define GOTCHABADGE_CONTRACT "gotchap.rep"
-#define ORCHESTRATOR_CONTRACT "metadata.rep"
-#define AABADGE_CONTRACT "aabadgec.rep"
-#define CUMULATIVE_CONTRACT "aggc.rep"
-#define ROUNDS_CONTRACT "roundsc.rep"
-#define ACCOUNT_PREFERENCES_CONTRACT "userpref.rep"
-#define SERIESBADGE_CONTRACT "seriesp.rep"
-#define ASYNC_CONTRACT "async.rep"
+#define SIMPLEBADGE_CONTRACT "simplebadge2"
+#define GOTCHABADGE_CONTRACT "gotchabadge1"
+#define ORCHESTRATOR_CONTRACT "metadata2222"
+#define AABADGE_CONTRACT "aabadge11111"
+#define CUMULATIVE_CONTRACT "cumulative11"
+#define ROUNDS_CONTRACT "rounds111111"
+#define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
+#define SERIESBADGE_CONTRACT "seriesbadge1"
+#define ASYNC_CONTRACT "async1111111"
 #define CLAIMASSET_CONTRACT "claimasset11"
 #define NOTIFICATION_CONTRACT "notification"
 
@@ -219,6 +219,12 @@ CONTRACT org : public contract {
     ACTION agivesimpl(name org, 
       name to, 
       name badge, 
+      string memo);
+    
+    ACTION simplebatch (name org, 
+      name badge, 
+      name authorizer, 
+      vector<name> to, 
       string memo);
 
 

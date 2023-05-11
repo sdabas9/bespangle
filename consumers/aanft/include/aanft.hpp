@@ -5,8 +5,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing.rep"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata.rep"
+#define BILLING_CONTRACT "billing11111"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
 #define ATOMIC_ASSETS_CONTRACT "atomicassets"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"

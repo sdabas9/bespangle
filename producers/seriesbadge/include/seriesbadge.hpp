@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata.rep"
+#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
 
 CONTRACT seriesbadge : public contract {
   public:
