@@ -86,7 +86,6 @@
       name("naddfeatur"),
       orchestrator_addfeature_args {
         .org = org,
-        .badge_contract = name(SIMPLEBADGE_CONTRACT),
         .badge_name = badge,
         .notify_account = consumers[i],
         .memo = memo}
@@ -105,8 +104,7 @@
 
   }
 
-  ACTION org::naddfeatur (name org, 
-    name badge_contract, 
+  ACTION org::naddfeatur (name org,
     name badge_name, 
     name notify_account, 
     string memo) {
@@ -151,7 +149,6 @@
       name("naddfeatur"),
       orchestrator_addfeature_args {
         .org = get_self(),
-        .badge_contract = name(GOTCHABADGE_CONTRACT),
         .badge_name = badge,
         .notify_account = consumers[i],
         .memo = memo}
@@ -221,7 +218,6 @@
       name("addfeature"),
       orchestrator_addfeature_args {
         .org = get_self(),
-        .badge_contract = name(SERIESBADGE_CONTRACT),
         .badge_name = badge,
         .notify_account = consumers[i],
         .memo = memo}
@@ -373,7 +369,6 @@
       name("naddfeatur"),
       orchestrator_addfeature_args {
         .org = org,
-        .badge_contract = name(CLAIMASSET_CONTRACT),
         .badge_name = assetname,
         .notify_account = consumers[i],
         .memo = memo}

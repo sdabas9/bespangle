@@ -4,7 +4,7 @@ using namespace std;
 using namespace eosio;
 
 #define BILLING_CONTRACT "billing11111"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define ORCHESTRATOR_CONTRACT_NAME "router111111"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
 CONTRACT cumulative : public contract {
@@ -13,11 +13,10 @@ CONTRACT cumulative : public contract {
     
     [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
       name org, 
-      name badge_contract, 
       name badge_name,
       name account, 
       name from,
-      uint8_t count,
+      uint64_t count,
       string memo,
       uint64_t badge_id,  
       vector<name> notify_accounts );
@@ -37,7 +36,7 @@ CONTRACT cumulative : public contract {
       uint64_t id;
       name account;
       uint64_t badge_id;
-      uint32_t count;
+      uint64_t count;
       auto primary_key() const {return id; }
       uint128_t acc_badge_key() const {
         return ((uint128_t) account.value) << 64 | badge_id;

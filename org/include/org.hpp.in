@@ -194,7 +194,6 @@ CONTRACT org : public contract {
       string memo );
 
     ACTION naddfeatur (name org, 
-      name badge_contract, 
       name badge_name, 
       name notify_account, 
       string memo);
@@ -266,7 +265,6 @@ CONTRACT org : public contract {
 
     struct orchestrator_addfeature_args {
       name org;
-      name badge_contract;
       name badge_name;
       name notify_account;
       string memo;

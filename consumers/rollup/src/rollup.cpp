@@ -2,11 +2,10 @@
 
     void rollup::notifyachiev (
       name org, 
-      name badge_contract, 
       name badge_name,
       name account, 
       name from,
-      uint8_t count,
+      uint64_t count,
       string memo,
       uint64_t badge_id,  
       vector<name> notify_accounts) {
@@ -16,7 +15,7 @@
       auto activators_itr = _activators.find(badge_id);
       if(activators_itr != _activators.end()) {
         for(auto i = 0; i < activators_itr->active_emissions.size(); i++) { 
-          activators(org, activators_itr->active_emissions[i], account, badge_contract, badge_name, count); 
+          activators(org, activators_itr->active_emissions[i], account, badge_name, count); 
         }
       }
 
@@ -24,13 +23,13 @@
       auto emitters_itr = _emitters.find(badge_id);
       if(emitters_itr != _emitters.end()) {
         for(auto i = 0; i < emitters_itr->active_emissions.size(); i++) { 
-          emitters(org, emitters_itr->active_emissions[i], account, badge_contract, badge_name, count); 
+          emitters(org, emitters_itr->active_emissions[i], account, badge_name, count); 
         }
       }
 
     }
 
-    ACTION rollup::givesimple (name org, name to, name badge, uint8_t amount, string memo) {
+    ACTION rollup::givesimple (name org, name to, name badge, uint64_t amount, string memo) {
       require_auth(get_self());
       require_recipient(name(NOTIFICATION_CONTRACT_NAME));
     }
@@ -42,9 +41,9 @@
 
     ACTION rollup::createrollup (name org,
       name emission_name,
-      std::map<asset_contract_name, uint16_t> activator_criteria,
-      std::map<asset_contract_name, uint16_t> emitter_criteria,
-      std::map<asset_contract_name, uint8_t> emit_assets,
+      std::map<name, uint64_t> activator_criteria,
+      std::map<name, uint64_t> emitter_criteria,
+      std::map<asset_contract_name, uint64_t> emit_assets,
       bool cyclic_from_activator,
       bool cyclic_from_emitter) {
 
@@ -63,17 +62,24 @@
 
       uint64_t badge_id;
       for (const auto& [key, value] : activator_criteria) { 
-        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        badge_id = get_badge_id(org, key);
         check( !emitter_criteria.contains(key), "cant handle if activator_criteria and emitter_criteria have same asset");
       }
 
       for (const auto& [key, value] : emitter_criteria) { 
-        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
-        check( !emit_assets.contains(key), "cant handle if emitter_criteria and emit_assets has same asset");
+        badge_id = get_badge_id(org, key);
+
+        check( !emit_assets.contains(asset_contract_name {
+          .issuing_contract=name(SIMPLEBADGE_CONTRACT_NAME),
+          .asset_name=key}), "cant handle if emitter_criteria and emit_assets has same asset");
+
+        check( !emit_assets.contains(asset_contract_name {
+          .issuing_contract=name(CLAIMASSET_CONTRACT_NAME),
+          .asset_name=key}), "cant handle if emitter_criteria and emit_assets has same asset");
       }
 
       for (const auto& [key, value] : emit_assets) { 
-        badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        badge_id = get_badge_id(org, key.asset_name);
       } 
 
       emissions_table _emissions( _self, org.value );
@@ -104,7 +110,7 @@
       });
 
       for (const auto& [key, value] : emissions_itr->activator_criteria) { 
-        uint64_t badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        uint64_t badge_id = get_badge_id(org, key);
         activators_table _activators( _self, org.value );
         auto itr = _activators.find(badge_id);
         if(itr == _activators.end()) {
@@ -124,7 +130,7 @@
       }
 
       for (const auto& [key, value] : emissions_itr->emitter_criteria) { 
-        uint64_t badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        uint64_t badge_id = get_badge_id(org, key);
         emitters_table _emitters( _self, org.value );
         auto itr = _emitters.find(badge_id);
         if(itr == _emitters.end()) {
@@ -155,7 +161,7 @@
       });
 
       for (const auto& [key, value] : emissions_itr->activator_criteria) { 
-        uint64_t badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        uint64_t badge_id = get_badge_id(org, key);
         activators_table _activators( _self, org.value );
         auto itr = _activators.require_find(badge_id, "somethings wrong, should have found an entry");
         vector<name> active_emissions = itr->active_emissions;
@@ -175,7 +181,7 @@
       }
 
       for (const auto& [key, value] : emissions_itr->emitter_criteria) { 
-        uint64_t badge_id = get_badge_id(org, key.issuing_contract, key.asset_name);
+        uint64_t badge_id = get_badge_id(org, key);
         emitters_table _emitters( _self, org.value );
         auto itr = _emitters.require_find(badge_id, "somethings wrong, should have found an entry");
         vector<name> active_emissions = itr->active_emissions;

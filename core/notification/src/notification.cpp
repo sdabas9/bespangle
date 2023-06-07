@@ -6,7 +6,9 @@ void notification::ainitsimple (name org,
   string offchain_lookup_data, 
   string onchain_lookup_data, 
   string memo) {
+  
 
+  
   action {
     permission_level{get_self(), name("active")},
     name(get_self()),
@@ -35,7 +37,7 @@ ACTION notification::initsimple(name org,
 void notification::asimpleissue (name org, 
   name to, 
   name badge,
-  uint8_t amount,
+  uint64_t amount,
   string memo) {
   action {
     permission_level{get_self(), name("active")},
@@ -54,7 +56,7 @@ void notification::asimpleissue (name org,
 void notification::bsimpleissue (name org, 
   name to, 
   name badge,
-  uint8_t amount, 
+  uint64_t amount, 
   string memo) {
   
   action {
@@ -71,7 +73,7 @@ void notification::bsimpleissue (name org,
 
 }
 
-ACTION notification::givesimple(name org, name to, name badge, uint8_t amount, string memo ) {
+ACTION notification::givesimple(name org, name to, name badge, uint64_t amount, string memo ) {
   require_auth(get_self());
   require_recipient(name(SIMPLEBADGE_CONTRACT_NAME));
 }
@@ -175,7 +177,6 @@ ACTION notification::claimasset(name org,
 }
 
 void notification::aaddfeature (name org, 
-      name badge_contract,
       name badge_name,
       name notify_account,
       string memo) {
@@ -185,7 +186,6 @@ void notification::aaddfeature (name org,
     name("addfeature"),
     addfeature_args {
       .org = org,
-      .badge_contract = badge_contract,
       .badge_name = badge_name,
       .notify_account = notify_account,
       .memo = memo }
@@ -193,11 +193,11 @@ void notification::aaddfeature (name org,
 }
 
 ACTION notification::addfeature(name org, 
-      name badge_contract,
       name badge_name,
       name notify_account,
       string memo) {
   require_auth(get_self());
   require_recipient(name(ORCHESTRATOR_CONTRACT_NAME)); 
 }
+
 

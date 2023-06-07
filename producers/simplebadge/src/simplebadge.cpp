@@ -31,7 +31,7 @@
   void simplebadge::extissue (name org, 
     name to, 
     name badge,
-    uint8_t amount, 
+    uint64_t amount, 
     string memo) {
     action {
       permission_level{get_self(), name("active")},
@@ -73,7 +73,6 @@
       name("initbadge"),
       initbadge_args {
         .org = org,
-        .badge_contract = get_self(),
         .badge_name = badge,
         .offchain_lookup_data = offchain_lookup_data,
         .onchain_lookup_data = onchain_lookup_data,
@@ -84,7 +83,7 @@
   ACTION simplebadge::issue (name org, 
     name to, 
     name badge,
-    uint8_t amount, 
+    uint64_t amount, 
     string memo ) {
     require_auth(get_self());
     require_recipient(to);
@@ -107,23 +106,22 @@
           _helper_queue.push(parent_itr->parent_badges[i]);
       }
     }
-    for(auto j = 0; j < amount; j++) {
-        for (auto i = 0 ; i < all_badges.size() ; i++ ) {
-          action {
-            permission_level{get_self(), name("active")},
-            name(ORCHESTRATOR_CONTRACT_NAME),
-            name("achievement"),
-            achievement_args {
-              .org = org,
-              .badge_contract = get_self(),
-              .badge_name = all_badges[i],
-              .account = to,
-              .from = org,
-              .count = 1,
-              .memo = memo }
-          }.send();
-        }
+
+    for (auto i = 0 ; i < all_badges.size() ; i++ ) {
+      action {
+        permission_level{get_self(), name("active")},
+        name(ORCHESTRATOR_CONTRACT_NAME),
+        name("achievement"),
+        achievement_args {
+          .org = org,
+          .badge_name = all_badges[i],
+          .account = to,
+          .from = org,
+          .count = amount,
+          .memo = memo }
+      }.send();
     }
+
 
     
   }

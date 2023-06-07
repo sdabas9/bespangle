@@ -36,7 +36,6 @@ ACTION aabadge::initcoll (name org, name collection_name) {
 
   vector <FORMAT> schema_format;
   schema_format.push_back(FORMAT{.name = "name", .type = "string"});
-  schema_format.push_back(FORMAT{.name = "contract",.type = "string"});
   schema_format.push_back(FORMAT{.name = "badge",.type = "string"});
   schema_format.push_back(FORMAT{.name = "badge_id",.type = "string"});
   schema_format.push_back(FORMAT{.name = "img",.type = "string"});
@@ -57,14 +56,13 @@ ACTION aabadge::initcoll (name org, name collection_name) {
 
 void aabadge::notifyinit(
     name org,
-    name badge_contract,
     name badge_name,
     name notify_account,
     string memo, 
     uint64_t badge_id, 
     string offchain_lookup_data,
     string onchain_lookup_data,
-    uint32_t rarity_counts) {
+    uint64_t rarity_counts) {
       
   ATTRIBUTE_MAP mdata = {};
   aacollection_table _aacollection (_self, _self.value);
@@ -80,7 +78,6 @@ void aabadge::notifyinit(
 
   mdata["badge"] = string(badge_name.to_string());
   mdata["badge_id"] = to_string(badge_id);
-  mdata["contract"] = string(badge_contract.to_string());
   mdata["img"] = ipfs_image;
   mdata["name"] = display_name;
   mdata["offchain_lookup_data"] = offchain_lookup_data;
@@ -136,11 +133,10 @@ void aabadge::updatebadge(
 }
 
 void aabadge::notifyachiev (name org, 
-    name badge_contract, 
     name badge_name,
     name account, 
     name from,
-    uint8_t count,
+    uint64_t count,
     string memo,
     uint64_t badge_id,  
     vector<name> notify_accounts) {

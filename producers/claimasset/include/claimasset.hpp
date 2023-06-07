@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define ORCHESTRATOR_CONTRACT_NAME "router111111"
 #define NOTIFICATION_CONTRACT_NAME "notification"
 #define NOTIFICATION_CONTRACT_CREATE NOTIFICATION_CONTRACT_NAME"::initcasset"
 #define NOTIFICATION_CONTRACT_ADD_CLAIMER NOTIFICATION_CONTRACT_NAME"::addclaimer"

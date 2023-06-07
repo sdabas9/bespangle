@@ -1,11 +1,11 @@
 #include <eosio/eosio.hpp>
 #include <eosio/system.hpp>
 
-#define SIMPLEBADGE_CONTRACT "simplebadge2"
+#define SIMPLEBADGE_CONTRACT "basicissue11"
 #define GOTCHABADGE_CONTRACT "gotchabadge1"
-#define ORCHESTRATOR_CONTRACT "metadata2222"
+#define ORCHESTRATOR_CONTRACT "router111111"
 #define AABADGE_CONTRACT "aabadge11111"
-#define CUMULATIVE_CONTRACT "cumulative11"
+#define CUMULATIVE_CONTRACT "accounting11"
 #define ROUNDS_CONTRACT "rounds111111"
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
 #define SERIESBADGE_CONTRACT "seriesbadge1"
@@ -194,7 +194,6 @@ CONTRACT org : public contract {
       string memo );
 
     ACTION naddfeatur (name org, 
-      name badge_contract, 
       name badge_name, 
       name notify_account, 
       string memo);
@@ -266,7 +265,6 @@ CONTRACT org : public contract {
 
     struct orchestrator_addfeature_args {
       name org;
-      name badge_contract;
       name badge_name;
       name notify_account;
       string memo;
