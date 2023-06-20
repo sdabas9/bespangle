@@ -1,11 +1,10 @@
 #include <cumulative.hpp>
 
-void cumulative::notifyachiev (name org, 
-    name badge_contract, 
+void cumulative::notifyachiev (name org,
     name badge_name,
     name account, 
     name from,
-    uint8_t count,
+    uint64_t count,
     string memo,
     uint64_t badge_id,  
     vector<name> notify_accounts) {

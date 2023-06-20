@@ -24,7 +24,7 @@ CONTRACT simplebadge : public contract {
     [[eosio::on_notify(SIMPLE_BADGE_ISSUANCE_NOTIFICATION)]] void extissue (name org, 
       name to, 
       name badge,
-      uint8_t amount, 
+      uint64_t amount, 
       string memo);
 
     ACTION create (name org, 
@@ -34,7 +34,7 @@ CONTRACT simplebadge : public contract {
       string onchain_lookup_data, 
       string memo);
 
-    ACTION issue (name org, name to, name badge, uint8_t amount, string memo );
+    ACTION issue (name org, name to, name badge, uint64_t amount, string memo );
 
 
   private:
@@ -58,23 +58,21 @@ CONTRACT simplebadge : public contract {
       name org;
       name to;
       name badge; 
-      uint8_t amount;
+      uint64_t amount;
       string memo;
     };
 
     struct achievement_args {
       name org;
-      name badge_contract;
       name badge_name;
       name account;
       name from;
-      uint8_t count;
+      uint64_t count;
       string memo;
     };
 
     struct initbadge_args {
-      name org; 
-      name badge_contract; 
+      name org;
       name badge_name;
       string offchain_lookup_data; 
       string onchain_lookup_data; 

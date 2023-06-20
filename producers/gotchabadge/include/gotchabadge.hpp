@@ -4,7 +4,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define ORCHESTRATOR_CONTRACT_NAME "router111111"
 
 CONTRACT gotchabadge : public contract {
   public:

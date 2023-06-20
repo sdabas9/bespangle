@@ -3,21 +3,21 @@
 using namespace std;
 using namespace eosio;
 
-#define ORG_INTERFACE_CONTRACT_NAME "organization"
-#define ROLLUP_CONTRACT_NAME "rollup111111"
-#define SIMPLEBADGE_CONTRACT_NAME "simplebadge2"
+#define ORG_INTERFACE_CONTRACT_NAME "interface111"
+#define ANDEMITTER_CONTRACT_NAME "andemitter11"
+#define SIMPLEBADGE_CONTRACT_NAME "basicissue11"
 #define CLAIMASSET_CONTRACT_NAME "claimasset11"
-#define ORCHESTRATOR_CONTRACT_NAME "metadata2222"
+#define ORCHESTRATOR_CONTRACT_NAME "router111111"
 
 // initsimple notifications
 #define ORG_INTERFACE_SIMPLE_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ninitsimpl"
 
 // simple issue notifications
 #define ORG_INTERFACE_SIMPLE_ISSUE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ngivesimpl"
-#define ROLLUP_SIMPLE_ISSUE_NOTIFICATION ROLLUP_CONTRACT_NAME"::givesimple"
+#define ANDEMITTER_SIMPLE_ISSUE_NOTIFICATION ANDEMITTER_CONTRACT_NAME"::givesimple"
 
 // add claimer notification
-#define ROLLUP_ADD_CLAIMER_NOTIFICATION ROLLUP_CONTRACT_NAME"::addclaimer"
+#define ANDEMITTER_ADD_CLAIMER_NOTIFICATION ANDEMITTER_CONTRACT_NAME"::addclaimer"
 #define ORG_INTERFACE_ADD_CLAIMER_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::naddclaime"
 
 // create claimasset notification
@@ -52,20 +52,20 @@ CONTRACT notification : public contract {
     [[eosio::on_notify(ORG_INTERFACE_SIMPLE_ISSUE_NOTIFICATION)]] void asimpleissue (name org, 
       name to, 
       name badge,
-      uint8_t amount,
+      uint64_t amount,
       string memo);
       
-    [[eosio::on_notify(ROLLUP_SIMPLE_ISSUE_NOTIFICATION)]] void bsimpleissue (name org, 
+    [[eosio::on_notify(ANDEMITTER_SIMPLE_ISSUE_NOTIFICATION)]] void bsimpleissue (name org, 
       name to, 
       name badge,
-      uint8_t amount, 
+      uint64_t amount, 
       string memo);
     
-    ACTION givesimple(name org, name to, name badge, uint8_t amount, string memo );
+    ACTION givesimple(name org, name to, name badge, uint64_t amount, string memo );
 
 
     
-    [[eosio::on_notify(ROLLUP_ADD_CLAIMER_NOTIFICATION)]] void aaddclaimer (name org, 
+    [[eosio::on_notify(ANDEMITTER_ADD_CLAIMER_NOTIFICATION)]] void aaddclaimer (name org, 
       name account, 
       name assetname, 
       uint64_t account_cap,
@@ -111,19 +111,16 @@ CONTRACT notification : public contract {
 
 
 
-    [[eosio::on_notify(ORG_INTERFACE_ADD_FEATURE_NOTIFICATION)]] void aaddfeature (name org, 
-      name badge_contract,
+    [[eosio::on_notify(ORG_INTERFACE_ADD_FEATURE_NOTIFICATION)]] void aaddfeature (name org,
       name badge_name,
       name notify_account,
       string memo);
 
-    ACTION addfeature(name org, 
-      name badge_contract,
+    ACTION addfeature(name org,
       name badge_name,
       name notify_account,
       string memo);
 
-      
 
   private:
 
@@ -140,7 +137,7 @@ CONTRACT notification : public contract {
       name org;
       name to;
       name badge; 
-      uint8_t amount;
+      uint64_t amount;
       string memo;
     };
 
@@ -162,7 +159,6 @@ CONTRACT notification : public contract {
 
     struct addfeature_args {
       name org;
-      name badge_contract;
       name badge_name;
       name notify_account;
       string memo;

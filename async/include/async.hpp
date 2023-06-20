@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORG_INTERFACE_CONTRACT "organization"
+#define ORG_INTERFACE_CONTRACT "interface111"
 
 CONTRACT async : public contract {
   public:

@@ -205,3 +205,63 @@ cleos -u http://jungle4.cryptolions.io push transaction '{
     }
   ]
 }'
+
+
+
+
+
+          {
+            "key": {
+              "issuing_contract": "basicissue11",
+              "asset_name": "par.r"
+            },
+            "value": 2
+          },
+          {
+            "key": {
+              "issuing_contract": "basicissue11",
+              "asset_name": "res.r"
+            },
+            "value": 5
+          }
+
+
+
+
+
+  cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "andemitter11",
+      "name": "newemission",
+      "data": {
+        "org": "daonumber111",
+        "emission_name": "res.m.e",
+        "emitter_criteria": [
+          {
+            "key": "res.m",
+            "value": 10
+          }
+        ],
+        "emit_assets": [
+          {
+            "key": {
+              "issuing_contract": "basicissue11",
+              "asset_name": "res.r"
+            },
+            "value": 1
+          }
+        ],
+        "cyclic": true
+      },
+      "authorization": [
+        {
+          "actor": "andemitter11",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'

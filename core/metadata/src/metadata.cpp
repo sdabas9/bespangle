@@ -16,14 +16,13 @@ ACTION metadata::isrecognized (name org, name contract) {
   check(itr != _authorized_contracts.end(), "<contract> is not recognized for <org>");
 }
 
-ACTION metadata::initbadge (name org, name badge_contract, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_authorization(org, badge_contract);
-  init(org, badge_contract, badge_name, offchain_lookup_data, onchain_lookup_data, memo);
+ACTION metadata::initbadge (name org, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+  check_authorization(org);
+  init(org, badge_name, offchain_lookup_data, onchain_lookup_data, memo);
 
 }
 
 void metadata::naddfeatur (name org, 
-  name badge_contract,
   name badge_name,
   name notify_account,
   string memo) {
@@ -34,7 +33,6 @@ void metadata::naddfeatur (name org,
     name("addfeature"),
     local_addfeature_args {
       .org = org,
-      .badge_contract = badge_contract,
       .badge_name = badge_name,
       .notify_account = notify_account,
       .memo = memo
@@ -42,22 +40,21 @@ void metadata::naddfeatur (name org,
   }.send();
 }
 
-ACTION metadata::addfeature (name org, name badge_contract, name badge_name, name notify_account, string memo) {
+ACTION metadata::addfeature (name org, name badge_name, name notify_account, string memo) {
   require_auth(get_self());
   
   badge_table _badge( _self, org.value );
-  auto contract_badge_index = _badge.get_index<name("contractbadge")>();
-  uint128_t contract_badge_key = ((uint128_t) badge_contract.value) << 64 | badge_name.value;
-  auto contract_badge_iterator = contract_badge_index.find (contract_badge_key);
-  check(contract_badge_iterator != contract_badge_index.end(), "<contractname>,<action name> : <org> <contract> <badge> not found");
+  auto badge_index = _badge.get_index<name("badgename")>();
+  auto badge_iterator = badge_index.find (badge_name.value);
+  check(badge_iterator != badge_index.end() && badge_iterator->badge_name == badge_name, "<action name> : <org> <contract> <badge> not found");
   
   vector<name> new_notify_accounts ;
-  for( auto i = 0; i < contract_badge_iterator->notify_accounts.size(); i++) {
-    check(notify_account != contract_badge_iterator->notify_accounts[i], "<thiscontractname>,<action name> : <contract> <badge> is already ");
-    new_notify_accounts.push_back(contract_badge_iterator->notify_accounts[i]);
+  for( auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
+    check(notify_account != badge_iterator->notify_accounts[i], "<thiscontractname>,<action name> : <contract> <badge> is already ");
+    new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
   }
   new_notify_accounts.push_back (notify_account);
-  contract_badge_index.modify(contract_badge_iterator, get_self(), [&](auto& row){
+  badge_index.modify(badge_iterator, get_self(), [&](auto& row){
     row.notify_accounts = new_notify_accounts;
   });
   // image
@@ -68,14 +65,13 @@ ACTION metadata::addfeature (name org, name badge_contract, name badge_name, nam
     name("addnotify"),
     downstream_notify_args {
       .org = org,
-      .badge_contract = contract_badge_iterator->badge_contract,
-      .badge_name = contract_badge_iterator->badge_name,
+      .badge_name = badge_iterator->badge_name,
       .notify_account = notify_account,
       .memo = memo,
-      .badge_id = contract_badge_iterator->badge_id,
-      .offchain_lookup_data = contract_badge_iterator->offchain_lookup_data,
-      .onchain_lookup_data = contract_badge_iterator->onchain_lookup_data,
-      .rarity_counts = contract_badge_iterator->rarity_counts
+      .badge_id = badge_iterator->badge_id,
+      .offchain_lookup_data = badge_iterator->offchain_lookup_data,
+      .onchain_lookup_data = badge_iterator->onchain_lookup_data,
+      .rarity_counts = badge_iterator->rarity_counts
       }
   }.send();
 
@@ -83,34 +79,32 @@ ACTION metadata::addfeature (name org, name badge_contract, name badge_name, nam
 
 ACTION metadata::addnotify(
   name org,
-  name badge_contract,
   name badge_name,
   name notify_account,
   string memo, 
   uint64_t badge_id, 
   string offchain_lookup_data,
   string onchain_lookup_data,
-  uint32_t rarity_counts) {
+  uint64_t rarity_counts) {
     require_auth(get_self());
     require_recipient (notify_account); 
 }
 
-ACTION metadata::delfeature (name org, name badge_contract, name badge_name, name notify_account, string memo) {
+ACTION metadata::delfeature (name org, name badge_name, name notify_account, string memo) {
   require_auth(org);
   
   badge_table _badge( _self, org.value );
-  auto contract_badge_index = _badge.get_index<name("contractbadge")>();
-  uint128_t contract_badge_key = ((uint128_t) badge_contract.value) << 64 | badge_name.value;
-  auto contract_badge_iterator = contract_badge_index.find (contract_badge_key);
-  check(contract_badge_iterator != contract_badge_index.end(), "<contractname>,<action name> : <org> <contract> <badge> not found");
+  auto badge_index = _badge.get_index<name("badgename")>();
+  auto badge_iterator = badge_index.find (badge_name.value);
+  check(badge_iterator != badge_index.end() && badge_iterator->badge_name == badge_name, "<action name> : <org> <contract> <badge> not found");
 
   vector<name> new_notify_accounts ;
-  for( auto i = 0; i < contract_badge_iterator->notify_accounts.size(); i++) {
-    if(notify_account != contract_badge_iterator->notify_accounts[i]) {
-      new_notify_accounts.push_back(contract_badge_iterator->notify_accounts[i]);
+  for( auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
+    if(notify_account != badge_iterator->notify_accounts[i]) {
+      new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
     }       
   }
-  contract_badge_index.modify(contract_badge_iterator, get_self(), [&](auto& row){
+  badge_index.modify(badge_iterator, get_self(), [&](auto& row){
     row.notify_accounts = new_notify_accounts;
   });
   action {
@@ -119,44 +113,41 @@ ACTION metadata::delfeature (name org, name badge_contract, name badge_name, nam
     name("delnotify"),
     downstream_notify_args {
       .org = org,
-      .badge_contract = contract_badge_iterator->badge_contract,
-      .badge_name = contract_badge_iterator->badge_name,
+      .badge_name = badge_iterator->badge_name,
       .notify_account = notify_account,
       .memo = memo,
-      .badge_id = contract_badge_iterator->badge_id,
-      .offchain_lookup_data = contract_badge_iterator->offchain_lookup_data,
-      .onchain_lookup_data = contract_badge_iterator->onchain_lookup_data,
-      .rarity_counts = contract_badge_iterator->rarity_counts
+      .badge_id = badge_iterator->badge_id,
+      .offchain_lookup_data = badge_iterator->offchain_lookup_data,
+      .onchain_lookup_data = badge_iterator->onchain_lookup_data,
+      .rarity_counts = badge_iterator->rarity_counts
       }
   }.send();
 }
 
 ACTION metadata::delnotify( 
   name org,
-  name badge_contract,
   name badge_name,
   name notify_account,
   string memo, 
   uint64_t badge_id, 
   string offchain_lookup_data,
   string onchain_lookup_data,
-  uint32_t rarity_counts) {
+  uint64_t rarity_counts) {
     require_auth(get_self());
     require_recipient (notify_account); 
 }
 
-ACTION metadata::achievement (name org, name badge_contract, name badge_name, name account, name from, uint8_t count, string memo) {
-  check_authorization (org, badge_contract);
+ACTION metadata::achievement (name org, name badge_name, name account, name from, uint64_t count, string memo) {
+  check_authorization (org);
   //check_account_prefs (org, account);
   
   badge_table _badge( _self, org.value );
-  auto contract_badge_index = _badge.get_index<name("contractbadge")>();
-  uint128_t contract_badge_key = ((uint128_t) badge_contract.value) << 64 | badge_name.value;
-  auto contract_badge_iterator = contract_badge_index.find (contract_badge_key);
+  auto badge_index = _badge.get_index<name("badgename")>();
+  auto badge_iterator = badge_index.find (badge_name.value);
 
-  check(contract_badge_iterator != contract_badge_index.end(), "<contractname>,<action name> : <org> <contract> <badge> not found");
+  check(badge_iterator != badge_index.end() && badge_iterator->badge_name == badge_name, "<contractname>,<action name> : <org> <contract> <badge> not found");
  
-  contract_badge_index.modify(contract_badge_iterator, get_self(), [&](auto& row){
+  badge_index.modify(badge_iterator, get_self(), [&](auto& row){
     row.rarity_counts = row.rarity_counts + count;
   });
    
@@ -166,14 +157,13 @@ ACTION metadata::achievement (name org, name badge_contract, name badge_name, na
     name("notifyachiev"),
     notifyachievement_args {
       .org = org,
-      .badge_contract = badge_contract,
       .badge_name = badge_name,
       .account = account,
       .from = from,
       .count = count,
       .memo = memo,
-      .badge_id = contract_badge_iterator->badge_id,
-      .notify_accounts = contract_badge_iterator->notify_accounts}
+      .badge_id = badge_iterator->badge_id,
+      .notify_accounts = badge_iterator->notify_accounts}
   }.send();
 
   //deduct_platform_fees (org);
@@ -181,11 +171,10 @@ ACTION metadata::achievement (name org, name badge_contract, name badge_name, na
 }
 
 ACTION metadata::notifyachiev (name org, 
-  name badge_contract, 
   name badge_name,
   name account, 
   name from,
-  uint8_t count,
+  uint64_t count,
   string memo,
   uint64_t badge_id,  
   vector<name> notify_accounts) {

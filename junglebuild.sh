@@ -1,21 +1,21 @@
 #!/bin/sh
 
-ORCHESTRATOR_CONTRACT="metadata2222"
+ORCHESTRATOR_CONTRACT="router111111"
 ACCOUNT_PREFERENCES_CONTRACT="userprefs111"
 BILLING_CONTRACT="billing11111"
 
-SIMPLEBADGE_CONTRACT="simplebadge2"
+SIMPLEBADGE_CONTRACT="basicissue11"
 GOTCHABADGE_CONTRACT="gotchabadge1"
 SERIESBADGE_CONTRACT="seriesbadge1"
 
 AABADGE_CONTRACT="aabadge11111"
 ATOMIC_ASSETS_CONTRACT="atomicassets"
 ROUNDS_CONTRACT="rounds111111"
-CUMULATIVE_CONTRACT="cumulative11"
+CUMULATIVE_CONTRACT="accounting11"
 AANFT_CONTRACT="aanft2222222"
-ORG_INTERFACE_CONTRACT="organization"
+ORG_INTERFACE_CONTRACT="interface111"
 ASYNC_CONTRACT="async1111111"
-ROLLUP_CONTRACT="rollup111111"
+ANDEMITTER_CONTRACT="andemitter11"
 CLAIMASSET_CONTRACT="claimasset11"
 NOTIFICATION_CONTRACT="notification"
 TAP_CONTRACT="tap111111111"
@@ -39,7 +39,7 @@ eosio-cpp -abigen -I ./include -R ./resource -contract orgbill -o orgbill.wasm s
 cd ../..
 
 cd core/notification
-cmake . -DORG_INTERFACE_CONTRACT_NAME=$ORG_INTERFACE_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DROLLUP_CONTRACT_NAME=$ROLLUP_CONTRACT -DCLAIMASSET_CONTRACT_NAME=$CLAIMASSET_CONTRACT
+cmake . -DORG_INTERFACE_CONTRACT_NAME=$ORG_INTERFACE_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DANDEMITTER_CONTRACT_NAME=$ANDEMITTER_CONTRACT -DCLAIMASSET_CONTRACT_NAME=$CLAIMASSET_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract notification -o notification.wasm src/notification.cpp
 cd ../..
 
@@ -88,9 +88,9 @@ cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DBILLING_CONTRACT=$
 eosio-cpp -abigen -I ./include -R ./resource -contract aanft -o aanft.wasm src/aanft.cpp
 cd ../..
 
-cd consumers/rollup
+cd consumers/andemitter
 cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DSIMPLEBADGE_CONTRACT_NAME=$SIMPLEBADGE_CONTRACT -DCLAIMASSET_CONTRACT_NAME=$CLAIMASSET_CONTRACT -DNOTIFICATION_CONTRACT_NAME=$NOTIFICATION_CONTRACT
-eosio-cpp -abigen -I ./include -R ./resource -contract rollup -o rollup.wasm src/rollup.cpp
+eosio-cpp -abigen -I ./include -R ./resource -contract andemitter -o andemitter.wasm src/andemitter.cpp
 cd ../..
 
 cd consumers/tap
@@ -111,8 +111,8 @@ cd ..
 cleos -u $CLEOS_URL set contract $ORCHESTRATOR_CONTRACT core/metadata metadata.wasm metadata.abi -p $ORCHESTRATOR_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $ORCHESTRATOR_CONTRACT active --add-code -p $ORCHESTRATOR_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $ACCOUNT_PREFERENCES_CONTRACT core/userprefs userprefs.wasm userprefs.abi -p $ACCOUNT_PREFERENCES_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $ACCOUNT_PREFERENCES_CONTRACT active --add-code -p $ACCOUNT_PREFERENCES_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $ACCOUNT_PREFERENCES_CONTRACT core/userprefs userprefs.wasm userprefs.abi -p $ACCOUNT_PREFERENCES_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $ACCOUNT_PREFERENCES_CONTRACT active --add-code -p $ACCOUNT_PREFERENCES_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $BILLING_CONTRACT core/orgbill orgbill.wasm orgbill.abi -p $BILLING_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $BILLING_CONTRACT active --add-code -p $BILLING_CONTRACT@active
@@ -120,41 +120,41 @@ cleos -u $CLEOS_URL set account permission $BILLING_CONTRACT active --add-code -
 cleos -u $CLEOS_URL set contract $SIMPLEBADGE_CONTRACT producers/simplebadge simplebadge.wasm simplebadge.abi -p $SIMPLEBADGE_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $SIMPLEBADGE_CONTRACT active --add-code -p $SIMPLEBADGE_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $GOTCHABADGE_CONTRACT producers/gotchabadge gotchabadge.wasm gotchabadge.abi -p $GOTCHABADGE_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $GOTCHABADGE_CONTRACT active --add-code -p $GOTCHABADGE_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $GOTCHABADGE_CONTRACT producers/gotchabadge gotchabadge.wasm gotchabadge.abi -p $GOTCHABADGE_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $GOTCHABADGE_CONTRACT active --add-code -p $GOTCHABADGE_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $SERIESBADGE_CONTRACT producers/seriesbadge seriesbadge.wasm seriesbadge.abi -p $SERIESBADGE_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $SERIESBADGE_CONTRACT active --add-code -p $SERIESBADGE_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $SERIESBADGE_CONTRACT producers/seriesbadge seriesbadge.wasm seriesbadge.abi -p $SERIESBADGE_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $SERIESBADGE_CONTRACT active --add-code -p $SERIESBADGE_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $AABADGE_CONTRACT consumers/aabadge aabadge.wasm aabadge.abi -p $AABADGE_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $AABADGE_CONTRACT active --add-code -p $AABADGE_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $AANFT_CONTRACT consumers/aanft aanft.wasm aanft.abi -p $AANFT_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $AANFT_CONTRACT active --add-code -p $AANFT_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $AANFT_CONTRACT consumers/aanft aanft.wasm aanft.abi -p $AANFT_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $AANFT_CONTRACT active --add-code -p $AANFT_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $CUMULATIVE_CONTRACT consumers/cumulative cumulative.wasm cumulative.abi -p $CUMULATIVE_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $CUMULATIVE_CONTRACT active --add-code -p $CUMULATIVE_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $ROUNDS_CONTRACT consumers/rounds rounds.wasm rounds.abi -p $ROUNDS_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $ROUNDS_CONTRACT active --add-code -p $ROUNDS_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $ROUNDS_CONTRACT consumers/rounds rounds.wasm rounds.abi -p $ROUNDS_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $ROUNDS_CONTRACT active --add-code -p $ROUNDS_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $ORG_INTERFACE_CONTRACT org org.wasm org.abi -p $ORG_INTERFACE_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $ORG_INTERFACE_CONTRACT active --add-code -p $ORG_INTERFACE_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $ASYNC_CONTRACT async async.wasm async.abi -p $ASYNC_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $ASYNC_CONTRACT active --add-code -p $ASYNC_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $ASYNC_CONTRACT async async.wasm async.abi -p $ASYNC_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $ASYNC_CONTRACT active --add-code -p $ASYNC_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $CLAIMASSET_CONTRACT producers/claimasset claimasset.wasm claimasset.abi -p $CLAIMASSET_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $CLAIMASSET_CONTRACT active --add-code -p $CLAIMASSET_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $CLAIMASSET_CONTRACT producers/claimasset claimasset.wasm claimasset.abi -p $CLAIMASSET_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $CLAIMASSET_CONTRACT active --add-code -p $CLAIMASSET_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $NOTIFICATION_CONTRACT core/notification notification.wasm notification.abi -p $NOTIFICATION_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $NOTIFICATION_CONTRACT active --add-code -p $NOTIFICATION_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $ROLLUP_CONTRACT consumers/rollup rollup.wasm rollup.abi -p $ROLLUP_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $ROLLUP_CONTRACT active --add-code -p $ROLLUP_CONTRACT@active
+cleos -u $CLEOS_URL set contract $ANDEMITTER_CONTRACT consumers/andemitter andemitter.wasm andemitter.abi -p $ANDEMITTER_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $ANDEMITTER_CONTRACT active --add-code -p $ANDEMITTER_CONTRACT@active
 
-cleos -u $CLEOS_URL set contract $TAP_CONTRACT consumers/tap tap.wasm tap.abi -p $TAP_CONTRACT@active
-cleos -u $CLEOS_URL set account permission $TAP_CONTRACT active --add-code -p $TAP_CONTRACT@active
+#cleos -u $CLEOS_URL set contract $TAP_CONTRACT consumers/tap tap.wasm tap.abi -p $TAP_CONTRACT@active
+#cleos -u $CLEOS_URL set account permission $TAP_CONTRACT active --add-code -p $TAP_CONTRACT@active
 
 cleos -u $CLEOS_URL set contract $CHECKS_CONTRACT core/checks checks.wasm checks.abi -p $CHECKS_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $CHECKS_CONTRACT active --add-code -p $CHECKS_CONTRACT@active
