@@ -2,7 +2,6 @@
 
   void tap::notifyinit(
     name org,
-    name badge_contract,
     name badge_name,
     name notify_account,
     string memo, 
@@ -29,23 +28,25 @@
   }
 
   void tap::notifyachiev (
-    name org, 
-    name badge_contract, 
+    name org,
     name badge_name,
     name account, 
     name from,
-    uint8_t count,
+    uint64_t count,
     string memo,
     uint64_t badge_id,  
     vector<name> notify_accounts) {
 
     tapstatus_table _tapstatus( _self, org.value );
-    auto itr = _tapstatus.require_find(badge_id, "Somethings wrong, should not have reached here");
+    auto itr = _tapstatus.require_find(badge_id, "tap contract: Somethings wrong, should not have reached here");
     
     check(itr->pause == false, "Distribution paused");
     
     if(itr->supply_bound) {
       check(itr->current_supply + count <= itr->supplycap, "Exceeded max supply");
+      _tapstatus.modify(itr, get_self(), [&](auto& row){
+        row.current_supply = row.current_supply + count;
+      });
     } 
     
     if(itr->time_bound) {
@@ -54,9 +55,7 @@
       check(current_time < itr->end_time, "Distribution ended");
     }
 
-    _tapstatus.modify(itr, get_self(), [&](auto& row){
-      row.current_supply = row.current_supply + count;
-    });
+
 
 
     // check if paused
@@ -64,9 +63,9 @@
     // check if out of supply range
   }
 
-  ACTION tap::pause(name org, name issuing_contract, name assetname) {
+  ACTION tap::pause(name org, name assetname) {
     require_auth(org);
-    uint64_t badge_id = get_badge_id(org, issuing_contract, assetname);
+    uint64_t badge_id = get_badge_id(org, assetname);
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "<tap> consumer is not set for <issuing_contract><assetname>");
     
@@ -76,9 +75,9 @@
   }
 
 
-  ACTION tap::resume(name org, name issuing_contract, name assetname) {
+  ACTION tap::resume(name org, name assetname) {
     require_auth(org);
-    uint64_t badge_id = get_badge_id(org, issuing_contract, assetname);
+    uint64_t badge_id = get_badge_id(org, assetname);
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "<tap> consumer is not set for <issuing_contract><assetname>");
     
@@ -87,9 +86,9 @@
     });
   }
 
-  ACTION tap::timebound(name org, name issuing_contract, name assetname, time_point_sec start_time, time_point_sec end_time) {
+  ACTION tap::timebound(name org, name assetname, time_point_sec start_time, time_point_sec end_time) {
     require_auth(org);
-    uint64_t badge_id = get_badge_id(org, issuing_contract, assetname);
+    uint64_t badge_id = get_badge_id(org, assetname);
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "<tap> consumer is not set for <issuing_contract><assetname>");
     _tapstatus.modify(itr, get_self(), [&](auto& row){
@@ -99,9 +98,9 @@
     });
   }
 
-  ACTION tap::removetb(name org, name issuing_contract, name assetname) {
+  ACTION tap::removetb(name org, name assetname) {
     require_auth(org);
-    uint64_t badge_id = get_badge_id(org, issuing_contract, assetname);
+    uint64_t badge_id = get_badge_id(org, assetname);
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "<tap> consumer is not set for <issuing_contract><assetname>");
     
@@ -110,9 +109,9 @@
     });
   }
 
-  ACTION tap::supplybound(name org, name issuing_contract, name assetname, uint64_t supplycap) {
+  ACTION tap::supplybound(name org, name assetname, uint64_t supplycap) {
     require_auth(org);
-    uint64_t badge_id = get_badge_id(org, issuing_contract, assetname);
+    uint64_t badge_id = get_badge_id(org, assetname);
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "<tap> consumer is not set for <issuing_contract><assetname>");
     _tapstatus.modify(itr, get_self(), [&](auto& row){
@@ -121,9 +120,9 @@
     });
   }
 
-  ACTION tap::removesb(name org, name issuing_contract, name assetname) {
+  ACTION tap::removesb(name org, name assetname) {
     require_auth(org);
-    uint64_t badge_id = get_badge_id(org, issuing_contract, assetname);
+    uint64_t badge_id = get_badge_id(org, assetname);
     tapstatus_table _tapstatus( _self, org.value );
     auto itr = _tapstatus.require_find(badge_id, "<tap> consumer is not set for <issuing_contract><assetname>");
     

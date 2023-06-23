@@ -3,125 +3,181 @@
 
 using json = nlohmann::json;
 
-    // todo 
-    // 1) check for cycles to throw better error message, c.
-    // 2) replace values in error messages.
-    // 3) put profiles contract name in a global constant
-    // 4) add action to update image json.
-    // 5) add action to update details json.
-    // []
-    // []
-    // []
+void seriesbadge::extcseries(name org, name series) {
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("createseries"),
+    createseries_args {
+      .org = org,
+      .series = series }
+  }.send();  
+}
 
-  // parent -
-  // family - 
-  // limit - 
-  // action1, action2, action3
-  // 
-  // issue (badge, from, to)
-  // hasauth (badge, from, to)
-  // rules (onetime, recurring)
-  // 
+void seriesbadge::extcnext(name org, name series, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("createnext"),
+    createnext_args {
+      .org = org,
+      .series = series,
+      .badge = badge,
+      .offchain_lookup_data = offchain_lookup_data,
+      .onchain_lookup_data = onchain_lookup_data,
+      .memo = memo }
+  }.send();  
+}
 
+void seriesbadge::extilatest(name org, name series, name to, uint64_t count, string memo) {
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("issuelatest"),
+    issuelatest_args {
+      .org = org,
+      .series = series,
+      .to = to,
+      .count = count,
+      .memo = memo }
+  }.send();    
+}
 
-  ACTION seriesbadge::define(name org, name family) {
-    require_auth(org);
-    metadata_table _metadata (_self, org.value);
-    auto metadata_itr = _metadata.find(family.value);
+void seriesbadge::extiany(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo) {
+  action {
+    permission_level{get_self(), name("active")},
+    name(get_self()),
+    name("issueany"),
+    issueany_args {
+      .org = org,
+      .series = series,
+      .seq_id = seq_id,
+      .to = to,
+      .count = count,
+      .memo = memo }
+  }.send();      
+}
 
-    check(metadata_itr == _metadata.end(), "<contractname><actionname> : <family> already exists");
-    
-    action {
-      permission_level{get_self(), name("active")},
-      name(ORCHESTRATOR_CONTRACT_NAME),
-      name("isrecognized"),
-      isrecognized_args {
-        .org = org,
-        .contract = get_self()}
-    }.send();
-    
-    _metadata.emplace(org, [&](auto& row) {
-      row.family = family;
-      row.seq_id = 0;
-    });
-  }
+ACTION seriesbadge::createseries(name org, name series) {
 
-  ACTION seriesbadge::createnext(name org, name family, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-    require_auth(org);
-    metadata_table _metadata (_self, org.value);
-    auto metadata_itr = _metadata.find(family.value);
-    check(metadata_itr != _metadata.end(), "<contractname><actionname> : <family> does not exist");
-    
- 
-    // insert into badge table
-    uint64_t new_seq_id = metadata_itr->seq_id + 1;
-    _metadata.modify(metadata_itr, org, [&](auto& row) {
-      row.seq_id = new_seq_id;
-    });
+  require_auth(get_self());
+  metadata_table _metadata (_self, org.value);
+  auto metadata_itr = _metadata.find(series.value);
 
-    badge_table _badge (_self, org.value);
-    auto family_badge_index = _badge.get_index<name("familybadge")>();
-    uint128_t family_badge_key = ((uint128_t) family.value) << 64 | badge.value;
-    auto family_badge_iterator = family_badge_index.find (family_badge_key);
-    check(family_badge_iterator == family_badge_index.end(), "<family> <badge> exists");
+  check(metadata_itr == _metadata.end(), "<contractname><actionname> : <series> already exists");
+      
+  _metadata.emplace(get_self(), [&](auto& row) {
+    row.series = series;
+    row.seq_id = 0;
+  });
+}
 
-    _badge.emplace(org, [&](auto& row){
-      row.id = _badge.available_primary_key();
-      row.family = family;
-      row.seq_id = new_seq_id;
-      row.badge = badge;
-    }); 
-    
-    auto _onchain_lookup_data = json::parse(onchain_lookup_data);
-    _onchain_lookup_data["_family"] = (metadata_itr->family).to_string();
-    _onchain_lookup_data["_seq_id"] = new_seq_id;
-    
-    action {
-      permission_level{get_self(), name("active")},
-      name(ORCHESTRATOR_CONTRACT_NAME),
-      name("initbadge"),
-      initbadge_args {
-        .org = org,
-        .badge_contract = get_self(),
-        .badge_name = badge,
-        .offchain_lookup_data = offchain_lookup_data,
-        .onchain_lookup_data = _onchain_lookup_data.dump(),
-        .memo = memo }
-    }.send();
-  }
+ACTION seriesbadge::createnext(name org, name series, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+  require_auth(get_self());
+  metadata_table _metadata (_self, org.value);
+  auto metadata_itr = _metadata.find(series.value);
+  check(metadata_itr != _metadata.end(), "<contractname><actionname> : <series> does not exist");
+  
 
-  ACTION seriesbadge::issuelatest(name org, name family, name to, string memo) {
-    metadata_table _metadata (_self, org.value);
-    auto metadata_itr = _metadata.find(family.value);
-    check(metadata_itr != _metadata.end(), "<family> not defined. Call define action");
-    
-    uint64_t seq_id = metadata_itr->seq_id;
-    check(seq_id != 0, "Create badge for the family.");
-    
-    badge_table _badge (_self, org.value);
-    auto family_seq_id_index = _badge.get_index<name("familyseqid")>();
-    uint128_t family_seq_id_key = ((uint128_t) seq_id) << 64 | family.value;
-    auto family_seq_id_iterator = family_seq_id_index.find (family_seq_id_key);
+  // insert into badge table
+  uint64_t new_seq_id = metadata_itr->seq_id + 1;
+  _metadata.modify(metadata_itr, get_self(), [&](auto& row) {
+    row.seq_id = new_seq_id;
+  });
 
-    name badge_name = family_seq_id_iterator->badge;
+  badge_table _badge (_self, org.value);
+  auto series_badge_index = _badge.get_index<name("seriesbadge")>();
+  uint128_t series_badge_key = ((uint128_t) series.value) << 64 | badge.value;
+  auto series_badge_iterator = series_badge_index.find (series_badge_key);
+  check(series_badge_iterator == series_badge_index.end(), "<series> <badge> exists");
 
-    // get badge name 
-    // issue id
-    require_auth(org); 
-      action {
-        permission_level{get_self(), name("active")},
-        name(ORCHESTRATOR_CONTRACT_NAME),
-        name("achievement"),
-        achievement_args {
-          .org = org,
-          .badge_contract = get_self(),
-          .badge_name = badge_name,
-          .account = to,
-          .from = org,
-          .count = 1,
-          .memo = memo }
-      }.send();
-  }
+  _badge.emplace(get_self(), [&](auto& row){
+    row.id = _badge.available_primary_key();
+    row.series = series;
+    row.seq_id = new_seq_id;
+    row.badge = badge;
+  }); 
+  
+  auto _onchain_lookup_data = json::parse(onchain_lookup_data);
+  _onchain_lookup_data["_series"] = (metadata_itr->series).to_string();
+  _onchain_lookup_data["_seq_id"] = new_seq_id;
+  
+  action {
+    permission_level{get_self(), name("active")},
+    name(ORCHESTRATOR_CONTRACT_NAME),
+    name("initbadge"),
+    initbadge_args {
+      .org = org,
+      .badge_name = badge,
+      .offchain_lookup_data = offchain_lookup_data,
+      .onchain_lookup_data = _onchain_lookup_data.dump(),
+      .memo = memo }
+  }.send();
+}
+
+ACTION seriesbadge::issuelatest(name org, name series, name to, uint64_t count, string memo) {
+  require_auth(get_self()); 
+  metadata_table _metadata (_self, org.value);
+  auto metadata_itr = _metadata.find(series.value);
+  check(metadata_itr != _metadata.end(), "<series> not defined. Call define action");
+  
+  uint64_t seq_id = metadata_itr->seq_id;
+  check(seq_id != 0, "Create badge for the series.");
+  
+  badge_table _badge (_self, org.value);
+  auto series_seq_id_index = _badge.get_index<name("seriesseqid")>();
+  uint128_t series_seq_id_key = ((uint128_t) seq_id) << 64 | series.value;
+  auto series_seq_id_iterator = series_seq_id_index.find (series_seq_id_key);
+
+  name badge_name = series_seq_id_iterator->badge;
+
+  // get badge name 
+  // issue id
+
+  action {
+    permission_level{get_self(), name("active")},
+    name(ORCHESTRATOR_CONTRACT_NAME),
+    name("achievement"),
+    achievement_args {
+      .org = org,
+      .badge_name = badge_name,
+      .account = to,
+      .from = org,
+      .count = count,
+      .memo = memo }
+  }.send();
+}
+
+ACTION seriesbadge::issueany(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo) {
+  require_auth(get_self()); 
+  metadata_table _metadata (_self, org.value);
+  auto metadata_itr = _metadata.find(series.value);
+  check(metadata_itr != _metadata.end(), "<series> not defined. Call define action");
+
+  badge_table _badge (_self, org.value);
+  auto series_seq_id_index = _badge.get_index<name("seriesseqid")>();
+  uint128_t series_seq_id_key = ((uint128_t) seq_id) << 64 | series.value;
+  auto series_seq_id_iterator = series_seq_id_index.find (series_seq_id_key);
+
+  check(series_seq_id_iterator!=series_seq_id_index.end() && 
+    series_seq_id_iterator->series==series &&
+    series_seq_id_iterator->seq_id==seq_id, "<series><seq_id> combination invalid ");
+
+  name badge_name = series_seq_id_iterator->badge;
+
+  action {
+    permission_level{get_self(), name("active")},
+    name(ORCHESTRATOR_CONTRACT_NAME),
+    name("achievement"),
+    achievement_args {
+      .org = org,
+      .badge_name = badge_name,
+      .account = to,
+      .from = org,
+      .count = count,
+      .memo = memo }
+  }.send();
+}
 
 
     
