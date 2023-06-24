@@ -8,6 +8,12 @@ using namespace eosio;
 #define SIMPLEBADGE_CONTRACT_NAME "basicissue11"
 #define CLAIMASSET_CONTRACT_NAME "claimasset11"
 #define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define SERIESBADGE_CONTRACT_NAME "seriesbadge1"
+
+#define ORG_INTERFACE_SERIES_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ncreateserie"
+#define ORG_INTERFACE_SERIES_BADGE_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ncreatenex"
+#define ORG_INTERFACE_SERIES_ISSUE_LATEST_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::nissuelates"
+#define ORG_INTERFACE_SERIES_ISSUE_ANY_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::nissuean"
 
 // initsimple notifications
 #define ORG_INTERFACE_SIMPLE_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ninitsimpl"
@@ -122,6 +128,22 @@ CONTRACT notification : public contract {
       string memo);
 
 
+
+
+
+    [[eosio::on_notify(ORG_INTERFACE_SERIES_CREATE_NOTIFICATION)]] void acreateserie(name org, name series);
+    ACTION createseries(name org, name series);
+
+    [[eosio::on_notify(ORG_INTERFACE_SERIES_BADGE_CREATE_NOTIFICATION)]] void acreatenex(name org, name series, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo);
+    ACTION createnext(name org, name series, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo);
+
+    [[eosio::on_notify(ORG_INTERFACE_SERIES_ISSUE_LATEST_NOTIFICATION)]] void aissuelates(name org, name series, name to, uint64_t count, string memo);
+    ACTION issuelatest(name org, name series, name to, uint64_t count, string memo);
+
+    [[eosio::on_notify(ORG_INTERFACE_SERIES_ISSUE_ANY_NOTIFICATION)]] void aissuean(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo);
+    ACTION issueany(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo);
+
+
   private:
 
     struct create_simplebadge_args {
@@ -168,6 +190,37 @@ CONTRACT notification : public contract {
       name org;
       name to;
       name assetname;
+      string memo;
+    };
+
+    struct createseries_args {
+      name org;
+      name series;
+    };
+
+    struct createnext_args {
+      name org;
+      name series;
+      name badge;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct issuelatest_args {
+      name org;
+      name series;
+      name to;
+      uint64_t count;
+      string memo;
+    };
+
+    struct issueany_args {
+      name org;
+      name series;
+      uint64_t seq_id;
+      name to;
+      uint64_t count;
       string memo;
     };
 };

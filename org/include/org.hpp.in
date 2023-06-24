@@ -167,18 +167,63 @@ CONTRACT org : public contract {
     
 
 
-    ACTION defineseries (name org, name creator, name family);
+    ACTION createseries (name org, 
+      name authorized, 
+      name series);
 
-    ACTION initseriesbdg (name org, name creator, 
-      name family, 
+    ACTION createnext (name org, 
+      name authorized, 
+      name series, 
       name badge, 
       string offchain_lookup_data, 
-      string onchain_lookup_data,
+      string onchain_lookup_data, 
       vector<name> consumers,
       string memo);
-    
-    ACTION givelatestsb (name org, name issuer, name family, name to, string memo);
 
+    ACTION issuelatest (name org,
+      name authorized, 
+      name series, 
+      name to, 
+      uint64_t count, 
+      string memo);
+
+    ACTION issueany (name org,
+      name authorized,
+      name series,
+      uint64_t seq_id,
+      name to,
+      uint64_t count,
+      string memo);
+    
+    ACTION serieslbatch (name org, 
+      name authorized, 
+      name series, 
+      vector<name> to, 
+      string memo);
+    
+    ACTION ncreateserie (name org, 
+      name series);
+
+    ACTION ncreatenex (name org,
+      name series, 
+      name badge, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo);
+
+    ACTION nissuelates (name org,
+      name series, 
+      name to, 
+      uint64_t count, 
+      string memo);
+
+    ACTION nissuean (name org,
+      name series,
+      uint64_t seq_id,
+      name to,
+      uint64_t count,
+      string memo);
+      
     ACTION ninitsimpl (name org,
       name badge, 
       vector<name> parent_badges,
@@ -299,27 +344,6 @@ CONTRACT org : public contract {
       string memo;
     };
 
-    struct series_createnext_args {
-      name org;
-      name family;
-      name badge;
-      string offchain_lookup_data;
-      string onchain_lookup_data;
-      string memo;
-    };
-
-    struct defineseries_args {
-      name org;
-      name family;
-    };
-
-    struct issue_latestseries_args {
-      name org;
-      name family;
-      name to;
-      string memo;
-    };
-
     struct givegotcha_args {
       name org;
       name badge;
@@ -392,6 +416,37 @@ CONTRACT org : public contract {
       name org;
       name to;
       name assetname;
+      string memo;
+    };
+
+    struct createseries_args {
+      name org;
+      name series;
+    };
+
+    struct createnext_args {
+      name org;
+      name series;
+      name badge;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct issuelatest_args {
+      name org;
+      name series;
+      name to;
+      uint64_t count;
+      string memo;
+    };
+
+    struct issueany_args {
+      name org;
+      name series;
+      uint64_t seq_id;
+      name to;
+      uint64_t count;
       string memo;
     };
 
