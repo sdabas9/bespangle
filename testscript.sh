@@ -249,10 +249,16 @@ cleos -u http://jungle4.cryptolions.io push transaction '{
           {
             "key": {
               "issuing_contract": "basicissue11",
-              "asset_name": "res.r"
+              "asset_name": "ch.r"
             },
-            "value": 1
-          }
+            "value": 3
+          }, {
+ 	"key":{
+	"issuing_contract":"basicissue11",
+	"asset_name:"trans.r"},
+	"value":2
+}	 
+ 
         ],
         "cyclic": true
       },

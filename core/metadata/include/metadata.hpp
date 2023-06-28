@@ -40,8 +40,7 @@ CONTRACT metadata : public contract {
     name org,
     name badge_name,
     name notify_accounts,
-    string memo, 
-    uint64_t badge_id,  
+    string memo,  
     string offchain_lookup_data,
     string onchain_lookup_data,
     uint64_t rarity_counts); 
@@ -56,7 +55,6 @@ CONTRACT metadata : public contract {
     name badge_name,
     name notify_accounts,
     string memo, 
-    uint64_t badge_id,
     string offchain_lookup_data,
     string onchain_lookup_data,
     uint64_t rarity_counts); 
@@ -73,8 +71,7 @@ CONTRACT metadata : public contract {
     name account, 
     name from,
     uint64_t count,
-    string memo,
-    uint64_t badge_id,  
+    string memo,  
     vector<name> notify_accounts);
 
   private:
@@ -97,7 +94,6 @@ CONTRACT metadata : public contract {
       name from;
       uint64_t count;
       string memo;
-      uint64_t badge_id;
       vector<name> notify_accounts;
     };
 
@@ -106,7 +102,6 @@ CONTRACT metadata : public contract {
       name badge_name;
       name notify_account;
       string memo;
-      uint64_t badge_id;
       string offchain_lookup_data;
       string onchain_lookup_data;
       uint64_t rarity_counts;
@@ -131,20 +126,14 @@ CONTRACT metadata : public contract {
     typedef multi_index<name("authorized"), authorized> authorized_contracts_table;
 
     TABLE badge {
-      uint64_t badge_id;
       name badge_name;
       vector<name> notify_accounts;
       string offchain_lookup_data;
       string onchain_lookup_data;
       uint64_t rarity_counts;
-      auto primary_key() const {return badge_id; }
-      uint64_t badge_key() const {
-        return badge_name.value;
-      }
+      auto primary_key() const {return badge_name.value; }
     };
-    typedef multi_index<name("badge"), badge,
-    indexed_by<name("badgename"), const_mem_fun<badge, uint64_t, &badge::badge_key>>    
-    > badge_table;
+    typedef multi_index<name("badge"), badge> badge_table;
     
     bool check_authorization (name org) {
       authorized_contracts_table _authorized_contracts( _self, org.value );
@@ -159,16 +148,14 @@ CONTRACT metadata : public contract {
 
     void init (name org, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
       badge_table _badge( _self, org.value );
-      auto badge_index = _badge.get_index<name("badgename")>();
-      auto badge_iterator = badge_index.find (badge_name.value);
-      check(badge_iterator == badge_index.end() || badge_iterator->badge_name != badge_name ,
+      auto badge_iterator = _badge.find (badge_name.value);
+      check(badge_iterator == _badge.end() ,
        "<badge> already exists for <contract> ");
       /* ipfs_hashes.push_back ( ipfs_hash {
         .key = "img",
         .value = ipfs_image
       }); */
       _badge.emplace(get_self(), [&](auto& row){
-        row.badge_id = _badge.available_primary_key();
         row.badge_name = badge_name;
         row.offchain_lookup_data = offchain_lookup_data;
         row.onchain_lookup_data = onchain_lookup_data;
