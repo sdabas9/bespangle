@@ -105,13 +105,15 @@ CONTRACT checks : public contract {
     void own_check(name org, name account ,name badge, uint64_t count) {
       uint64_t badge_id = get_badge_id(org,  badge);
       uint64_t balance = account_balance(org, account, badge_id);
-      check(balance >= count, "account does not hold enough <badge>. has only <balance>, but needs <count> to pass check");
+      check(balance >= count, "CHECK FAILED: account does not hold enough " + 
+        badge.to_string() + ". Has only " + to_string(balance) + ",  needs " + to_string(count) + " to pass check");
     }
 
     void not_own_check(name org, name account ,  name badge, uint64_t count) {
       uint64_t badge_id = get_badge_id(org, badge);
       uint64_t balance = account_balance(org, account, badge_id);
-      check(balance < count, "account has balance of <balance> for <badge>. to successfully pass check should hold less than <count>");    
+      check(balance < count, "CHECK FAILED: account has balance of " + to_string(balance) +
+      " for " + badge.to_string() + ". to successfully pass check should hold less than " + to_string(count));    
     }
 
     uint64_t latest_seq_id (name org, name series) {

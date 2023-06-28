@@ -3,10 +3,10 @@
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CONTRACT_NAME "basicissue11"
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
-#define CUMULATIVE_CONTRACT_NAME "accounting11"
-#define SERIESBADGE_CONTRACT_NAME "seriesbadge1"
+#define SIMPLEBADGE_CONTRACT_NAME "simplep.rep"
+#define ORCHESTRATOR_CONTRACT_NAME "meta.rep"
+#define CUMULATIVE_CONTRACT_NAME "aggc.rep"
+#define SERIESBADGE_CONTRACT_NAME "seriesp.rep"
 
 CONTRACT checks : public contract {
   public:
@@ -105,13 +105,15 @@ CONTRACT checks : public contract {
     void own_check(name org, name account ,name badge, uint64_t count) {
       uint64_t badge_id = get_badge_id(org,  badge);
       uint64_t balance = account_balance(org, account, badge_id);
-      check(balance >= count, "account does not hold enough <badge>. has only <balance>, but needs <count> to pass check");
+      check(balance >= count, "CHECK FAILED: account does not hold enough " + 
+        badge.to_string() + ". Has only " + to_string(balance) + ",  needs " + to_string(count) + " to pass check");
     }
 
     void not_own_check(name org, name account ,  name badge, uint64_t count) {
       uint64_t badge_id = get_badge_id(org, badge);
       uint64_t balance = account_balance(org, account, badge_id);
-      check(balance < count, "account has balance of <balance> for <badge>. to successfully pass check should hold less than <count>");    
+      check(balance < count, "CHECK FAILED: account has balance of " + to_string(balance) +
+      " for " + badge.to_string() + ". to successfully pass check should hold less than " + to_string(count));    
     }
 
     uint64_t latest_seq_id (name org, name series) {

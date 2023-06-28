@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
-#define NOTIFICATION_CONTRACT_NAME "notification"
+#define ORCHESTRATOR_CONTRACT_NAME "meta.rep"
+#define NOTIFICATION_CONTRACT_NAME "notify.rep"
 #define BILLING_CONTRACT "billing.rep"
 
 

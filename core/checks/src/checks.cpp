@@ -10,8 +10,8 @@ ACTION checks::ownnotown(name org, name account, vector<sbadges> own, vector<sba
 }
 
 ACTION checks::lookback(name org, name account, name series, uint8_t lookback, uint8_t musthave) {
-  check(musthave <= lookback, "musthave cannot be greater than lookback");
-  check(lookback > 0, "lookback should be atleast 1");
+  check(musthave <= lookback, "UNSUPPORTED INPUT: musthave cannot be greater than lookback");
+  check(lookback > 0, "UNSUPPORTED INPUT: lookback should be atleast 1");
   if(musthave == 0) {
     return;
   }
@@ -19,19 +19,26 @@ ACTION checks::lookback(name org, name account, name series, uint8_t lookback, u
   vector<uint64_t> sequences;
   sequences.push_back(last_seq_id);
   for (auto i = 0; i < lookback - 1; i++) {
-    sequences.push_back(--last_seq_id);
+    last_seq_id = last_seq_id - 1;
+    if(last_seq_id > 0) {
+      sequences.push_back(last_seq_id);
+    }
   }
   uint8_t hascount = series_own_count (org, account, series, sequences);
   if ( hascount >= musthave) {
     return;
   } else {
-    check(false, "have only <hascount>, needed <musthave>");
+    check(false, "CHECK FAILED: account has only " + to_string(hascount) + "; needed " + to_string(musthave));
   }
 
 }
 
+
+// todo call lookback action with musthave 1 and lookback 1
 ACTION checks::haslatest(name org, name account, name series) {
+
   uint64_t last_seq_id = latest_seq_id(org, series);
+  check(last_seq_id > 0, "CHECK FAILED: no badge defined in series");
   
   vector<uint64_t> sequences;
   sequences.push_back(last_seq_id);
@@ -39,7 +46,7 @@ ACTION checks::haslatest(name org, name account, name series) {
   if(hascount == 1) {
     return;
   } else {
-    check(false, "does not have the latest in series");
+    check(false, "CHECK FAILED: account does not have the latest in series");
   }
 
 }
