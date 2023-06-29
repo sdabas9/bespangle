@@ -17,6 +17,7 @@ NOTIFICATION_CONTRACT="notify.rep"
 ASYNC_CONTRACT="async1111111"
 ANDEMITTER_CONTRACT="andemitter11"
 CLAIMASSET_CONTRACT="claimasset11"
+SERIESVALIDATION="serval.rep"
 
 CLEOS_URL="https://eos.greymass.com"
 
@@ -69,6 +70,11 @@ cmake . -DSIMPLEBADGE_CONTRACT=$SIMPLEBADGE_CONTRACT -DNOTIFICATION_CONTRACT=$NO
 eosio-cpp -abigen -I ./include -R ./resource -contract org -o org.wasm src/org.cpp
 cd ..
 
+cd validations/serval
+cmake . -DORG_INTERFACE_CONTRACT=$ORG_INTERFACE_CONTRACT 
+eosio-cpp -abigen -I ./include -R ./resource -contract serval -o serval.wasm src/serval.cpp
+cd ../..
+
 
 cleos -u $CLEOS_URL set contract $ORCHESTRATOR_CONTRACT core/metadata metadata.wasm metadata.abi -p $ORCHESTRATOR_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $ORCHESTRATOR_CONTRACT active --add-code -p $ORCHESTRATOR_CONTRACT@active
@@ -102,3 +108,5 @@ cleos -u $CLEOS_URL set account permission $NOTIFICATION_CONTRACT active --add-c
 cleos -u $CLEOS_URL set contract $CHECKS_CONTRACT core/checks checks.wasm checks.abi -p $CHECKS_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $CHECKS_CONTRACT active --add-code -p $CHECKS_CONTRACT@active
 
+cleos -u $CLEOS_URL set contract $SERIESVALIDATION validations/serval serval.wasm serval.abi -p $SERIESVALIDATION@active
+cleos -u $CLEOS_URL set account permission $SERIESVALIDATION active --add-code -p $SERIESVALIDATION@active
