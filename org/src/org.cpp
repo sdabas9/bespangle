@@ -19,9 +19,61 @@
     }
   }
 
+  ACTION org::linksyschk(name org, name system_check_contract) {
+    require_auth(org);
+    availablechk_table availablechk(get_self(), get_self().value);
+    auto available_itr = availablechk.require_find(system_check_contract.value, "Unsupported system_check_contract");
+
+    
+    systemchecks_table systemchecks(get_self(), get_self().value);
+    auto itr = systemchecks.find(org.value);
+    if (itr != systemchecks.end()) {
+        systemchecks.modify(itr, get_self(), [&](auto& row) {
+            row.system_check_contracts.push_back(system_check_contract);
+        });
+    } else {
+        systemchecks.emplace(get_self(), [&](auto& row) {
+            row.org = org;
+            row.system_check_contracts.push_back(system_check_contract);
+        });
+    }
+  }
+
+  ACTION org::unlinksyschk(name org, name system_check_contract) {
+    require_auth(org);
+    systemchecks_table systemchecks(get_self(), get_self().value);
+    auto itr = systemchecks.find(org.value);
+    if (itr != systemchecks.end()) {
+        systemchecks.modify(itr, get_self(), [&](auto& row) {
+            auto it = std::find(row.system_check_contracts.begin(), row.system_check_contracts.end(), system_check_contract);
+            if (it != row.system_check_contracts.end()) {
+                row.system_check_contracts.erase(it);
+            }
+        });
+    }
+  }
+
+  ACTION org::addsyscheck(name system_check_contract) {
+    require_auth (get_self());
+    availablechk_table availablechk(get_self(), get_self().value);
+    availablechk.emplace(get_self(), [&](auto& row) {
+        row.system_check_contract = system_check_contract;
+    });
+  }
+
+  ACTION org::remsyscheck(name system_check_contract) {
+    require_auth (get_self());
+    availablechk_table availablechk(get_self(), get_self().value);
+    auto itr = availablechk.find(system_check_contract.value);
+    if (itr != availablechk.end()) {
+        availablechk.erase(itr);
+    }
+  }
+
   ACTION org::processsync (name org, name action, name authorizer) {
     require_auth(authorizer); 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
     processmode_table _processmode( get_self(), org.value);
     auto itr = _processmode.find(action.value);
     if( itr == _processmode.end()) {
@@ -39,6 +91,7 @@
   ACTION org::processasync (name org, name action, name authorizer) {
     require_auth(authorizer); 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
     processmode_table _processmode( get_self(), org.value);
     auto itr = _processmode.find(action.value);
     if( itr == _processmode.end()) {
@@ -64,6 +117,7 @@
     require_auth(creator);
 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
 
     action {
@@ -126,6 +180,7 @@
     require_auth(creator);
     
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
     
     action {
       permission_level{get_self(), name("active")},
@@ -175,6 +230,7 @@
 
     require_auth(authorized);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     action {
       permission_level{get_self(), name("active")},
@@ -190,6 +246,7 @@
     
     require_auth(authorized);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
     
     action {
       permission_level{get_self(), name("active")},
@@ -222,6 +279,7 @@
     
     require_auth(authorized);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
     
     action {
       permission_level{get_self(), name("active")},
@@ -240,6 +298,7 @@
 
     require_auth(authorized);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     action {
       permission_level{get_self(), name("active")},
@@ -258,6 +317,7 @@
   ACTION org::serieslbatch (name org, name authorized, name series, vector<name> to, string memo) {
     require_auth(authorized);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     for( auto i = 0; i < to.size(); i++ ) {
       action {
@@ -313,6 +373,7 @@
   ACTION org::givegotcha (name org, name badge, name from, name to, uint8_t amount, string memo ) {
     require_auth(from);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     action {
       permission_level{get_self(), name("active")},
@@ -337,6 +398,7 @@
   ACTION org::simplebatch (name org, name badge, name authorizer, vector<name> to, string memo) {
     require_auth(authorizer);
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     for( auto i = 0; i < to.size(); i++ ) {
       action {
@@ -358,6 +420,7 @@
     require_auth(authorizer);
 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     if(is_async(org, name("givesimple"))) {
       action {
@@ -419,6 +482,7 @@
     require_auth(creator);
 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
 
     action {
@@ -456,6 +520,7 @@
     require_auth(authorizer);
 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
 
     action {
     permission_level{get_self(), name("active")},
@@ -479,6 +544,7 @@
     require_auth(to);
 
     require_recipient(checkscontract(org));
+    linked_inbuilt_checks_contract(org);
     
     action {
     permission_level{get_self(), name("active")},

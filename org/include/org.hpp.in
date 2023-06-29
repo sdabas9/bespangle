@@ -22,6 +22,11 @@ CONTRACT org : public contract {
 
     ACTION chkscontract (name org, name checks_contract);
 
+    ACTION addsyscheck (name system_check_contract);
+    ACTION remsyscheck (name system_check_contract);
+    ACTION linksyschk (name org, name system_check_contract);
+    ACTION unlinksyschk (name org, name system_check_contract);
+
     ACTION processasync (name org, name action, name authorizer);
 
     ACTION processsync (name org, name action, name authorizer);
@@ -281,6 +286,20 @@ CONTRACT org : public contract {
     };
     typedef multi_index<name("checks"), checks> checks_table;
 
+    TABLE systemchecks {
+      name org;
+      vector<name> system_check_contracts;
+      auto primary_key() const {return org.value; }
+    };
+    typedef multi_index<name("systemchecks"), systemchecks> systemchecks_table;
+
+    TABLE availablechk {
+      name system_check_contract;
+      auto primary_key() const {return system_check_contract.value; }
+    };
+    typedef multi_index<name("availablechk"), availablechk> availablechk_table;
+
+
     TABLE processmode {
       name action;
       bool async;
@@ -301,6 +320,16 @@ CONTRACT org : public contract {
         return false;
       }
       return itr->async;
+    }
+
+    void linked_inbuilt_checks_contract(name org) {
+      systemchecks_table systemchecks(get_self(), get_self().value);
+      auto itr = systemchecks.find(org.value);
+      if(itr != systemchecks.end()) {
+        for(auto i = 0 ; i < itr->system_check_contracts.size(); i++) {
+          require_recipient(itr->system_check_contracts[i]);
+        }
+      }
     }
 
     struct orchestrator_recognize_args {

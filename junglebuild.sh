@@ -21,6 +21,7 @@ NOTIFICATION_CONTRACT="notification"
 TAP_CONTRACT="tap111111111"
 CHECKS_CONTRACT="checks111111"
 STATISTICS="statistics13"
+SERIESVALIDATION="seriesval111"
 
 CLEOS_URL="http://jungle4.cryptolions.io"
 
@@ -110,6 +111,11 @@ cd ..
 #eosio-cpp -abigen -I ./include -R ./resource -contract async -o async.wasm src/async.cpp
 #cd ..
 
+cd validations/serval
+cmake . -DORG_INTERFACE_CONTRACT=$ORG_INTERFACE_CONTRACT 
+eosio-cpp -abigen -I ./include -R ./resource -contract serval -o serval.wasm src/serval.cpp
+cd ../..
+
 cleos -u $CLEOS_URL set contract $ORCHESTRATOR_CONTRACT core/metadata metadata.wasm metadata.abi -p $ORCHESTRATOR_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $ORCHESTRATOR_CONTRACT active --add-code -p $ORCHESTRATOR_CONTRACT@active
 
@@ -163,3 +169,6 @@ cleos -u $CLEOS_URL set account permission $TAP_CONTRACT active --add-code -p $T
 
 cleos -u $CLEOS_URL set contract $CHECKS_CONTRACT core/checks checks.wasm checks.abi -p $CHECKS_CONTRACT@active
 cleos -u $CLEOS_URL set account permission $CHECKS_CONTRACT active --add-code -p $CHECKS_CONTRACT@active
+
+cleos -u $CLEOS_URL set contract $SERIESVALIDATION validations/serval serval.wasm serval.abi -p $SERIESVALIDATION@active
+cleos -u $CLEOS_URL set account permission $SERIESVALIDATION active --add-code -p $SERIESVALIDATION@active
