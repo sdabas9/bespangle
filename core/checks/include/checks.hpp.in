@@ -1,4 +1,6 @@
 #include <eosio/eosio.hpp>
+#include <json.hpp>
+using json = nlohmann::json;
 
 using namespace std;
 using namespace eosio;
@@ -22,6 +24,8 @@ CONTRACT checks : public contract {
     ACTION lookback(name org, name account, name series, uint8_t lookback, uint8_t musthave);
 
     ACTION haslatest(name org, name account, name series);
+
+    ACTION canissueanti(name org, name account, name antibadge , uint64_t amount);
 
   private:
     TABLE mbadge {
@@ -86,6 +90,40 @@ CONTRACT checks : public contract {
       auto badge_iterator = badge_index.find (assetname.value);
       check(badge_iterator->badge_name == assetname, "asset not found");
       return badge_iterator->badge_id;
+    }
+
+    name get_badge_for_antibadge (name org, name antibadge) {
+      metadata_badge_table _badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
+      auto badge_index = _badge.get_index<name("badgename")>();
+      auto badge_iterator = badge_index.find (antibadge.value);
+      check(badge_iterator->badge_name == antibadge, "antibadge not created"); 
+      auto onchain_lookup_data = json::parse(badge_iterator->onchain_lookup_data);
+     string badge_name = onchain_lookup_data["anti_to"];
+      return name(badge_name);
+    }
+
+    vector<name> anti_badge_vector (name org, name badge) {
+      metadata_badge_table _badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
+      auto badge_index = _badge.get_index<name("badgename")>();
+      auto badge_iterator = badge_index.find (badge.value);
+      check(badge_iterator->badge_name == badge, "UNEXPECTED: badge not created"); 
+      auto onchain_lookup_data = json::parse(badge_iterator->onchain_lookup_data);
+      json entries = onchain_lookup_data["antibadge"];
+      vector<name> anti_badges;
+      for (const auto& entry : entries) {
+        string badge_name = entry["badge"];
+        anti_badges.push_back(name(badge_name));
+      }
+      return anti_badges;
+    }
+
+    uint64_t multiple_badges_additive_balance (name org, name account, vector<name> badges) {
+      uint64_t balance = 0;
+      for (auto i = 0 ; i < badges.size(); i++) {
+        uint64_t badge_id = get_badge_id(org, badges[i]);
+        balance = balance + account_balance(org, account, badge_id);    
+      }
+      return balance;
     }
 
     uint64_t account_balance(name org, name account, uint64_t badge_id) {

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORG_INTERFACE_CONTRACT "orgint.rep"
+#define ORG_INTERFACE_CONTRACT "interface111"
 
 #define ORG_INTERFACE_CREATE_SERIES_NOTIFICATION ORG_INTERFACE_CONTRACT"::createseries" 
 #define ORG_INTERFACE_CREATE_NEXT_NOTIFICATION ORG_INTERFACE_CONTRACT"::createnext" 

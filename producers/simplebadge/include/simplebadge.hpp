@@ -3,9 +3,9 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "meta.rep"
-#define NOTIFICATION_CONTRACT "notify.rep"
-#define BILLING_CONTRACT "billing.rep"
+#define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define NOTIFICATION_CONTRACT "notification"
+#define BILLING_CONTRACT "billing11111"
 
 #define SIMPLE_BADGE_CREATE_NOTIFICATION NOTIFICATION_CONTRACT"::initsimple"
 #define SIMPLE_BADGE_ISSUANCE_NOTIFICATION NOTIFICATION_CONTRACT"::givesimple"

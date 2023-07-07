@@ -1,4 +1,6 @@
 #include <metadata.hpp>
+#include <json.hpp>
+using json = nlohmann::json;
 
 ACTION metadata::recognize (name org, name trusted_contract) {
   require_auth (org);
@@ -19,6 +21,44 @@ ACTION metadata::isrecognized (name org, name contract) {
 ACTION metadata::initbadge (name org, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
   check_authorization(org);
   init(org, badge_name, offchain_lookup_data, onchain_lookup_data, memo);
+
+}
+
+ACTION metadata::mergeinfo (name org, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+  check_authorization(org);
+  
+  badge_table _badge( _self, org.value );
+  auto badge_index = _badge.get_index<name("badgename")>();
+  auto badge_iterator = badge_index.find (badge_name.value);
+  check(badge_iterator != badge_index.end() && badge_iterator->badge_name == badge_name, "<action name> : <org> <contract> <badge> not found");
+
+  
+  if(!offchain_lookup_data.empty()) {
+    check(json::accept(offchain_lookup_data), "offchain_lookup_data is not a valid json"); 
+    string existing_offchain_data = badge_iterator->offchain_lookup_data;
+    check(json::accept(existing_offchain_data), "existing offchain_lookup_data is not a valid json"); 
+    json existing_offchain_lookup_json = json::parse(existing_offchain_data);
+    json new_offchain_lookup_json = json::parse(offchain_lookup_data);
+    existing_offchain_lookup_json.merge_patch(new_offchain_lookup_json);
+    badge_index.modify(badge_iterator, get_self(), [&](auto& row){
+      row.offchain_lookup_data = existing_offchain_lookup_json.dump();
+    });
+  }
+
+  
+  if(!onchain_lookup_data.empty()) {
+    check(json::accept(onchain_lookup_data), "onchain_lookup_data is not a valid json"); 
+    string existing_onchain_data = badge_iterator->onchain_lookup_data;
+    check(json::accept(existing_onchain_data), "existing onchain_lookup_data is not a valid json"); 
+    json existing_onchain_lookup_json = json::parse(existing_onchain_data);
+    json new_onchain_lookup_json = json::parse(onchain_lookup_data);
+    existing_onchain_lookup_json.merge_patch(new_onchain_lookup_json);
+    badge_index.modify(badge_iterator, get_self(), [&](auto& row){
+      row.onchain_lookup_data = existing_onchain_lookup_json.dump();
+    });
+    
+  }
+
 
 }
 

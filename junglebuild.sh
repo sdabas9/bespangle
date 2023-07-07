@@ -7,6 +7,7 @@ BILLING_CONTRACT="billing11111"
 SIMPLEBADGE_CONTRACT="basicissue11"
 GOTCHABADGE_CONTRACT="gotchabadge1"
 SERIESBADGE_CONTRACT="seriesbadge1"
+ANTIBADGE="antibadge111"
 
 AABADGE_CONTRACT="aabadge11111"
 ATOMIC_ASSETS_CONTRACT="atomicassets"
@@ -59,6 +60,11 @@ cd ../..
 cd producers/seriesbadge
 cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DNOTIFICATION_CONTRACT_NAME=$NOTIFICATION_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract seriesbadge -o seriesbadge.wasm src/seriesbadge.cpp
+cd ../..
+
+cd producers/antibadge
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DCHECKS_CONTRACT_NAME=$CHECKS_CONTRACT 
+eosio-cpp -abigen -I ./include -R ./resource -contract antibadge -o antibadge.wasm src/antibadge.cpp
 cd ../..
 
 #cd producers/claimasset
@@ -172,3 +178,6 @@ cleos -u $CLEOS_URL set account permission $CHECKS_CONTRACT active --add-code -p
 
 cleos -u $CLEOS_URL set contract $SERIESVALIDATION validations/serval serval.wasm serval.abi -p $SERIESVALIDATION@active
 cleos -u $CLEOS_URL set account permission $SERIESVALIDATION active --add-code -p $SERIESVALIDATION@active
+
+cleos -u $CLEOS_URL set contract $ANTIBADGE producers/antibadge antibadge.wasm antibadge.abi -p $ANTIBADGE@active
+cleos -u $CLEOS_URL set account permission $ANTIBADGE active --add-code -p $ANTIBADGE@active

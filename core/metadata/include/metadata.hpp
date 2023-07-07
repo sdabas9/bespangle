@@ -3,11 +3,11 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing.rep"
+#define BILLING_CONTRACT "billing11111"
 #define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
-#define ORG_INTERFACE_CONTRACT "orgint.rep"
+#define ORG_INTERFACE_CONTRACT "interface111"
 /* #undef ORCHESTRATOR_CONTRACT */
-#define NOTIFICATION_CONTRACT "notify.rep"
+#define NOTIFICATION_CONTRACT "notification"
 
 
 #define ADD_FEATURE_NOTIFICATION NOTIFICATION_CONTRACT"::addfeature"
@@ -76,6 +76,12 @@ CONTRACT metadata : public contract {
     string memo,
     uint64_t badge_id,  
     vector<name> notify_accounts);
+
+  ACTION mergeinfo (name org, 
+    name badge_name, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    string memo);
 
   private:
 
@@ -147,6 +153,9 @@ CONTRACT metadata : public contract {
     > badge_table;
     
     bool check_authorization (name org) {
+      if(has_auth(org)) {
+        return true;
+      }
       authorized_contracts_table _authorized_contracts( _self, org.value );
       for(auto itr = _authorized_contracts.begin(); itr != _authorized_contracts.end(); ++itr ) {
         

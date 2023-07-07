@@ -77,6 +77,12 @@ CONTRACT metadata : public contract {
     uint64_t badge_id,  
     vector<name> notify_accounts);
 
+  ACTION mergeinfo (name org, 
+    name badge_name, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    string memo);
+
   private:
 
     struct ramcredits_arg {
@@ -147,6 +153,9 @@ CONTRACT metadata : public contract {
     > badge_table;
     
     bool check_authorization (name org) {
+      if(has_auth(org)) {
+        return true;
+      }
       authorized_contracts_table _authorized_contracts( _self, org.value );
       for(auto itr = _authorized_contracts.begin(); itr != _authorized_contracts.end(); ++itr ) {
         
