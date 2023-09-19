@@ -51,7 +51,23 @@ ACTION checks::canissueanti(name org, name account, name antibadge, uint64_t amo
     name badge = get_badge_for_antibadge(org, antibadge);
     vector<name> antibadges = anti_badge_vector(org, badge);
     uint64_t total_antibadge_balance = multiple_badges_additive_balance(org, account, antibadges);
-    uint64_t badge_id = get_badge_id(org, badge);
-    uint64_t badge_balance = account_balance(org, account, badge_id);
+    uint64_t badge_balance = account_balance(org, account, badge);
     check(total_antibadge_balance + amount <= badge_balance, "CHECK FAILED: cumulative balance of all antibadges will exceed the badge balance");
 }
+
+ACTION checks::issuebndanti(name org, name antibadge, name account, uint64_t amount) {
+    name badge = get_badge_for_antibadge(org, antibadge);
+    vector<name> antibadges = anti_badge_vector(org, badge);
+    // get rounds that badge has subscribed to
+    vector<name> ongoing_rounds = badge_rounds(org, badge);
+    for(auto i = 0; i < ongoing_rounds.size(); i++) {
+        vector<uint64_t> badgeround_ids = relevant_badgeround_ids(org, ongoing_rounds[i], antibadges);
+        check(badgeround_ids.size()>0, "antibadge not active or setup for any rounds");
+        uint64_t badge_round_balance = bounded_account_balance(org, ongoing_rounds[i], badge, account);
+        uint64_t total_round_antibadge_balance = bounded_multiple_badges_additive_balance (org, badgeround_ids, account);
+        check(total_round_antibadge_balance + amount <= badge_round_balance, "CHECK FAILED: cumulative balance of all antibadges will exceed the badge balance for round <>");
+    }
+
+}
+
+

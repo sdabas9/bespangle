@@ -13,12 +13,11 @@ CONTRACT cumulative : public contract {
     
     [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
       name org, 
-      name badge_name,
+      name badge,
       name account, 
       name from,
       uint64_t count,
-      string memo,
-      uint64_t badge_id,  
+      string memo, 
       vector<name> notify_accounts );
 
     ACTION dummy();
@@ -35,11 +34,11 @@ CONTRACT cumulative : public contract {
     TABLE achievements {
       uint64_t id;
       name account;
-      uint64_t badge_id;
+      name badge;
       uint64_t count;
       auto primary_key() const {return id; }
       uint128_t acc_badge_key() const {
-        return ((uint128_t) account.value) << 64 | badge_id;
+        return ((uint128_t) account.value) << 64 | badge.value;
       }
     };
     typedef multi_index<name("achievements"), achievements,

@@ -21,64 +21,61 @@ CONTRACT metadata : public contract {
   ACTION isrecognized (name org, name contract); 
 
   ACTION initbadge (name org, 
-    name badge_name,
+    name badge,
     string offchain_lookup_data, 
     string onchain_lookup_data, 
     string memo);
 
   ACTION addfeature (name org, 
-    name badge_name,
+    name badge,
     name notify_account,
     string memo);
   
   [[eosio::on_notify(ADD_FEATURE_NOTIFICATION)]] void naddfeatur (name org, 
-    name badge_name,
+    name badge,
     name notify_account,
     string memo);
 
   ACTION addnotify(
     name org,
-    name badge_name,
+    name badge,
     name notify_accounts,
     string memo, 
-    uint64_t badge_id,  
     string offchain_lookup_data,
     string onchain_lookup_data,
     uint64_t rarity_counts); 
 
   ACTION delfeature (name org, 
-    name badge_name,
+    name badge,
     name notify_account,
     string memo);
 
   ACTION delnotify(
     name org,
-    name badge_name,
+    name badge,
     name notify_accounts,
-    string memo, 
-    uint64_t badge_id,
+    string memo,
     string offchain_lookup_data,
     string onchain_lookup_data,
     uint64_t rarity_counts); 
   
   ACTION achievement (name org,
-    name badge_name,
+    name badge,
     name account,
     name from,
     uint64_t count,
     string memo);
 
   ACTION notifyachiev (name org, 
-    name badge_name,
+    name badge,
     name account, 
     name from,
     uint64_t count,
-    string memo,
-    uint64_t badge_id,  
+    string memo,  
     vector<name> notify_accounts);
 
   ACTION mergeinfo (name org, 
-    name badge_name, 
+    name badge, 
     string offchain_lookup_data, 
     string onchain_lookup_data, 
     string memo);
@@ -98,21 +95,19 @@ CONTRACT metadata : public contract {
 
     struct notifyachievement_args {
       name org;
-      name badge_name;
+      name badge;
       name account;
       name from;
       uint64_t count;
       string memo;
-      uint64_t badge_id;
       vector<name> notify_accounts;
     };
 
     struct downstream_notify_args {
       name org;
-      name badge_name;
+      name badge;
       name notify_account;
       string memo;
-      uint64_t badge_id;
       string offchain_lookup_data;
       string onchain_lookup_data;
       uint64_t rarity_counts;
@@ -125,7 +120,7 @@ CONTRACT metadata : public contract {
 
     struct local_addfeature_args {
       name org; 
-      name badge_name;
+      name badge;
       name notify_account;
       string memo;
     };
@@ -137,20 +132,14 @@ CONTRACT metadata : public contract {
     typedef multi_index<name("authorized"), authorized> authorized_contracts_table;
 
     TABLE badge {
-      uint64_t badge_id;
-      name badge_name;
+      name badge;
       vector<name> notify_accounts;
       string offchain_lookup_data;
       string onchain_lookup_data;
       uint64_t rarity_counts;
-      auto primary_key() const {return badge_id; }
-      uint64_t badge_key() const {
-        return badge_name.value;
-      }
+      auto primary_key() const {return badge.value; }
     };
-    typedef multi_index<name("badge"), badge,
-    indexed_by<name("badgename"), const_mem_fun<badge, uint64_t, &badge::badge_key>>    
-    > badge_table;
+    typedef multi_index<name("badge"), badge> badge_table;
     
     bool check_authorization (name org) {
       if(has_auth(org)) {
@@ -166,19 +155,17 @@ CONTRACT metadata : public contract {
       check(false, "metadata; check_authorization - action does not have authorization of any trusted contract");
     }
 
-    void init (name org, name badge_name, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+    void init (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
       badge_table _badge( _self, org.value );
-      auto badge_index = _badge.get_index<name("badgename")>();
-      auto badge_iterator = badge_index.find (badge_name.value);
-      check(badge_iterator == badge_index.end() || badge_iterator->badge_name != badge_name ,
-       "<badge> already exists for <contract> ");
+      auto badge_iterator = _badge.find (badge.value);
+      check(badge_iterator == badge_index.end() ,
+       "<badge> already exists for <org> ");
       /* ipfs_hashes.push_back ( ipfs_hash {
         .key = "img",
         .value = ipfs_image
       }); */
       _badge.emplace(get_self(), [&](auto& row){
-        row.badge_id = _badge.available_primary_key();
-        row.badge_name = badge_name;
+        row.badge = badge;
         row.offchain_lookup_data = offchain_lookup_data;
         row.onchain_lookup_data = onchain_lookup_data;
         row.rarity_counts = 0;

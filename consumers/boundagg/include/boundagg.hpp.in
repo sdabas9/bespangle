@@ -1,0 +1,69 @@
+#pragma once
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <string>
+
+using namespace eosio;
+using namespace std;
+
+#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
+
+CONTRACT boundagg : public contract {
+public:
+    using contract::contract;
+
+    ACTION addrnd(name org, name round, string description);
+    ACTION setstat(name org, name round, name status);
+    ACTION addbgrnd(name org, name round, name badge);
+    ACTION rembgrnd(name org, name round, name badge)
+
+    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
+      name org, 
+      name badge,
+      name account, 
+      name from,
+      uint64_t count,
+      string memo,  
+      vector<name> notify_accounts );
+    
+private:
+    TABLE rounds {
+        name round;
+        name status;
+        string description;
+
+        uint64_t primary_key() const { return round.value; }
+    };
+    typedef eosio::multi_index<"rounds"_n, rounds> rounds_table;
+
+    TABLE badgeround {
+        uint64_t badgeround_id;
+        name round;
+        name badge;
+        name status;
+        uint64_t primary_key() const { return badgeround_id; }
+        uint128_t round_badge_key() const {
+            return ((uint128_t) round.value) << 64 | badge.value;
+        }
+        uint64_t get_badge() const { return badge.value; }
+    };
+    typedef eosio::multi_index<"badgeround"_n, badgeround,
+        indexed_by<"roundbadge"_n, const_mem_fun<badgeround, uint128_t, &badgeround::round_badge_key>>,
+        indexed_by<"badge"_n, const_mem_fun<badgeround, uint64_t, &badgeround::get_badge>>
+    > badgeround_table;
+
+    TABLE achievements {
+      uint64_t id;
+      name account;
+      uint64_t badgeround_id;
+      uint64_t count;
+      auto primary_key() const {return id; }
+      uint128_t acc_badge_key() const {
+        return ((uint128_t) account.value) << 64 | badgeround_id;
+      }
+    };
+    typedef eosio::multi_index<"achievements"_n, achievements,
+        indexed_by<"accbadge"_n, const_mem_fun<achievements, uint128_t, &achievements::acc_badge_key>>
+    > achievements_table;
+};

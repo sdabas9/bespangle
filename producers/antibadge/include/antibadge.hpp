@@ -6,6 +6,7 @@ using namespace eosio;
 #define ORCHESTRATOR_CONTRACT_NAME "router111111"
 #define CHECKS_CONTRACT_NAME "checks111111"
 #define NOTIFICATION_CONTRACT "sdsdf"
+#define BOUNDEDAGG_CONTRACT_NAME "dsfd"
 
 #define CREATE_NOTIFICATION NOTIFICATION_CONTRACT "::initsimple"
 #define CREATE_INVALIDATE_NOTIFICATION NOTIFICATION_CONTRACT "::initsimple"
@@ -62,23 +63,15 @@ public:
 
 private:
     TABLE badge {
-        uint64_t badge_id;
-        name badge_name;
-        vector<name> notify_accounts;
-        string offchain_lookup_data;
-        string onchain_lookup_data;
-        uint64_t rarity_counts;
-
-        auto primary_key() const { return badge_id; }
-
-        uint64_t badge_key() const {
-            return badge_name.value;
-        }
+      name badge;
+      vector<name> notify_accounts;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      uint64_t rarity_counts;
+      auto primary_key() const {return badge.value; }
     };
+    typedef multi_index<name("badge"), badge> badge_table;
 
-    typedef multi_index<name("badge"), badge,
-        indexed_by<name("badgename"), const_mem_fun<badge, uint64_t, &badge::badge_key>>
-    > badge_table;
 
     struct create_args {
         name org;

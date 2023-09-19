@@ -134,6 +134,9 @@ ACTION antibadge::createinv(name org,
         }
     }.send();
 }
+// m1 .. mn
+// p, p, p, p, p
+// r, r, r, r, r
 
 ACTION antibadge::issue(name org,
                         name to,
@@ -141,18 +144,39 @@ ACTION antibadge::issue(name org,
                         uint64_t amount,
                         string memo) {
     require_auth(get_self());
-
-    action{
-        permission_level{get_self(), name("active")},
-        name(CHECKS_CONTRACT_NAME),
-        name("canissueanti"),
-        canissueanti_args{
-            .org = org,
-            .account = to,
-            .antibadge = antibadge,
-            .amount = amount
+    
+    badge_table badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
+    auto badge_itr = badge.require_find(antibadge.value, "antibadge not defined. create badge before issuing");
+    vector<name> notify_accounts = badge_itr->notify_accounts;
+    for(auto i = 0 ; i < notify_accounts.size(); i++) {
+        if(notify_accounts[i] == name(CUMULATIVE_CONTRACT_NAME)) {
+            action{
+                permission_level{get_self(), name("active")},
+                name(CHECKS_CONTRACT_NAME),
+                name("canissueanti"),
+                canissueanti_args{
+                    .org = org,
+                    .account = to,
+                    .antibadge = antibadge,
+                    .amount = amount
+                }
+            }.send();
         }
-    }.send();
+        if(notify_accounts[i] == name(BOUNDEDAGG_CONTRACT_NAME)) {
+            action{
+                permission_level{get_self(), name("active")},
+                name(CHECKS_CONTRACT_NAME),
+                name("issuebndanti"),
+                canissueanti_args{
+                    .org = org,
+                    .account = to,
+                    .antibadge = antibadge,
+                    .amount = amount
+                }
+            }.send();
+        }
+    }
+
 
     action{
         permission_level{get_self(), name("active")},
