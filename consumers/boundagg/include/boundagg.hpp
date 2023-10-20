@@ -13,10 +13,12 @@ CONTRACT boundagg : public contract {
 public:
     using contract::contract;
 
+
     ACTION addrnd(name org, name round, string description);
     ACTION setstat(name org, name round, name status);
     ACTION addbgrnd(name org, name round, name badge);
-    ACTION rembgrnd(name org, name round, name badge)
+    ACTION rembgrnd(name org, name round, name badge);
+    
 
     [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
       name org, 
@@ -32,10 +34,15 @@ private:
         name round;
         name status;
         string description;
-
         uint64_t primary_key() const { return round.value; }
     };
     typedef eosio::multi_index<"rounds"_n, rounds> rounds_table;
+
+    TABLE ids {
+        uint64_t badgeround_id;
+        uint64_t primary_key() const {badgeround_id;}
+    };
+    typedef eosio::multi_index<"ids"_n, ids> ids_table;
 
     TABLE badgeround {
         uint64_t badgeround_id;
