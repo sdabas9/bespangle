@@ -36,7 +36,7 @@ ACTION deferred::rqsetstat(name org, name round, name status, time_point executi
   eosio::microseconds curr_micros = tp.time_since_epoch();
   uint64_t count_curr_micros = curr_micros.count();
   uint64_t count_exec_micros = execution_time.elapsed.count();
-  eosio::check(count_exec_micros >= count_curr_micros(), "Execution time cannot be in the past");
+  eosio::check(count_exec_micros >= count_curr_micros, "Execution time cannot be in the past");
 
   rounds_table _rounds(get_self(), org.value);
 
@@ -57,7 +57,7 @@ ACTION deferred::rqaddbgrnd(name org, name round, name badge, time_point executi
   eosio::microseconds curr_micros = tp.time_since_epoch();
   uint64_t count_curr_micros = curr_micros.count();
   uint64_t count_exec_micros = execution_time.elapsed.count();
-  eosio::check(count_exec_micros >= count_curr_micros(), "Execution time cannot be in the past");
+  eosio::check(count_exec_micros >= count_curr_micros, "Execution time cannot be in the past");
 
   rounds_table _rounds(get_self(), org.value);
 
@@ -71,14 +71,14 @@ ACTION deferred::rqaddbgrnd(name org, name round, name badge, time_point executi
 
 }
 
-ACTION deferred::rqrembgrnd(name org, name round, name status, time_point execution_time) {
+ACTION deferred::rqrembgrnd(name org, name round, name badge, time_point execution_time) {
   require_auth(get_self());
 
   eosio::time_point tp = eosio::current_time_point();
   eosio::microseconds curr_micros = tp.time_since_epoch();
   uint64_t count_curr_micros = curr_micros.count();
   uint64_t count_exec_micros = execution_time.elapsed.count();
-  eosio::check(count_exec_micros >= count_curr_micros(), "Execution time cannot be in the past");
+  eosio::check(count_exec_micros >= count_curr_micros, "Execution time cannot be in the past");
 
   rounds_table _rounds(get_self(), org.value);
 
@@ -143,15 +143,15 @@ ACTION deferred::rounddeque(name org, uint64_t step, name executing_account) {
 }
 
 ACTION deferred::resetstat(name org, name round, name status) {
-  require_recipient(notification_contract);
+  require_recipient(name(NOTIFICATION_CONTRACT_NAME));
 }
 ACTION deferred::readdbgrnd(name org, name round, name badge) {
-  require_recipient(notification_contract);
+  require_recipient(name(NOTIFICATION_CONTRACT_NAME));
 }
 ACTION deferred::rerembgrnd(name org, name round, name badge) {
-  require_recipient(notification_contract);
+  require_recipient(name(NOTIFICATION_CONTRACT_NAME));
 }
-
+/*
 ACTION deferred::addrecord(name org, name contract, name from, name to, uint64_t amount, std::string memo, name badge, time_point_sec execution_time) {
   require_auth(get_self());
 
@@ -212,6 +212,5 @@ ACTION deferred::execbyhour(name org, uint64_t hour, uint64_t step) {
     iterator = next;
     ++count;
   }
-}
+}*/
 
-EOSIO_DISPATCH(deferred, (addrecord)(execute)(execbyhour))

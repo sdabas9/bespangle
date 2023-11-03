@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(roundmanager)
+set(NOTIFICATION_CONTRACT_NAME ${NOTIFICATION_CONTRACT_NAME})
+set(BOUNDED_AGG_CONTRACT_NAME ${BOUNDED_AGG_CONTRACT_NAME})
+set(ORG_CHECKS_CONTRACT_NAME ${ORG_CHECKS_CONTRACT_NAME})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/roundmanager.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/roundmanager.hpp @ONLY)

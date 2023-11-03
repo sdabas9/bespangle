@@ -9,6 +9,11 @@ using namespace eosio;
 #define CLAIMASSET_CONTRACT_NAME "claimasset11"
 #define ORCHESTRATOR_CONTRACT_NAME "router111111"
 #define SERIESBADGE_CONTRACT_NAME "seriesbadge1"
+#define ROUND_MANAGER_CONTRACT_NAME "roundname"
+#define REDEEM_CONTRACT_NAME "asdfasdf"
+#define ANTIBADGE_CONTRACT_NAME "asdfadsf"
+#define DEFERRED_CONTRACT_NAME "deferred"
+#define BOUNDED_AGG_CONTRACT_NAME "bnound"
 
 #define ORG_INTERFACE_SERIES_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ncreateserie"
 #define ORG_INTERFACE_SERIES_BADGE_CREATE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::ncreatenex"
@@ -34,6 +39,15 @@ using namespace eosio;
 
 // add feature notification
 #define ORG_INTERFACE_ADD_FEATURE_NOTIFICATION ORG_INTERFACE_CONTRACT_NAME"::naddfeatur" 
+
+#define ROUND_MANAGER_ADD_ROUND_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::addround"
+#define ROUND_MANAGER_SET_STATUS_DEFERRED_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::setstatus"
+#define ROUND_MANAGER_ADD_BADGE_DEFERRED_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::addbadge"
+#define ROUND_MANAGER_REM_BADGE_DEFERRED_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::rembadge"
+#define ROUND_MANAGER_CREATE_REDEEMABLE_BADGE_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::createredeem"
+#define ROUND_MANAGER_INIT_FIXED_REDEEM_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::initfixed"
+#define ROUND_MANAGER_INIT_DYNAMIC_REDEEM_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::initdynamic"
+#define ROUND_MANAGER_ADD_FEATURE_NOTIFICATION ROUND_MANAGER_CONTRACT_NAME"::addfeature"
 
 CONTRACT notification : public contract {
   public:
@@ -121,6 +135,11 @@ CONTRACT notification : public contract {
       name badge_name,
       name notify_account,
       string memo);
+    
+    [[eosio::on_notify(ROUND_MANAGER_ADD_FEATURE_NOTIFICATION)]] void baddfeature (name org,
+      name badge_name,
+      name notify_account,
+      string memo);
 
     ACTION addfeature(name org,
       name badge_name,
@@ -143,6 +162,38 @@ CONTRACT notification : public contract {
     [[eosio::on_notify(ORG_INTERFACE_SERIES_ISSUE_ANY_NOTIFICATION)]] void aissuean(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo);
     ACTION issueany(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo);
 
+    [[eosio::on_notify(ROUND_MANAGER_ADD_ROUND_NOTIFICATION)]] void aaddroun(name org, name round, string description);
+    ACTION addround(name org, name round, string description);
+
+    [[eosio::on_notify(ROUND_MANAGER_SET_STATUS_DEFERRED_NOTIFICATION)]] void asetstatu(name org, name round, name status, time_point execution_time);
+    ACTION setstatus(name org, name round, name status, time_point execution_time);
+
+    [[eosio::on_notify(ROUND_MANAGER_ADD_BADGE_DEFERRED_NOTIFICATION)]] void aaddbadg(name org, name round, name badge, time_point execution_time);
+    ACTION addbadge(name org, name round, name badge, time_point execution_time);
+
+    [[eosio::on_notify(ROUND_MANAGER_REM_BADGE_DEFERRED_NOTIFICATION)]] void arembadg(name org, name round, name badge, time_point execution_time);
+    ACTION rembadge(name org, name round, name badge, time_point execution_time);
+
+    [[eosio::on_notify(ROUND_MANAGER_CREATE_REDEEMABLE_BADGE_NOTIFICATION)]] void acreateredee(name org,
+                  name antibadge,
+                  name badge,
+                  name type,
+                  string offchain_lookup_data,
+                  string onchain_lookup_data,
+                  string memo);
+    ACTION createredeem(name org,
+                  name antibadge,
+                  name badge,
+                  name type,
+                  string offchain_lookup_data,
+                  string onchain_lookup_data,
+                  string memo);
+
+    [[eosio::on_notify(ROUND_MANAGER_INIT_FIXED_REDEEM_NOTIFICATION)]] void ainitfixe(name org, name round, name badge, uint64_t rate, name notification_contract);
+    ACTION initfixed(name org, name round, name badge, uint64_t rate, name notification_contract);
+
+    [[eosio::on_notify(ROUND_MANAGER_INIT_DYNAMIC_REDEEM_NOTIFICATION)]] void ainitdynami(name org, name round, name badge, uint64_t amount, name notification_contract);
+    ACTION initdynamic(name org, name round, name badge, uint64_t amount, name notification_contract);
 
   private:
 
@@ -222,6 +273,59 @@ CONTRACT notification : public contract {
       name to;
       uint64_t count;
       string memo;
+    };
+
+    struct addround_args {
+      name org;
+      name round;
+      string description;
+    };
+
+    struct setstatus_args {
+      name org;
+      name round;
+      name status;
+      time_point execution_time;
+    };
+
+    struct addbadge_args {
+      name org;
+      name round;
+      name badge;
+      time_point execution_time;
+    };
+
+    struct rembadge_args {
+      name org;
+      name round;
+      name badge;
+      time_point execution_time;
+    };
+    
+    struct createredeem_args {
+      name org;
+      name antibadge;
+      name badge;
+      name type;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      string memo;
+    };
+
+    struct initfixed_args {
+      name org;
+      name round;
+      name badge;
+      uint64_t rate;
+      name notification_contract;
+    };
+
+    struct initdynamic_args {
+      name org;
+      name round;
+      name badge;
+      uint64_t amount;
+      name notification_contract;
     };
 };
 

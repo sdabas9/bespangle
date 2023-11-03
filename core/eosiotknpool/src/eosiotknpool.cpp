@@ -80,9 +80,8 @@ ACTION eosiotknpool::withdraw(name org, asset amount) {
     ).send();
 }
 
-ACTION eosiotknpool::dynamic(name org, name round, name badge, name account, uint64_t portion) {
-    require_auth(org);
-
+void eosiotknpool::dynamic(name org, name round, name badge, name account, uint64_t portion, name notification_contract) {
+    
     eosio::check(portion <= 1000000, "Invalid portion value. It should not exceed 1000000 (representing 100%).");
 
     poolbalance_table pools(get_self(), get_self().value);
@@ -106,16 +105,13 @@ ACTION eosiotknpool::dynamic(name org, name round, name badge, name account, uin
     ).send();
 }
 
-ACTION eosiotknpool::fixed(name org, name round, name badge, name account, uint64_t amount_val) {
-    require_auth(org);
-
-    asset amount = asset(amount_val, symbol("YOUR_SYMBOL_HERE", PRECISION)); // Replace YOUR_SYMBOL_HERE and PRECISION with appropriate values
-
+void eosiotknpool::fixed(name org, name round, name badge, name account, uint64_t amount_val, name notification_contract) {
+    
     poolbalance_table pools(get_self(), get_self().value);
     auto idx = pools.get_index<"byroundbadge"_n>();
     auto pool_itr = idx.find((uint128_t(round.value) << 64) | badge.value);
     eosio::check(pool_itr != idx.end(), "Pool for the specified round and badge not found.");
-
+    asset amount = asset(amount_val, pool_itr->pool_allocation.symbol);
     eosio::check(pool_itr->pool_allocation - pool_itr->pool_distributed >= amount, "Insufficient balance in pool to transfer.");
 
     // Update the poolbalance table
