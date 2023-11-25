@@ -92,7 +92,7 @@ ACTION metadata::addfeature (name org, name badge, name notify_account, string m
     new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
   }
   new_notify_accounts.push_back (notify_account);
-  badge_index.modify(badge_iterator, get_self(), [&](auto& row){
+  _badge.modify(badge_iterator, get_self(), [&](auto& row){
     row.notify_accounts = new_notify_accounts;
   });
   // image
@@ -139,7 +139,7 @@ ACTION metadata::delfeature (name org, name badge, name notify_account, string m
       new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
     }       
   }
-  badge_index.modify(badge_iterator, get_self(), [&](auto& row){
+  _badge.modify(badge_iterator, get_self(), [&](auto& row){
     row.notify_accounts = new_notify_accounts;
   });
   action {
@@ -179,7 +179,7 @@ ACTION metadata::achievement (name org, name badge, name account, name from, uin
 
   check(badge_iterator != _badge.end() , "<contractname>,<action name> : <org> <contract> <badge> not found");
  
-  badge_index.modify(badge_iterator, get_self(), [&](auto& row){
+  _badge.modify(badge_iterator, get_self(), [&](auto& row){
     row.rarity_counts = row.rarity_counts + count;
   });
    

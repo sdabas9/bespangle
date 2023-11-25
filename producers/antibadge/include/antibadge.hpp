@@ -3,10 +3,12 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
-#define CHECKS_CONTRACT_NAME "checks111111"
-#define NOTIFICATION_CONTRACT "sdsdf"
-#define BOUNDEDAGG_CONTRACT_NAME "dsfd"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
+#define CHECKS_CONTRACT_NAME "checksxxxxxx"
+#define NOTIFICATION_CONTRACT "notification"
+#define BOUNDEDAGG_CONTRACT_NAME "boundedaggxx"
+#define CUMULATIVE_CONTRACT_NAME "cumulativexx"
+
 
 #define CREATE_NOTIFICATION NOTIFICATION_CONTRACT "::initsimple"
 #define CREATE_INVALIDATE_NOTIFICATION NOTIFICATION_CONTRACT "::initsimple"

@@ -1,8 +1,8 @@
 #include <eosio/eosio.hpp>
 
 
-#define CUMULATIVE_CONTRACT_NAME "accounting11"
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define CUMULATIVE_CONTRACT_NAME "cumulativexx"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 

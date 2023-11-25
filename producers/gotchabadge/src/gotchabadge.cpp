@@ -5,6 +5,50 @@
 // change supply per duration.
 // number of cycles
 
+ void gotchabadge::extcreate (name org, 
+    name badge, 
+    time_point_sec starttime, 
+    uint64_t cycle_length, 
+    uint8_t supply_per_cycle, 
+    string offchain_lookup_data,
+    string onchain_lookup_data,  
+    string memo) {
+    action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("create"),
+      create_args {
+        .org = org,
+        .badge = badge,
+        .starttime = starttime,
+        .cycle_length = cycle_length,
+        .supply_per_cycle = supply_per_cycle,
+        .offchain_lookup_data = offchain_lookup_data,
+        .onchain_lookup_data = onchain_lookup_data,
+        .memo = memo }
+    }.send();  
+  }
+
+  void gotchabadge::extissue (name org, 
+    name badge, 
+    name from, 
+    name to, 
+    uint8_t amount, 
+    string memo) {
+    action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("issue"),
+      issue_args {
+        .org = org,
+        .badge = badge,
+        .from = from,
+        .to = to,
+        .amount = amount,
+        .memo = memo}
+    }.send(); 
+
+  }
 
   ACTION gotchabadge::create (name org, 
     name badge, 
@@ -15,7 +59,7 @@
     string onchain_lookup_data,  
     string memo) {
 
-      require_auth(org);
+      require_auth(_self);
       metadata_table _metadata (_self, org.value);
       
       // todo add in all badges
@@ -56,7 +100,7 @@
     name to, 
     uint8_t amount, 
     string memo ) {
-    require_auth(org);
+    require_auth(_self);
 
     check(from != to, "can not be same - from, to");
 

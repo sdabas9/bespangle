@@ -5,11 +5,11 @@ using json = nlohmann::json;
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CONTRACT_NAME "basicissue11"
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
-#define CUMULATIVE_CONTRACT_NAME "accounting11"
-#define SERIESBADGE_CONTRACT_NAME "seriesbadge1"
-#define BOUNDEDAGG_CONTRACT_NAME "boundagg"
+#define SIMPLEBADGE_CONTRACT_NAME "simplebadgex"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
+#define CUMULATIVE_CONTRACT_NAME "cumulativexx"
+#define SERIESBADGE_CONTRACT_NAME "seriesbadgex"
+#define BOUNDED_AGG_CONTRACT_NAME ""
 
 CONTRACT checks : public contract {
   public:
@@ -210,7 +210,7 @@ CONTRACT checks : public contract {
     }
 
     vector<name> badge_rounds(name org, name badge) {
-        badgeround_table _badgerounds(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        badgeround_table _badgerounds(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         auto badge_index = _badgerounds.get_index<"badge"_n>();
         auto badge_itr = badge_index.lower_bound(badge.value);
         vector<name> relevant_rounds;
@@ -228,7 +228,7 @@ CONTRACT checks : public contract {
     }
 
     vector<uint64_t> relevant_badgeround_ids(name org, name round, vector<name> antibadges) {
-        badgeround_table _badgerounds(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        badgeround_table _badgerounds(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         vector<uint64_t> badgeround_ids;
 
         for (auto i = 0; i < antibadges.size(); i++) {
@@ -253,7 +253,7 @@ CONTRACT checks : public contract {
     }
 
     uint64_t bounded_account_balance_for_badgeround_id(name org, uint64_t badgeround_id, name account) {
-        bounded_agg_achievements_table _achievements(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        bounded_agg_achievements_table _achievements(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         auto account_badge_index = _achievements.get_index<"accbadge"_n>();
 
         uint128_t key = ((uint128_t) account.value) << 64 | badgeround_id;
@@ -269,7 +269,7 @@ CONTRACT checks : public contract {
     }
 
     uint64_t get_badgeround_id(name org, name round, name badge) {
-        badgeround_table _badgeround(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        badgeround_table _badgeround(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         auto round_badge_index = _badgeround.get_index<"roundbadge"_n>();
         uint128_t round_badge_key = ((uint128_t) round.value) << 64 | badge.value;
         auto round_badge_iterator = round_badge_index.find(round_badge_key);

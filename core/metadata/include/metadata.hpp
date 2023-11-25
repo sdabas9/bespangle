@@ -3,17 +3,12 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing11111"
-#define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
-#define ORG_INTERFACE_CONTRACT "interface111"
-/* #undef ORCHESTRATOR_CONTRACT */
+#define BILLING_CONTRACT "billingxxxxx"
 #define NOTIFICATION_CONTRACT "notification"
 
 
 #define ADD_FEATURE_NOTIFICATION NOTIFICATION_CONTRACT"::addfeature"
-// todo list
-// merge notify
-// error message
+
 CONTRACT metadata : public contract {
   public:
     using contract::contract;
@@ -160,7 +155,7 @@ CONTRACT metadata : public contract {
     void init (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
       badge_table _badge( _self, org.value );
       auto badge_iterator = _badge.find (badge.value);
-      check(badge_iterator == badge_index.end() ,
+      check(badge_iterator == _badge.end() ,
        "<badge> already exists for <org> ");
       /* ipfs_hashes.push_back ( ipfs_hash {
         .key = "img",
@@ -198,7 +193,7 @@ CONTRACT metadata : public contract {
       }.send();
     }
 
-    void check_account_prefs (name org, name account) {
+    /*void check_account_prefs (name org, name account) {
       action {
         permission_level{get_self(), name("active")},
         name(ACCOUNT_PREFERENCES_CONTRACT),
@@ -207,5 +202,5 @@ CONTRACT metadata : public contract {
           .org = org,
           .account = account }
       }.send();
-    }
+    }*/
 };

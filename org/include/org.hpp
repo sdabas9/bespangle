@@ -1,16 +1,16 @@
 #include <eosio/eosio.hpp>
 #include <eosio/system.hpp>
 
-#define SIMPLEBADGE_CONTRACT "basicissue11"
-#define GOTCHABADGE_CONTRACT "gotchabadge1"
-#define ORCHESTRATOR_CONTRACT "router111111"
-#define AABADGE_CONTRACT "aabadge11111"
-#define CUMULATIVE_CONTRACT "accounting11"
-#define ROUNDS_CONTRACT "rounds111111"
-#define ACCOUNT_PREFERENCES_CONTRACT "userprefs111"
-#define SERIESBADGE_CONTRACT "seriesbadge1"
-#define ASYNC_CONTRACT "async1111111"
-#define CLAIMASSET_CONTRACT "claimasset11"
+#define SIMPLEBADGE_CONTRACT "simplebadgex"
+#define GOTCHABADGE_CONTRACT "gotchabadgex"
+#define ORCHESTRATOR_CONTRACT "orchestrator"
+#define AABADGE_CONTRACT "aabadgexxxxx"
+#define CUMULATIVE_CONTRACT "cumulativexx"
+/* #undef ROUNDS_CONTRACT */
+/* #undef ACCOUNT_PREFERENCES_CONTRACT */
+#define SERIESBADGE_CONTRACT "seriesbadgex"
+/* #undef ASYNC_CONTRACT */
+#define CLAIMASSET_CONTRACT "dummy"
 #define NOTIFICATION_CONTRACT "notification"
 
 using namespace std;
@@ -98,44 +98,7 @@ CONTRACT org : public contract {
       name assetname, 
       string memo );
 
-    /*
-		* 
-    * Defines - a badge of type gotcha badge contract 
-		*
-		* This action creates a gotcha badge and consumers that the badge has subscribed to. All inputs can be
-    * validated in checks_contract ( which is setup in initsystem action )
-    *
-    * A gotcha badge is issued from member to member. Gotcha badge has two constraints supply_per_cycle and
-    * cycle_length. supply_per_cycle is restored at the beginning of new cycle regardless of if member has issued
-    * badges (hence reduced available supply for current cycle) to other members or not.
-		*
-		* @param creator	Authorized person to execute this action. 
-		* @param badge  Name of the badge. 
-    * @param starttime Time at which badge can be issued from member to member.
-    * @param cycle_length Duration after which supply is restored for a member.
-    * @param supply_per_cycle Supply per cycle_length
-		* @param ipfs_image ipfs image associated with the badge.
-    * @param display_name Text for display purpose.
-    * @param consumers Vector of consumers that a badge has subscribed. Available feature set includes
-    *           1) Write to Atomic Asset as Non Transferrable Token. This is recommended to be used
-    *               when org wants the badges to be stored granularly. For this to work, org must setup 
-    *               a collection using initsystem action OR via initcoll in AA_BADGE_CONTRACT (handy when 
-    *               collection is not setup while initialize the system for the org).
-    *            2) Cumulative . This enables cumulative maintainence of badge balance for an account.
-    *            3) Rounds.  This enables putting a score to the badge. 
-		* @return no return value.
-		*/
 
-    ACTION initgotcha (name org,
-      name creator, 
-      name badge, 
-      time_point_sec starttime, 
-      uint64_t cycle_length, 
-      uint8_t supply_per_cycle, 
-      string offchain_lookup_data, 
-      string onchain_lookup_data,
-      vector<name> consumers,
-      string memo);
 
     /*
     * Gives a simple badge from authorizer to member
@@ -162,12 +125,6 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givegotcha (name org, 
-      name badge, 
-      name from, 
-      name to, 
-      uint8_t amount, 
-      string memo );
 
     
 
@@ -248,22 +205,6 @@ CONTRACT org : public contract {
       name notify_account, 
       string memo);
 
-    ACTION ninitgotch (name org, 
-      name badge, 
-      time_point_sec starttime, 
-      uint64_t cycle_length, 
-      uint8_t supply_per_cycle, 
-      string offchain_lookup_data, 
-      string onchain_lookup_data,
-      vector<name> consumers,
-      string memo);
-
-    ACTION ngivegotch (name org,
-      name badge, 
-      name from, 
-      name to, 
-      uint8_t amount,
-      string memo);
     
     ACTION agivesimpl(name org, 
       name to, 

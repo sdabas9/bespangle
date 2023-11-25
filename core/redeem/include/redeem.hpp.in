@@ -176,7 +176,7 @@ private:
     }
 
     uint64_t bounded_account_balance_for_badgeround_id(name org, uint64_t badgeround_id, name account) {
-        achievements_table _achievements(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        achievements_table _achievements(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         auto account_badge_index = _achievements.get_index<"accbadge"_n>();
         uint128_t key = (static_cast<uint128_t>(account.value) << 64) | badgeround_id;
         auto account_badge_iterator = account_badge_index.find(key);
@@ -191,7 +191,7 @@ private:
     }
 
     uint64_t get_badgeround_id(name org, name round, name badge) {
-        badgeround_table _badgeround(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        badgeround_table _badgeround(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         auto round_badge_index = _badgeround.get_index<"roundbadge"_n>();
         uint128_t round_badge_key = (static_cast<uint128_t>(round.value) << 64) | badge.value;
         auto round_badge_iterator = round_badge_index.find(round_badge_key);
@@ -213,7 +213,7 @@ private:
     }
 
     vector<uint64_t> relevant_badgeround_ids(name org, name round, vector<name> antibadges) {
-        badgeround_table _badgerounds(name(BOUNDEDAGG_CONTRACT_NAME), org.value);
+        badgeround_table _badgerounds(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
         vector<uint64_t> badgeround_ids;
         
         for (auto i = 0; i < antibadges.size(); i++) {

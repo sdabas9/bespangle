@@ -3,10 +3,10 @@
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CONTRACT_NAME "basicissue11"
-#define CLAIMASSET_CONTRACT_NAME "claimasset11"
+#define SIMPLEBADGE_CONTRACT_NAME "simplebadgex"
+#define CLAIMASSET_CONTRACT_NAME "dummy"
 #define NOTIFICATION_CONTRACT_NAME "notification"
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 

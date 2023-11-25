@@ -3,9 +3,9 @@
 using namespace std;
 using namespace eosio;
 
-#define ORG_CHECKS_CONTRACT_NAME "org"
-#define NOTIFICATION_CONTRACT_NAME "notcon"
-#define BOUNDED_AGG_CONTRACT_NAME "bdfd"
+#define ORG_CHECKS_CONTRACT_NAME "interface111"
+#define NOTIFICATION_CONTRACT_NAME "notification"
+#define BOUNDED_AGG_CONTRACT_NAME "boundedaggxx"
 
 CONTRACT roundmanager : public contract {
   public:

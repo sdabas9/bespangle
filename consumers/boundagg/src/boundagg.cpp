@@ -141,5 +141,5 @@ void boundagg::notifyachiev(
         // Move to the next round associated with the same badge
         badge_itr++;
 
-    } while (badge_itr != badge_index.end() && badge_itr->badge == badge_name);
+    } while (badge_itr != badge_index.end() && badge_itr->badge == badge);
 }

@@ -2,15 +2,15 @@
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
 #include <json.hpp>
-
 using json = nlohmann::json;
+
 using namespace std;
 using namespace eosio;
 using eosio::singleton;
 
-#define NOTIFICATION_CONTRACT_NAME "notifica"
-#define ORCHESTRATOR_CONTRACT_NAME "orc"
-#define BOUNDED_AGG_CONTRACT_NAME "badg"
+#define BOUNDED_AGG_CONTRACT_NAME "boundedaggxx"
+#define NOTIFICATION_CONTRACT_NAME "notification"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 
 CONTRACT redeem : public contract {
 public:

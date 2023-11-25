@@ -166,65 +166,6 @@
     require_recipient(name(NOTIFICATION_CONTRACT));
   }
 
-  ACTION org::initgotcha (name org,
-    name creator, 
-    name badge, 
-    time_point_sec starttime, 
-    uint64_t cycle_length, 
-    uint8_t supply_per_cycle, 
-    string offchain_lookup_data, 
-    string onchain_lookup_data,
-    vector<name> consumers,
-    string memo) {
-
-    require_auth(creator);
-    
-    require_recipient(checkscontract(org));
-    linked_inbuilt_checks_contract(org);
-    
-    action {
-      permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("ninitgotch"),
-      creategotcha_args {
-        .org = org,
-        .badge = badge,
-        .starttime = starttime,
-        .cycle_length = cycle_length,
-        .supply_per_cycle = supply_per_cycle,
-        .offchain_lookup_data = offchain_lookup_data,
-        .onchain_lookup_data = onchain_lookup_data,
-        .memo = memo }
-    }.send();
-
-    for (auto i = 0 ; i < consumers.size(); i++) {
-      action {
-      permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("naddfeatur"),
-      orchestrator_addfeature_args {
-        .org = get_self(),
-        .badge_name = badge,
-        .notify_account = consumers[i],
-        .memo = memo}
-      }.send();
-    }
-  }
-
-  ACTION org::ninitgotch (name org, 
-    name badge, 
-    time_point_sec starttime, 
-    uint64_t cycle_length, 
-    uint8_t supply_per_cycle, 
-    string offchain_lookup_data, 
-    string onchain_lookup_data,
-    vector<name> consumers,
-    string memo) {
-
-    require_auth(get_self());
-    require_recipient(name(GOTCHABADGE_CONTRACT));
-
-  }
 
   ACTION org::createseries(name org, name authorized, name series) {
 
@@ -370,30 +311,6 @@
     require_recipient(name(NOTIFICATION_CONTRACT));  
   }
 
-  ACTION org::givegotcha (name org, name badge, name from, name to, uint8_t amount, string memo ) {
-    require_auth(from);
-    require_recipient(checkscontract(org));
-    linked_inbuilt_checks_contract(org);
-
-    action {
-      permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("ngivegotch"),
-      givegotcha_args {
-        .org = org,
-        .badge = badge,
-        .from = from,
-        .to = to,
-        .amount = amount,
-        .memo = memo }
-    }.send();
-
-  }
-
-  ACTION org::ngivegotch (name org, name badge, name from, name to, uint8_t amount, string memo) {
-    require_auth(get_self());
-    require_recipient(name(GOTCHABADGE_CONTRACT));
-  }
 
   ACTION org::simplebatch (name org, name badge, name authorizer, vector<name> to, string memo) {
     require_auth(authorizer);
@@ -422,7 +339,7 @@
     require_recipient(checkscontract(org));
     linked_inbuilt_checks_contract(org);
 
-    if(is_async(org, name("givesimple"))) {
+   /* if(is_async(org, name("givesimple"))) {
       action {
       permission_level{get_self(), name("active")},
       name(ASYNC_CONTRACT),
@@ -434,7 +351,7 @@
         .memo = memo }
       }.send();
 
-    } else {
+    } else {*/
       action {
       permission_level{get_self(), name("active")},
       name(get_self()),
@@ -446,12 +363,12 @@
         .amount = 1,
         .memo = memo }
       }.send();
-    }
+   // }
 
   }
 
   ACTION org::agivesimpl(name org, name to, name badge, string memo ) {
-    require_auth(name(ASYNC_CONTRACT));
+   /* require_auth(name(ASYNC_CONTRACT));
     action {
     permission_level{get_self(), name("active")},
     name(get_self()),
@@ -462,7 +379,7 @@
       .badge = badge,
       .amount = 1,
       .memo = memo }
-    }.send();
+    }.send();*/
   }
 
   ACTION org::ngivesimpl(name org, name to, name badge, uint8_t amount, string memo ) {

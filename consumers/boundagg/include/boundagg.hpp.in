@@ -16,7 +16,7 @@ public:
     ACTION addrnd(name org, name round, string description);
     ACTION setstat(name org, name round, name status);
     ACTION addbgrnd(name org, name round, name badge);
-    ACTION rembgrnd(name org, name round, name badge)
+    ACTION rembgrnd(name org, name round, name badge);
 
     [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
       name org, 

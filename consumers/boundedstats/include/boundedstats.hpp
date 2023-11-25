@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
-#define BOUNDED_AGG_CONTRACT_NAME "dasfd"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
+#define BOUNDED_AGG_CONTRACT_NAME "boundedaggxx"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
 CONTRACT boundedstats : public contract {

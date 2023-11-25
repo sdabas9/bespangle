@@ -3,7 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define NOTIFICATION_CONTRACT_NAME "notification"
 #define BILLING_CONTRACT "billing.rep"
 

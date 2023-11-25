@@ -5,8 +5,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing11111"
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define BILLING_CONTRACT "billingxxxxx"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define ATOMIC_ASSETS_CONTRACT "atomicassets"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
@@ -14,9 +14,7 @@ using namespace eosio;
 #define ATOMIC_ASSETS_CREATE_TEMPLATE_NOTIFICATION ATOMIC_ASSETS_CONTRACT"::lognewtempl"
 #define ATOMIC_ASSETS_SCHEMA_NAME "schemaschema"
 
-// todo list
-// 1. create multiple collection
-// 2. initcoll by contract.
+
 CONTRACT aabadge : public contract {
   public:
     using contract::contract;

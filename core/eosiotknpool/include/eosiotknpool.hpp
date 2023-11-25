@@ -3,7 +3,7 @@
 
 using namespace eosio;
 
-#define REDEEM_CONTRACT_NAME "router111111"
+#define REDEEM_CONTRACT_NAME "redeemsbtxxx"
 #define DYNAMIC_REDEEM_NOTIFICATION REDEEM_CONTRACT_NAME"::distdynamic"
 #define FIXED_REDEEM_NOTIFICATION REDEEM_CONTRACT_NAME"::distfixed"
 

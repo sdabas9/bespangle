@@ -5,10 +5,31 @@ using namespace std;
 using namespace eosio;
 
 #cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine NOTIFICATION_CONTRACT "@NOTIFICATION_CONTRACT@"
+
+#define GOTCHA_BADGE_CREATE_NOTIFICATION NOTIFICATION_CONTRACT"::initsimple"
+#define GOTCHA_BADGE_ISSUANCE_NOTIFICATION NOTIFICATION_CONTRACT"::givesimple"
 
 CONTRACT gotchabadge : public contract {
   public:
     using contract::contract;
+
+    [[eosio::on_notify(GOTCHA_BADGE_CREATE_NOTIFICATION)]] void extcreate (
+      name org, 
+      name badge, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string offchain_lookup_data,
+      string onchain_lookup_data,  
+      string memo);
+
+    [[eosio::on_notify(GOTCHA_BADGE_ISSUANCE_NOTIFICATION)]] void extissue (name org, 
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount, 
+      string memo); 
 
     ACTION create (name org, 
       name badge, 
@@ -75,5 +96,24 @@ CONTRACT gotchabadge : public contract {
       string memo;
     }; 
 
+    struct create_args { 
+      name org; 
+      name badge; 
+      time_point_sec starttime; 
+      uint64_t cycle_length; 
+      uint8_t supply_per_cycle; 
+      string offchain_lookup_data;
+      string onchain_lookup_data; 
+      string memo; 
+    };
+
+    struct issue_args { 
+      name org; 
+      name badge; 
+      name from; 
+      name to; 
+      uint8_t amount; 
+      string memo; 
+    }; 
 
 };

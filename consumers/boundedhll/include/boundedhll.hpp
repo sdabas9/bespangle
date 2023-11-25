@@ -4,8 +4,8 @@
 using namespace std;
 using namespace eosio;
 
-#define NOTIFICATION_CONTRACT_NAME "billing11111"
-#define ORCHESTRATOR_CONTRACT_NAME "router111111"
+#define NOTIFICATION_CONTRACT_NAME "notification"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
 CONTRACT boundedhll : public contract {
