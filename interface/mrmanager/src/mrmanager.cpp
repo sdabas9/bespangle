@@ -22,7 +22,7 @@
     require_auth(creator);
     
     notify_checks_contract(org);
-    notify_linked_inbuilt_checks_contract(org);
+    require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
     
     action {
       permission_level{get_self(), name("active")},
@@ -72,7 +72,6 @@
   ACTION mrmanager::givegotcha (name org, name badge, name from, name to, uint8_t amount, string memo ) {
     require_auth(from);
     notify_checks_contract(org);
-    notify_linked_inbuilt_checks_contract(org);
 
     action {
       permission_level{get_self(), name("active")},

@@ -32,6 +32,16 @@ accounts=(
     "mrnotifyxxxx"
     "tapxxxxxxxxx"
     "checksxxxxxx"
+    "simmanagerxx"
+    "simnotifyxxx"
+    "sermanagerxx"
+    "simnotifyxxx"
+    "abnotifyxxxx"
+    "abmanagerxxx"
+    "antibadgeval"
+    "sernotifyxxx"
+    "simplevalxxx"
+    "gotchavalxxx"
 )
 
 # Loop through each account and power up

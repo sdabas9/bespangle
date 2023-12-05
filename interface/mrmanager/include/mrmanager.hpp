@@ -6,6 +6,8 @@ using namespace eosio;
 #define NOTIFICATION_CONTRACT "notification"
 #define MUTUAL_RECOGNITION_NOTIFICATION_CONTRACT "mrnotifyxxxx"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
+#define MUTUAL_RECOGNITION_VALIDATION_CONTRACT "gotchavalxxx"
+
 
 CONTRACT mrmanager : public contract {
   public:
@@ -50,13 +52,6 @@ CONTRACT mrmanager : public contract {
     };
     typedef multi_index<name("checks"), checks> checks_table;
 
-    TABLE systemchecks {
-      name org;
-      vector<name> system_check_contracts;
-      auto primary_key() const {return org.value; }
-    };
-    typedef multi_index<name("systemchecks"), systemchecks> systemchecks_table;
-
     void notify_checks_contract(name org) {
       checks_table _checks( name(ORG_CHECKS_CONTRACT_NAME), get_self().value );
       auto itr = _checks.find(org.value);
@@ -65,16 +60,6 @@ CONTRACT mrmanager : public contract {
       }
     }
     
-    void notify_linked_inbuilt_checks_contract(name org) {
-      systemchecks_table systemchecks(name(ORG_CHECKS_CONTRACT_NAME), get_self().value);
-      auto itr = systemchecks.find(org.value);
-      if(itr != systemchecks.end()) {
-        for(auto i = 0 ; i < itr->system_check_contracts.size(); i++) {
-          require_recipient(itr->system_check_contracts[i]);
-        }
-      }
-    }
-
     struct addfeature_args {
       name org;
       name badge_name;

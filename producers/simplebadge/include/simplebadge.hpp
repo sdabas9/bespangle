@@ -4,11 +4,11 @@ using namespace std;
 using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-#define NOTIFICATION_CONTRACT "notification"
+#define SIMPLE_NOTIFICATION_CONTRACT "simnotifyxxx"
 #define BILLING_CONTRACT "billingxxxxx"
 
-#define SIMPLE_BADGE_CREATE_NOTIFICATION NOTIFICATION_CONTRACT"::initsimple"
-#define SIMPLE_BADGE_ISSUANCE_NOTIFICATION NOTIFICATION_CONTRACT"::givesimple"
+#define SIMPLE_BADGE_CREATE_NOTIFICATION SIMPLE_NOTIFICATION_CONTRACT"::initsimple"
+#define SIMPLE_BADGE_ISSUANCE_NOTIFICATION SIMPLE_NOTIFICATION_CONTRACT"::givesimple"
 
 CONTRACT simplebadge : public contract {
   public:

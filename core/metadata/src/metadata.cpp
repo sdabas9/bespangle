@@ -2,9 +2,9 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
-ACTION metadata::recognize (name org, name trusted_contract) {
-  require_auth (org);
-  authorized_contracts_table _authorized_contracts( _self, org.value );
+ACTION metadata::recognize (name trusted_contract) {
+  require_auth (get_self());
+  authorized_contracts_table _authorized_contracts( _self, _self.value );
   auto itr = _authorized_contracts.find(trusted_contract.value);
   check(itr == _authorized_contracts.end(), "<trusted_contract> already authorized to issues badges");
   _authorized_contracts.emplace(get_self(), [&](auto& row){
@@ -12,20 +12,20 @@ ACTION metadata::recognize (name org, name trusted_contract) {
   });
 }
 
-ACTION metadata::isrecognized (name org, name contract) {
+/*ACTION metadata::isrecognized (name org, name contract) {
   authorized_contracts_table _authorized_contracts( _self, org.value );
   auto itr = _authorized_contracts.find(contract.value);
   check(itr != _authorized_contracts.end(), "<contract> is not recognized for <org>");
-}
+}*/
 
 ACTION metadata::initbadge (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_authorization(org);
+  check_authorization();
   init(org, badge, offchain_lookup_data, onchain_lookup_data, memo);
 
 }
 
 ACTION metadata::mergeinfo (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_authorization(org);
+  check_authorization();
   
   badge_table _badge( _self, org.value );
   auto badge_iterator = _badge.find (badge.value);
@@ -66,6 +66,24 @@ void metadata::naddfeatur (name org,
   name notify_account,
   string memo) {
 
+  action {
+    permission_level{get_self(), name("active")},
+    get_self(),
+    name("addfeature"),
+    local_addfeature_args {
+      .org = org,
+      .badge = badge,
+      .notify_account = notify_account,
+      .memo = memo
+      }
+  }.send();
+}
+
+ACTION metadata::extaddfeatur (name org, 
+  name badge,
+  name notify_account,
+  string memo) {
+  check_internal_auth(name("addfeature"));
   action {
     permission_level{get_self(), name("active")},
     get_self(),
@@ -171,9 +189,8 @@ ACTION metadata::delnotify(
 }
 
 ACTION metadata::achievement (name org, name badge, name account, name from, uint64_t count, string memo) {
-  check_authorization (org);
+  check_authorization ();
   //check_account_prefs (org, account);
-  
   badge_table _badge( _self, org.value );
   auto badge_iterator = _badge.find (badge.value);
 

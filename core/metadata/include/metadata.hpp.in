@@ -5,6 +5,7 @@ using namespace eosio;
 
 #cmakedefine BILLING_CONTRACT "@BILLING_CONTRACT@"
 #cmakedefine NOTIFICATION_CONTRACT "@NOTIFICATION_CONTRACT@"
+#cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
 
 
 #define ADD_FEATURE_NOTIFICATION NOTIFICATION_CONTRACT"::addfeature"
@@ -13,14 +14,19 @@ CONTRACT metadata : public contract {
   public:
     using contract::contract;
  
-  ACTION recognize (name org, name trusted_badge_contract);
+  ACTION recognize (name trusted_badge_contract);
 
-  ACTION isrecognized (name org, name contract); 
+ /* ACTION isrecognized (name org, name contract); */
 
   ACTION initbadge (name org, 
     name badge,
     string offchain_lookup_data, 
     string onchain_lookup_data, 
+    string memo);
+
+  ACTION extaddfeatur (name org, 
+    name badge,
+    name notify_account,
     string memo);
 
   ACTION addfeature (name org, 
@@ -137,12 +143,49 @@ CONTRACT metadata : public contract {
       auto primary_key() const {return badge.value; }
     };
     typedef multi_index<name("badge"), badge> badge_table;
-    
-    bool check_authorization (name org) {
-      if(has_auth(org)) {
-        return true;
+
+    TABLE auth {
+      uint64_t id;
+      name contract;
+      name action;
+      vector<name> authorized_contracts;
+
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
       }
-      authorized_contracts_table _authorized_contracts( _self, org.value );
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    bool check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      auto secondary_key = (uint128_t)(name(get_self()).value << 64 | action.value);
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+
+      if (itr == secondary_index.end() || itr->contract!=name(get_self()) || itr->action!=action) {
+          return false; // No authority found for the specified contract and action
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    bool check_authorization () {
+
+      authorized_contracts_table _authorized_contracts( _self, _self.value );
       for(auto itr = _authorized_contracts.begin(); itr != _authorized_contracts.end(); ++itr ) {
         
         if (has_auth(itr->trusted_contract)) {

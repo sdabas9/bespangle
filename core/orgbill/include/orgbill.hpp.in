@@ -44,11 +44,11 @@ CONTRACT orgbill : public contract {
           if (itr->trusted_contract == source_contract) {
             return true;
           } else {
-            check (false, "<source_contract> is not same as <trusted_contract>");
+            check (false, "billing contract : <source_contract> is not same as <trusted_contract>");
           }
         }
       }
-      check(false, "action does not have authorization of any trusted contract");
+      check(false, "billing contract : action does not have authorization of any trusted contract");
     }
     
     TABLE credits {
@@ -89,8 +89,8 @@ CONTRACT orgbill : public contract {
     credits_table _credits(get_self(), get_self().value);
     auto credits_itr = _credits.find(org.value);
     
-    check(credits_itr != _credits.end(), "<org> never registered for credits");
-    check(credits_itr->total_credits - credits_itr->used_credits - credits >= 0, "Credits exhausted for <org>");
+    check(credits_itr != _credits.end(), "billing contract : <org> never registered for credits");
+    check(credits_itr->total_credits - credits_itr->used_credits - credits >= 0, "billing contract : Credits exhausted for <org>");
     
     _credits.modify(credits_itr, get_self(), [&](auto& row) {
       row.used_credits = row.used_credits + credits;

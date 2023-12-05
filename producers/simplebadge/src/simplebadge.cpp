@@ -87,7 +87,7 @@
     string memo ) {
     require_auth(get_self());
     require_recipient(to);
-
+    
     badge_table _badge (_self, org.value);
     auto badge_itr = _badge.require_find(badge.value, "no simplebadge named <badge> is created");
     vector<name> all_badges;
@@ -108,6 +108,7 @@
     }
 
     for (auto i = 0 ; i < all_badges.size() ; i++ ) {
+    
       action {
         permission_level{get_self(), name("active")},
         name(ORCHESTRATOR_CONTRACT_NAME),

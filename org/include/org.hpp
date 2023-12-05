@@ -53,14 +53,7 @@ CONTRACT org : public contract {
 		* @return no return value.
 		*/
 
-    ACTION initsimple (name org, name creator, 
-      name badge, 
-      vector<name> parent_badges,
-      string offchain_lookup_data, 
-      string onchain_lookup_data,
-      vector<name> consumers,
-      string memo);
-    
+
     ACTION initcasset(name org, 
       name creator,
       name assetname,
@@ -109,11 +102,7 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-    ACTION givesimple (name org,
-     name badge, 
-     name authorizer, 
-     name to, 
-     string memo );
+
     
     /*
     * Gives a gotcha badge from member to member. Inputs must be validated in checks_contract
@@ -125,96 +114,9 @@ CONTRACT org : public contract {
     * @param memo Reason for giving the badge
     */  
 
-
-    
-
-
-    ACTION createseries (name org, 
-      name authorized, 
-      name series);
-
-    ACTION createnext (name org, 
-      name authorized, 
-      name series, 
-      name badge, 
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      vector<name> consumers,
-      string memo);
-
-    ACTION issuelatest (name org,
-      name authorized, 
-      name series, 
-      name to, 
-      uint64_t count, 
-      string memo);
-
-    ACTION issueany (name org,
-      name authorized,
-      name series,
-      uint64_t seq_id,
-      name to,
-      uint64_t count,
-      string memo);
-    
-    ACTION serieslbatch (name org, 
-      name authorized, 
-      name series, 
-      vector<name> to, 
-      string memo);
-    
-    ACTION ncreateserie (name org, 
-      name series);
-
-    ACTION ncreatenex (name org,
-      name series, 
-      name badge, 
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      string memo);
-
-    ACTION nissuelates (name org,
-      name series, 
-      name to, 
-      uint64_t count, 
-      string memo);
-
-    ACTION nissuean (name org,
-      name series,
-      uint64_t seq_id,
-      name to,
-      uint64_t count,
-      string memo);
-      
-    ACTION ninitsimpl (name org,
-      name badge, 
-      vector<name> parent_badges,
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      string memo);
-
-    // action notifying simplebadge contract. starts with "n"
-    ACTION ngivesimpl(name org,
-      name to, 
-      name badge,
-      uint8_t amount, 
-      string memo );
-
     ACTION naddfeatur (name org, 
       name badge_name, 
       name notify_account, 
-      string memo);
-
-    
-    ACTION agivesimpl(name org, 
-      name to, 
-      name badge, 
-      string memo);
-    
-    ACTION simplebatch (name org, 
-      name badge, 
-      name authorizer, 
-      vector<name> to, 
       string memo);
 
 
@@ -285,6 +187,7 @@ CONTRACT org : public contract {
       string memo;
     };
 
+
     struct aa_initcoll_args {
       name org;
       name collection_name;
@@ -294,77 +197,9 @@ CONTRACT org : public contract {
       name checks_contract;
     };
  
-    struct createsimple_args {
-      name org;
-      name badge;
-      vector<name> parent_badges;
-      string offchain_lookup_data; 
-      string onchain_lookup_data;
-      string memo;
-    };
 
-    struct creategotcha_args {
-      name org;
-      name badge;
-      time_point_sec starttime;
-      uint64_t cycle_length;
-      uint8_t supply_per_cycle;
-      string offchain_lookup_data; 
-      string onchain_lookup_data;
-      string memo;
-    };
 
-    struct givegotcha_args {
-      name org;
-      name badge;
-      name from;
-      name to;
-      uint8_t amount;
-      string memo;
-    };
 
-    struct issuesimple_args {
-      name org;
-      name to;
-      name badge;
-      uint8_t amount;
-      string memo;
-    };
-
-    struct createround_args {
-      name org;
-      name round;
-      string description;
-      bool account_constrained;
-      vector<name> participating_accounts;
-    };
-
-    struct startround_args {
-      name org;
-      name round;
-    };
-
-    struct endround_args {
-      name org;
-      name round;
-    };
-
-    struct addscoremeta_args {
-      name org;
-      name round;
-      uint64_t badge_id;
-      name balance_based_scoring_type;
-      uint16_t balance_based_scoring_weight;
-      name source_based_scoring_type;
-      uint16_t source_based_scoring_weight;
-    };
-
-    struct qgivesimpl_args {
-      name org;
-      name to;
-      name badge;
-      string memo;
-    };
 
     struct create_claim_asset_args {
       name org;
@@ -389,35 +224,6 @@ CONTRACT org : public contract {
       string memo;
     };
 
-    struct createseries_args {
-      name org;
-      name series;
-    };
-
-    struct createnext_args {
-      name org;
-      name series;
-      name badge;
-      string offchain_lookup_data;
-      string onchain_lookup_data;
-      string memo;
-    };
-
-    struct issuelatest_args {
-      name org;
-      name series;
-      name to;
-      uint64_t count;
-      string memo;
-    };
-
-    struct issueany_args {
-      name org;
-      name series;
-      uint64_t seq_id;
-      name to;
-      uint64_t count;
-      string memo;
-    };
 
 };
+
