@@ -42,6 +42,13 @@ accounts=(
     "sernotifyxxx"
     "simplevalxxx"
     "gotchavalxxx"
+    "authorityxxx"
+    "repmanagerxx"
+    "repvalxxxxxx"
+    "sachitsachit"
+    "testuserxxxx"
+    "testuseryyyy"
+    "testorgxxxxx"
 )
 
 # Loop through each account and power up

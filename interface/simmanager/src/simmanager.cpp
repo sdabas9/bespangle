@@ -15,8 +15,8 @@
 
     action {
     permission_level{get_self(), name("active")},
-    name(get_self()),
-    name("ninitsimpl"),
+    name(SIMPLEBADGE_CONTRACT),
+    name("create"),
     createsimple_args {
       .org = org,
       .badge = badge,
@@ -30,7 +30,7 @@
       action {
       permission_level{get_self(), name("active")},
       name(ORCHESTRATOR_CONTRACT),
-      name("extaddfeatur"),
+      name("addfeature"),
       addfeature_args {
         .org = org,
         .badge_name = badge,
@@ -38,17 +38,6 @@
         .memo = memo}
       }.send();
     }
-  }
-
-  ACTION simmanager::ninitsimpl (name org,
-    name badge, 
-    vector<name> parent_badges,
-    string offchain_lookup_data, 
-    string onchain_lookup_data, 
-    string memo) {
-    require_auth(get_self());
-    require_recipient(name(SIMPLE_NOTIFICATION_CONTRACT));
-
   }
 
   ACTION simmanager::simplebatch (name org, name badge, name authorizer, vector<name> to, string memo) {
@@ -59,8 +48,8 @@
     for( auto i = 0; i < to.size(); i++ ) {
       action {
       permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("ngivesimpl"),
+      name(SIMPLEBADGE_CONTRACT),
+      name("issue"),
       issuesimple_args {
         .org = org,
         .to = to[i],
@@ -80,8 +69,8 @@
 
     action {
     permission_level{get_self(), name("active")},
-    name(get_self()),
-    name("ngivesimpl"),
+    name(SIMPLEBADGE_CONTRACT),
+    name("issue"),
     issuesimple_args {
       .org = org,
       .to = to,
@@ -93,15 +82,3 @@
 
   }
 
-  ACTION simmanager::ngivesimpl(name org, name to, name badge, uint64_t amount, string memo ) {
-    require_auth(get_self());
-    require_recipient(name(SIMPLE_NOTIFICATION_CONTRACT));
-  }
-
-  ACTION simmanager::naddfeatur (name org,
-    name badge_name, 
-    name notify_account, 
-    string memo) {
-    require_auth(get_self());
-    require_recipient(name(NOTIFICATION_CONTRACT));
-  }

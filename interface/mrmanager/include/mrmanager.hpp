@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define NOTIFICATION_CONTRACT "notification"
-#define MUTUAL_RECOGNITION_NOTIFICATION_CONTRACT "mrnotifyxxxx"
+#define GOTCHABADGE_CONTRACT "gotchabadgex"
+#define ORCHESTRATOR_CONTRACT "orchestrator"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
 #define MUTUAL_RECOGNITION_VALIDATION_CONTRACT "gotchavalxxx"
 
@@ -13,23 +13,8 @@ CONTRACT mrmanager : public contract {
   public:
     using contract::contract;
 
-  ACTION naddfeatur (name org,
-    name badge_name, 
-    name notify_account, 
-    string memo);
-
   ACTION initgotcha (name org,
-    name creator, 
-    name badge, 
-    time_point_sec starttime, 
-    uint64_t cycle_length, 
-    uint8_t supply_per_cycle, 
-    string offchain_lookup_data, 
-    string onchain_lookup_data,
-    vector<name> consumers,
-    string memo);
-
-  ACTION ninitgotch (name org, 
+    name authorized, 
     name badge, 
     time_point_sec starttime, 
     uint64_t cycle_length, 
@@ -40,9 +25,14 @@ CONTRACT mrmanager : public contract {
     string memo);
 
 
-  ACTION givegotcha (name org, name badge, name from, name to, uint8_t amount, string memo );
+  ACTION givegotcha (name org, name badge, name from, name to, uint64_t amount, string memo );
 
-  ACTION ngivegotch (name org, name badge, name from, name to, uint8_t amount, string memo);
+  ACTION changestart(name org, name authorized, name badge, time_point_sec new_starttime);
+
+  ACTION changelength(name org, name authorized, name badge, uint64_t new_cycle_length);
+
+  ACTION changesupply(name org, name authorized, name badge, uint8_t new_supply_per_cycle);
+
 
   private:
     TABLE checks {
@@ -83,7 +73,25 @@ CONTRACT mrmanager : public contract {
       name badge;
       name from;
       name to;
-      uint8_t amount;
+      uint64_t amount;
       string memo;
+    };
+
+    struct starttime_args {
+      name org;
+      name badge;
+      time_point_sec new_starttime;
+    };
+
+    struct cyclelength_args {
+      name org;
+      name badge;
+      uint64_t new_cycle_length;
+    };
+
+    struct cyclesupply_args {
+      name org;
+      name badge;
+      uint8_t new_supply_per_cycle;
     };
 };

@@ -40,13 +40,21 @@ ACTION authority::removeauth(name contract, name action, name authorized_contrac
 
         check(itr != secondary_index.end() && itr->contract==contract && itr->action==action, "Authority with this contract and action does not exist");
 
+        bool erase_row = false;
         // Remove the specified authorized contract
         secondary_index.modify(itr, get_self(), [&](auto& mod_auth) {
             auto& contracts = mod_auth.authorized_contracts;
             auto contract_itr = std::find(contracts.begin(), contracts.end(), authorized_contract);
             check(contract_itr != contracts.end(), "Contract is not authorized");
             contracts.erase(contract_itr);
+            if(contracts.size() == 0) {
+               erase_row = true; 
+            }
         });
+
+        if(erase_row) {
+            secondary_index.erase(itr);
+        }
     }
 
 ACTION authority::hasauth(name contract, name action, name account) {

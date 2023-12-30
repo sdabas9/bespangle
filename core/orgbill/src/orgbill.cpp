@@ -10,18 +10,9 @@
 // recognize and addsettings are multisig authorizations.
 // notify is contract authorization.
 
-ACTION orgbill::recognize (name trusted_contract) {
-  require_auth (get_self());
-  authorized_contracts_table _authorized_contracts( get_self(), get_self().value );
-  auto itr = _authorized_contracts.find(trusted_contract.value);
-  check(itr == _authorized_contracts.end(), "billing contract : <trusted_contract> already authorized to issues badges");
-  _authorized_contracts.emplace(get_self(), [&](auto& row){
-    row.trusted_contract = trusted_contract;
-  });
-}
 
 ACTION orgbill::addsettings (name key, uint32_t value) {
-  require_auth(get_self());
+  check_internal_auth(name("addsettings"));
   settings_table _settings(get_self(), get_self().value);
   auto itr = _settings.find(key.value);
   if(itr == _settings.end()) {
@@ -63,13 +54,13 @@ void orgbill::buycredits(name from, name to, asset quantity, string memo) {
 }
 
 ACTION orgbill::protocolfees(name org, name feature) {
-  require_auth(name(ORCHESTRATOR_CONTRACT_NAME));
+  check_internal_auth(name("protocolfees"));
   uint32_t credits = getvalue(feature);
   deduct_credit (org, credits);
 }
 
 ACTION orgbill::ramcredits(name org, name contract, uint64_t bytes, string memo) {
-  check_authorization(contract);
+  check_internal_auth(name("ramcredits"));
   uint32_t credits = bytes_to_credits(bytes);
   deduct_credit (org, credits);
 }

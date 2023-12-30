@@ -36,7 +36,9 @@ void boundedhll::notifyachiev(
             uint8_t b = 7;
             uint32_t m = 1 << b;
 
-            if (existing_entry == secondary_index.end()) {
+            if (existing_entry == secondary_index.end() ||
+                existing_entry->account != account ||
+                existing_entry->badgeround_id != badge_itr->badgeround_id) {
                 // Initialize HyperLogLog data structure
                 vector<uint8_t> M(m, 0);
                 hll::HyperLogLog hll(b, m, M);
@@ -49,6 +51,19 @@ void boundedhll::notifyachiev(
                     row.badgeround_id = badge_itr->badgeround_id;
                     row.hll = hll.registers();
                 });
+
+                action {
+                    permission_level{get_self(), name("active")},
+                    name(name(SIMPLEBADGE_CONTRACT)),
+                    name("issue"),
+                    issue_args {
+                        .org = org,
+                        .to = account,
+                        .badge = emit_badge,
+                        .amount = 1,
+                        .memo = "issued from rollup consumer"
+                    }
+                }.send();
             } else if (existing_entry != secondary_index.end() &&
                        existing_entry->account == account && 
                        existing_entry->badgeround_id == badge_itr->badgeround_id) {
@@ -72,8 +87,8 @@ void boundedhll::notifyachiev(
 
                     action {
                         permission_level{get_self(), name("active")},
-                        name(get_self()),
-                        name("issuesimple"),
+                        name(name(SIMPLEBADGE_CONTRACT)),
+                        name("issue"),
                         issue_args {
                             .org = org,
                             .to = account,
@@ -151,8 +166,3 @@ ACTION boundedhll::newemission(
     });
 }
 
-ACTION boundedhll::issuesimple(name org, name to, name badge, uint64_t amount, string memo) {
-    require_auth(get_self());
-    require_recipient(name(NOTIFICATION_CONTRACT_NAME));
-    // Implementation here
-}

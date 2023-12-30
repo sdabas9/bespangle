@@ -2,7 +2,7 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
-ACTION metadata::recognize (name trusted_contract) {
+/*ACTION metadata::recognize (name trusted_contract) {
   require_auth (get_self());
   authorized_contracts_table _authorized_contracts( _self, _self.value );
   auto itr = _authorized_contracts.find(trusted_contract.value);
@@ -10,7 +10,7 @@ ACTION metadata::recognize (name trusted_contract) {
   _authorized_contracts.emplace(get_self(), [&](auto& row){
     row.trusted_contract = trusted_contract;
   });
-}
+}*/
 
 /*ACTION metadata::isrecognized (name org, name contract) {
   authorized_contracts_table _authorized_contracts( _self, org.value );
@@ -19,14 +19,13 @@ ACTION metadata::recognize (name trusted_contract) {
 }*/
 
 ACTION metadata::initbadge (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_authorization();
+  check_internal_auth(name("initbadge"));
   init(org, badge, offchain_lookup_data, onchain_lookup_data, memo);
 
 }
 
 ACTION metadata::mergeinfo (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_authorization();
-  
+  check_internal_auth(name("mergeinfo"));
   badge_table _badge( _self, org.value );
   auto badge_iterator = _badge.find (badge.value);
   check(badge_iterator != _badge.end(), "<action name> : <org> <contract> <badge> not found");
@@ -61,48 +60,11 @@ ACTION metadata::mergeinfo (name org, name badge, string offchain_lookup_data, s
 
 }
 
-void metadata::naddfeatur (name org, 
-  name badge,
-  name notify_account,
-  string memo) {
-
-  action {
-    permission_level{get_self(), name("active")},
-    get_self(),
-    name("addfeature"),
-    local_addfeature_args {
-      .org = org,
-      .badge = badge,
-      .notify_account = notify_account,
-      .memo = memo
-      }
-  }.send();
-}
-
-ACTION metadata::extaddfeatur (name org, 
-  name badge,
-  name notify_account,
-  string memo) {
-  check_internal_auth(name("addfeature"));
-  action {
-    permission_level{get_self(), name("active")},
-    get_self(),
-    name("addfeature"),
-    local_addfeature_args {
-      .org = org,
-      .badge = badge,
-      .notify_account = notify_account,
-      .memo = memo
-      }
-  }.send();
-}
-
 ACTION metadata::addfeature (name org, name badge, name notify_account, string memo) {
-  require_auth(get_self());
-  
+  check_internal_auth(name("addfeature"));  
   badge_table _badge( _self, org.value );
   auto badge_iterator = _badge.find (badge.value);
-  check(badge_iterator != _badge.end(), "<action name> : <org> <contract> <badge> not found");
+  check(badge_iterator != _badge.end(), "addfeature action, metadata contract : <org> <contract> <badge> not found");
   
   vector<name> new_notify_accounts ;
   for( auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
@@ -145,8 +107,7 @@ ACTION metadata::addnotify(
 }
 
 ACTION metadata::delfeature (name org, name badge, name notify_account, string memo) {
-  require_auth(org);
-  
+  check_internal_auth(name("delfeature"));  
   badge_table _badge( _self, org.value );
   auto badge_iterator = _badge.find (badge.value);
   check(badge_iterator != _badge.end() , "<action name> : <org> <contract> <badge> not found");
@@ -189,7 +150,7 @@ ACTION metadata::delnotify(
 }
 
 ACTION metadata::achievement (name org, name badge, name account, name from, uint64_t count, string memo) {
-  check_authorization ();
+  check_internal_auth(name("achievement"));
   //check_account_prefs (org, account);
   badge_table _badge( _self, org.value );
   auto badge_iterator = _badge.find (badge.value);

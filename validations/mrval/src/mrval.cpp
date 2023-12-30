@@ -1,7 +1,7 @@
 #include <mrval.hpp>
 
 void mrval::initgotcha (name org,
-      name creator, 
+      name authorized, 
       name badge, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
@@ -11,12 +11,34 @@ void mrval::initgotcha (name org,
       vector<name> consumers,
       string memo) {
 
-    if (has_action_authority(org, name("initgotcha"), creator)) {
+    if (has_action_authority(org, name("initgotcha"), authorized)) {
         return;
     }
     check(false, "Unauthorized account to execute action");
 
 }
+
+void mrval::changestart(name org, name authorized, name badge, time_point_sec new_starttime) {
+    if (has_action_authority(org, name("changestart"), authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
+}
+
+void mrval::changelength(name org, name authorized, name badge, uint64_t new_cycle_length) {
+    if (has_action_authority(org, name("changelength"), authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
+}
+
+void mrval::changesupply(name org, name authorized, name badge, uint8_t new_supply_per_cycle) {
+    if (has_action_authority(org, name("changesupply"), authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
+}
+  
 
 ACTION mrval::addactionauth (name org, name action, name authorized_account) {
   require_auth (org);

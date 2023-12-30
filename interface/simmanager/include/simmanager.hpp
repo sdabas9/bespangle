@@ -3,8 +3,7 @@
 using namespace std;
 using namespace eosio;
 
-#define NOTIFICATION_CONTRACT "notification"
-#define SIMPLE_NOTIFICATION_CONTRACT "simnotifyxxx"
+#define SIMPLEBADGE_CONTRACT "simplebadgex"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
 #define SIMPLE_VALIDATION_CONTRACT "simplevalxxx"
 #define ORCHESTRATOR_CONTRACT "orchestrator"
@@ -27,31 +26,11 @@ CONTRACT simmanager : public contract {
      name to, 
      string memo );
 
-    ACTION ninitsimpl (name org,
-      name badge, 
-      vector<name> parent_badges,
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      string memo);
-
-    // action notifying simplebadge contract. starts with "n"
-    ACTION ngivesimpl(name org,
-      name to, 
-      name badge,
-      uint64_t amount, 
-      string memo );
-      
     ACTION simplebatch (name org, 
       name badge, 
       name authorizer, 
       vector<name> to, 
       string memo);
-
-    ACTION naddfeatur (name org,
-      name badge_name, 
-      name notify_account, 
-      string memo);
-
     
 
   private:

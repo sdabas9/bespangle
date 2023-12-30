@@ -4,7 +4,8 @@
 using namespace std;
 using namespace eosio;
 
-#define NOTIFICATION_CONTRACT_NAME "notification"
+#define AUTHORITY_CONTRACT "authorityxxx"
+#define SIMPLEBADGE_CONTRACT "simplebadgex"
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
@@ -29,9 +30,44 @@ CONTRACT hllemitter : public contract {
     name badge,
     name sender_uniqueness_badge);
 
-    ACTION issuesimple (name org, name to, name badge, uint64_t amount, string memo);
-
   private:
+    TABLE auth {
+      uint64_t id;
+      name contract;
+      name action;
+      vector<name> authorized_contracts;
+
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
+      }
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    void check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      uint128_t secondary_key = (uint128_t)get_self().value << 64 | action.value;
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+      if (itr != secondary_index.end() && itr->contract!=get_self() && itr->action!=action) {
+          check(false, "No authority found for contract " + get_self().to_string() + " and action " + action.to_string());
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
+          return;
+        }
+      }
+      check(false, "Account not is authorized list of accounts for action " + action.to_string());
+    }
 
     // Table definition moved to private
     TABLE balances {

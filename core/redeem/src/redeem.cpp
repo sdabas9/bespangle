@@ -64,23 +64,14 @@ ACTION redeem::initdynamic(name org, name round, name badge, uint64_t amount, na
 }
 
 ACTION redeem::distfixed(name org, name round, name badge, name account, uint64_t amount_val, name notification_contract) {
+    require_auth(get_self());
     require_recipient(notification_contract);
 }
 
 ACTION redeem::distdynamic(name org, name round, name badge, name account, uint64_t portion, name notification_contract) {
+    require_auth(get_self());
     require_recipient(notification_contract);
 }
-
-ACTION redeem::issuesbt(name org,
-    name to,
-    name antibadge,
-    uint64_t amount,
-    string memo) {
-
-    require_recipient(name(NOTIFICATION_CONTRACT_NAME));
-}
-
-
 
 
 ACTION redeem::redeemfix(name org, name account, name round, name badge) {
@@ -107,8 +98,8 @@ ACTION redeem::redeemfix(name org, name account, name round, name badge) {
 
     action(
         permission_level{get_self(), "active"_n},
-        get_self(),
-        "issuesbt"_n,
+        name(ANTIBADGE_CONTRACT),
+        "issue"_n,
         issuesbt_args{
             .org = org,
             .to = account,
@@ -167,8 +158,8 @@ ACTION redeem::redeemdyn(name org, name account, name badge, name round) {
 
     action(
         permission_level{get_self(), "active"_n},
-        get_self(),
-        "issuesbt"_n,
+        name(ANTIBADGE_CONTRACT),
+        "issue"_n,
         issuesbt_args{
             .org = org,
             .to = account,

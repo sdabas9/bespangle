@@ -2,68 +2,6 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
-void antibadge::extcreate(name org,
-               name antibadge,
-               name badge,
-               name type,
-               string offchain_lookup_data,
-               string onchain_lookup_data,
-               string memo) {
-    action{
-        permission_level{get_self(), name("active")},
-        name(get_self()),
-        name("create"),
-        create_args{
-            .org = org,
-            .antibadge = antibadge,
-            .badge = badge,
-            .offchain_lookup_data = offchain_lookup_data,
-            .onchain_lookup_data = onchain_lookup_data,
-            .memo = memo
-        }
-    }.send();
-}
-
-void antibadge::extcinv(name org,
-             name antibadge,
-             name badge,
-             string offchain_lookup_data,
-             string onchain_lookup_data,
-             string memo) {
-    action{
-        permission_level{get_self(), name("active")},
-        name(get_self()),
-        name("createinv"),
-        createinv_args{
-            .org = org,
-            .antibadge = antibadge,
-            .badge = badge,
-            .offchain_lookup_data = offchain_lookup_data,
-            .onchain_lookup_data = onchain_lookup_data,
-            .memo = memo
-        }
-    }.send();
-}
-
-void antibadge::extissue(name org,
-              name to,
-              name antibadge,
-              uint64_t amount,
-              string memo) {
-    action{
-        permission_level{get_self(), name("active")},
-        name(get_self()),
-        name("issue"),
-        issue_args{
-            .org = org,
-            .to = to,
-            .antibadge = antibadge,
-            .amount = amount,
-            .memo = memo
-        }
-    }.send();
-}
-
 ACTION antibadge::create(name org,
                          name antibadge,
                          name badge,
@@ -71,7 +9,7 @@ ACTION antibadge::create(name org,
                          string offchain_lookup_data,
                          string onchain_lookup_data,
                          string memo) {
-    require_auth(get_self());
+    check_internal_auth(name("create"));
     auto _onchain_lookup_data = json::parse(onchain_lookup_data);
 
     _onchain_lookup_data["anti_to"] = badge.to_string();
@@ -117,7 +55,7 @@ ACTION antibadge::createinv(name org,
                             string offchain_lookup_data,
                             string onchain_lookup_data,
                             string memo) {
-    require_auth(get_self());
+    check_internal_auth(name("createinv"));
 
     action{
         permission_level{get_self(), name("active")},
@@ -143,7 +81,7 @@ ACTION antibadge::issue(name org,
                         name antibadge,
                         uint64_t amount,
                         string memo) {
-    require_auth(get_self());
+    check_internal_auth(name("issue"));
     
     badge_table badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
     auto badge_itr = badge.require_find(antibadge.value, "antibadge not defined. create badge before issuing");

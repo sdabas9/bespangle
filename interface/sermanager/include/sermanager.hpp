@@ -3,8 +3,8 @@
 using namespace std;
 using namespace eosio;
 
-#define SERIES_NOTIFICATION_CONTRACT "sernotifyxxx"
-#define NOTIFICATION_CONTRACT "notification"
+#define SERIESBADGE_CONTRACT "seriesbadgex"
+#define ORCHESTRATOR_CONTRACT "orchestrator"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
 #define SERIES_VALIDATION_CONTRACT "seriesval111"
 
@@ -46,36 +46,6 @@ CONTRACT sermanager : public contract {
       vector<name> to, 
       string memo);
     
-    ACTION ncreateserie (name org, 
-      name series);
-
-    ACTION ncreatenex (name org,
-      name series, 
-      name badge, 
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      string memo);
-
-    ACTION nissuelates (name org,
-      name series, 
-      name to, 
-      uint64_t count, 
-      string memo);
-
-    ACTION nissuean (name org,
-      name series,
-      uint64_t seq_id,
-      name to,
-      uint64_t count,
-      string memo);
-      
-
-
-    ACTION naddfeatur (name org, 
-      name badge_name, 
-      name notify_account, 
-      string memo);
-
   private:
     TABLE checks {
       name org;

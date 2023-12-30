@@ -5,42 +5,14 @@ using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define CHECKS_CONTRACT_NAME "checksxxxxxx"
-#define ANTIBADGE_NOTIFICATION_CONTRACT "abnotifyxxxx"
+#define AUTHORITY_CONTRACT "authorityxxx"
 #define BOUNDEDAGG_CONTRACT_NAME "boundedaggxx"
 #define CUMULATIVE_CONTRACT_NAME "cumulativexx"
 
 
-#define CREATE_NOTIFICATION ANTIBADGE_NOTIFICATION_CONTRACT "::create"
-#define CREATE_INVALIDATE_NOTIFICATION ANTIBADGE_NOTIFICATION_CONTRACT "::createinv"
-#define ISSUANCE_NOTIFICATION ANTIBADGE_NOTIFICATION_CONTRACT "::issue"
-
 CONTRACT antibadge : public contract {
 public:
     using contract::contract;
-
-    [[eosio::on_notify(CREATE_NOTIFICATION)]]
-    void extcreate(name org,
-                   name antibadge,
-                   name badge,
-                   name type,
-                   string offchain_lookup_data,
-                   string onchain_lookup_data,
-                   string memo);
-
-    [[eosio::on_notify(CREATE_INVALIDATE_NOTIFICATION)]]
-    void extcinv(name org,
-                 name antibadge,
-                 name badge,
-                 string offchain_lookup_data,
-                 string onchain_lookup_data,
-                 string memo);
-
-    [[eosio::on_notify(ISSUANCE_NOTIFICATION)]]
-    void extissue(name org,
-                  name to,
-                  name antibadge,
-                  uint64_t amount,
-                  string memo);
 
     ACTION create(name org,
                   name antibadge,
@@ -74,6 +46,44 @@ private:
     };
     typedef multi_index<name("badge"), badge> badge_table;
 
+    TABLE auth {
+      uint64_t id;
+      name contract;
+      name action;
+      vector<name> authorized_contracts;
+
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
+      }
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    bool check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      auto secondary_key = (uint128_t)(name(get_self()).value << 64 | action.value);
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+
+      if (itr == secondary_index.end() || itr->contract!=name(get_self()) || itr->action!=action) {
+          return false; // No authority found for the specified contract and action
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     struct create_args {
         name org;

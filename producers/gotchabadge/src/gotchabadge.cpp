@@ -5,102 +5,99 @@
 // change supply per duration.
 // number of cycles
 
- void gotchabadge::extcreate (name org, 
-    name badge, 
-    time_point_sec starttime, 
-    uint64_t cycle_length, 
-    uint8_t supply_per_cycle, 
-    string offchain_lookup_data,
-    string onchain_lookup_data,  
-    string memo) {
-    action {
-      permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("create"),
-      create_args {
-        .org = org,
-        .badge = badge,
-        .starttime = starttime,
-        .cycle_length = cycle_length,
-        .supply_per_cycle = supply_per_cycle,
-        .offchain_lookup_data = offchain_lookup_data,
-        .onchain_lookup_data = onchain_lookup_data,
-        .memo = memo }
-    }.send();  
-  }
+ACTION gotchabadge::starttime(name org, name badge, time_point_sec new_starttime) {
+    check_internal_auth(name("starttime"));
+    metadata_table _metadata(_self, org.value);
 
-  void gotchabadge::extissue (name org, 
-    name badge, 
-    name from, 
-    name to, 
-    uint8_t amount, 
-    string memo) {
-    action {
-      permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("issue"),
-      issue_args {
-        .org = org,
-        .badge = badge,
-        .from = from,
-        .to = to,
-        .amount = amount,
-        .memo = memo}
-    }.send(); 
+    // Find the record with the given badge
+    auto itr = _metadata.find(badge.value);
+    check(itr != _metadata.end(), "Badge not found");
 
-  }
+    // Check if the current starttime is past the current time
+    check(new_starttime >= current_time_point(), "new starttime in past");
+    if (itr->starttime >= current_time_point()) {
+        // Update the starttime if it's in the past
+        _metadata.modify(itr, get_self(), [&](auto& row) {
+            row.starttime = new_starttime;
+            row.last_known_cycle_start = new_starttime;
+            row.last_known_cycle_end = new_starttime + row.cycle_length - 1;
+        });
+    } else {
+        check(false, "starttime already past");
+    }
+}
 
-  ACTION gotchabadge::create (name org, 
-    name badge, 
-    time_point_sec starttime, 
-    uint64_t cycle_length, 
-    uint8_t supply_per_cycle, 
-    string offchain_lookup_data,
-    string onchain_lookup_data,  
-    string memo) {
+ACTION gotchabadge::cyclelength(name org, name badge, uint64_t new_cycle_length) {
+    check_internal_auth(name("cyclelength"));
+    metadata_table _metadata(_self, org.value);
 
-      require_auth(_self);
-      metadata_table _metadata (_self, org.value);
-      
-      // todo add in all badges
-      auto badge_itr = _metadata.find(badge.value);
-      check(badge_itr == _metadata.end(), "invalid name or <badge> with this name already exists");
+    // Find the record with the given badge
+    auto itr = _metadata.find(badge.value);
+    check(itr != _metadata.end(), "Badge not found");
 
-      // duration of cycle is in seconds.
-      // for duration of 60 secs starting at time 100 
-      // cycle start, cycle end
-      // 100, 159
-      // 160, 219  
-      _metadata.emplace(org, [&](auto& row) {
+    // Update the cycle_length
+    _metadata.modify(itr, get_self(), [&](auto& row) {
+        row.cycle_length = new_cycle_length;
+    });
+}
+
+ACTION gotchabadge::cyclesupply(name org, name badge, uint8_t new_supply_per_cycle) {
+    check_internal_auth(name("cyclesupply"));
+    metadata_table _metadata(_self, org.value);
+
+    // Find the record with the given badge
+    auto itr = _metadata.find(badge.value);
+    check(itr != _metadata.end(), "Badge not found");
+
+    // Update cycle supply
+    _metadata.modify(itr, get_self(), [&](auto& row) {
+        row.supply_per_cycle = new_supply_per_cycle;
+    });
+}
+
+ACTION gotchabadge::create(name org, name badge, time_point_sec starttime, uint64_t cycle_length, uint8_t supply_per_cycle, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+    check_internal_auth(name("create"));
+    time_point_sec current_time = time_point_sec(current_time_point());
+    check(starttime >= current_time, "Gotchabadge contract - start time can not be in past");
+    metadata_table _metadata(_self, org.value);
+
+    // Todo: Add in all badges
+    auto badge_itr = _metadata.find(badge.value);
+    check(badge_itr == _metadata.end(), "Invalid name or <badge> with this name already exists");
+
+    // Duration of cycle is in seconds
+    _metadata.emplace(get_self(), [&](auto& row) {
         row.badge = badge;
         row.starttime = starttime;
         row.cycle_length = cycle_length;
         row.last_known_cycle_start = starttime;
         row.last_known_cycle_end = starttime + cycle_length - 1;
         row.supply_per_cycle = supply_per_cycle;
-      });
+    });
 
-      action {
+    // Remote orchestrator contract call
+    action {
         permission_level{get_self(), name("active")},
         name(ORCHESTRATOR_CONTRACT_NAME),
         name("initbadge"),
         initbadge_args {
-          .org = org,
-          .badge_contract = get_self(),
-          .badge_name = badge,
-          .offchain_lookup_data = offchain_lookup_data,
-          .onchain_lookup_data = offchain_lookup_data,
-          .memo = memo}
-      }.send();
-  }
+            .org = org,
+            .badge_name = badge,
+            .offchain_lookup_data = offchain_lookup_data,
+            .onchain_lookup_data = onchain_lookup_data,
+            .memo = memo
+        }
+    }.send();
+}
+
 
   ACTION gotchabadge::give (name org, 
     name badge, 
     name from, 
     name to, 
-    uint8_t amount, 
+    uint64_t amount, 
     string memo ) {
-    require_auth(_self);
+    check_internal_auth(name("give"));
 
     check(from != to, "can not be same - from, to");
 
@@ -128,7 +125,7 @@
     }
     //// update current cycle in local metadata
     if(cycle_update_needed) {
-      _metadata.modify(badge_itr, org, [&](auto& row) {
+      _metadata.modify(badge_itr, get_self(), [&](auto& row) {
         row.last_known_cycle_end = last_known_cycle_end;
         row.last_known_cycle_start = last_known_cycle_start;
       }); 
@@ -147,7 +144,7 @@
 
     if(account_badge_iterator == account_badge_index.end()) {
       check(amount <= supply_per_cycle, "<amount> exceeds available <supply_per_cycle>. Can only issue <supply_per_cycle> <badge>");
-      _stats.emplace(org, [&](auto& row) {
+      _stats.emplace(get_self(), [&](auto& row) {
         row.id = _stats.available_primary_key();
         row.account = from;
         row.badge = badge;
@@ -156,13 +153,13 @@
       });
     } else if (current_cycle_start <= account_badge_iterator->last_claimed_time) {
       check(account_badge_iterator->balance + amount <= supply_per_cycle, "<balance + amount> exceeds available <supply_per_cycle>. Can only issue <supply_per_cycle - balance> <badge>");
-      account_badge_index.modify(account_badge_iterator, org, [&](auto& row) {
+      account_badge_index.modify(account_badge_iterator, get_self(), [&](auto& row) {
         row.balance = row.balance + amount;
         row.last_claimed_time = current_time;
       });
     } else {
       check(amount <= supply_per_cycle, "<amount> exceeds available <supply_per_cycle>. Can only issue <supply_per_cycle - balance> <badge>");
-      account_badge_index.modify(account_badge_iterator, org, [&](auto& row) {
+      account_badge_index.modify(account_badge_iterator, get_self(), [&](auto& row) {
         row.balance = amount;
         row.last_claimed_time = current_time;
       });
@@ -175,8 +172,7 @@
       name("achievement"),
       achievement_args {
         .org = org,
-        .badge_contract = get_self(),
-        .badge_name = badge,
+        .badge = badge,
         .account = to,
         .from = from,
         .count = amount,

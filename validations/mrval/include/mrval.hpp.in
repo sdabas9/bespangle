@@ -7,7 +7,10 @@ using std::vector;
 
 #cmakedefine MUTUAL_RECOGNITION_INTERFACE_CONTRACT "@MUTUAL_RECOGNITION_INTERFACE_CONTRACT@"
 
-#define MUTUAL_RECOGNITION_INTERFACE_CREATE_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT"::initsimple" 
+#define MUTUAL_RECOGNITION_INTERFACE_CREATE_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT"::initgotcha" 
+#define MUTUAL_RECOGNITION_INTERFACE_CHANGE_START_TIME_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT"::changestart" 
+#define MUTUAL_RECOGNITION_INTERFACE_CHANGE_CYCLE_LENGTH_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT"::changelength" 
+#define MUTUAL_RECOGNITION_INTERFACE_CHANGE_CYCLE_SUPPLY_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT"::changesupply" 
 
 
 CONTRACT mrval : public contract {
@@ -15,7 +18,7 @@ CONTRACT mrval : public contract {
     using contract::contract;
 
     [[eosio::on_notify(MUTUAL_RECOGNITION_INTERFACE_CREATE_NOTIFICATION)]] void initgotcha (name org,
-      name creator, 
+      name authorized, 
       name badge, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
@@ -24,6 +27,12 @@ CONTRACT mrval : public contract {
       string onchain_lookup_data,
       vector<name> consumers,
       string memo);
+    
+    [[eosio::on_notify(MUTUAL_RECOGNITION_INTERFACE_CHANGE_START_TIME_NOTIFICATION)]] void changestart(name org, name authorized, name badge, time_point_sec new_starttime);
+
+    [[eosio::on_notify(MUTUAL_RECOGNITION_INTERFACE_CHANGE_CYCLE_LENGTH_NOTIFICATION)]] void changelength(name org, name authorized, name badge, uint64_t new_cycle_length);
+
+    [[eosio::on_notify(MUTUAL_RECOGNITION_INTERFACE_CHANGE_CYCLE_SUPPLY_NOTIFICATION)]] void changesupply(name org, name authorized, name badge, uint8_t new_supply_per_cycle);
       
     ACTION addactionauth (name org, name action, name authorized_account);
 

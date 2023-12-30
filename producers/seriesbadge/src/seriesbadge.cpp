@@ -3,64 +3,10 @@
 
 using json = nlohmann::json;
 
-void seriesbadge::extcseries(name org, name series) {
-  action {
-    permission_level{get_self(), name("active")},
-    name(get_self()),
-    name("createseries"),
-    createseries_args {
-      .org = org,
-      .series = series }
-  }.send();  
-}
-
-void seriesbadge::extcnext(name org, name series, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  action {
-    permission_level{get_self(), name("active")},
-    name(get_self()),
-    name("createnext"),
-    createnext_args {
-      .org = org,
-      .series = series,
-      .badge = badge,
-      .offchain_lookup_data = offchain_lookup_data,
-      .onchain_lookup_data = onchain_lookup_data,
-      .memo = memo }
-  }.send();  
-}
-
-void seriesbadge::extilatest(name org, name series, name to, uint64_t count, string memo) {
-  action {
-    permission_level{get_self(), name("active")},
-    name(get_self()),
-    name("issuelatest"),
-    issuelatest_args {
-      .org = org,
-      .series = series,
-      .to = to,
-      .count = count,
-      .memo = memo }
-  }.send();    
-}
-
-void seriesbadge::extiany(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo) {
-  action {
-    permission_level{get_self(), name("active")},
-    name(get_self()),
-    name("issueany"),
-    issueany_args {
-      .org = org,
-      .series = series,
-      .seq_id = seq_id,
-      .to = to,
-      .count = count,
-      .memo = memo }
-  }.send();      
-}
 
 ACTION seriesbadge::createseries(name org, name series) {
 
-  require_auth(get_self());
+  check_internal_auth(name("createseries"));
   metadata_table _metadata (_self, org.value);
   auto metadata_itr = _metadata.find(series.value);
 
@@ -73,7 +19,7 @@ ACTION seriesbadge::createseries(name org, name series) {
 }
 
 ACTION seriesbadge::createnext(name org, name series, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  require_auth(get_self());
+  check_internal_auth(name("createseries"));
   metadata_table _metadata (_self, org.value);
   auto metadata_itr = _metadata.find(series.value);
   check(metadata_itr != _metadata.end(), "<contractname><actionname> : <series> does not exist");
@@ -116,7 +62,7 @@ ACTION seriesbadge::createnext(name org, name series, name badge, string offchai
 }
 
 ACTION seriesbadge::issuelatest(name org, name series, name to, uint64_t count, string memo) {
-  require_auth(get_self()); 
+  check_internal_auth(name("createseries"));
   metadata_table _metadata (_self, org.value);
   auto metadata_itr = _metadata.find(series.value);
   check(metadata_itr != _metadata.end(), "<series> not defined. Call define action");
@@ -149,7 +95,7 @@ ACTION seriesbadge::issuelatest(name org, name series, name to, uint64_t count, 
 }
 
 ACTION seriesbadge::issueany(name org, name series, uint64_t seq_id, name to, uint64_t count, string memo) {
-  require_auth(get_self()); 
+  check_internal_auth(name("createseries"));
   metadata_table _metadata (_self, org.value);
   auto metadata_itr = _metadata.find(series.value);
   check(metadata_itr != _metadata.end(), "<series> not defined. Call define action");

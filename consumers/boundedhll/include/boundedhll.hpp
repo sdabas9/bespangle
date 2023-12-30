@@ -4,7 +4,7 @@
 using namespace std;
 using namespace eosio;
 
-#define NOTIFICATION_CONTRACT_NAME "notification"
+#define SIMPLEBADGE_CONTRACT "simplebadgex"
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
@@ -33,7 +33,6 @@ CONTRACT boundedhll : public contract {
     name badge,
     name sender_uniqueness_badge);
 
-    ACTION issuesimple (name org, name to, name badge, uint64_t amount, string memo);
   private:
 
     TABLE rounds {

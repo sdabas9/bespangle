@@ -1,14 +1,5 @@
 #include <sermanager.hpp>
 
-  ACTION sermanager::naddfeatur (name org,
-    name badge_name, 
-    name notify_account, 
-    string memo) {
-    require_auth(get_self());
-    require_recipient(name(NOTIFICATION_CONTRACT));
-  }
-
-
   ACTION sermanager::createseries(name org, name authorized, name series) {
 
     require_auth(authorized);
@@ -17,8 +8,8 @@
 
     action {
       permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("ncreateserie"),
+      name(SERIESBADGE_CONTRACT),
+      name("createseries"),
       createseries_args {
         .org = org,
         .series = series }
@@ -33,8 +24,8 @@
     
     action {
       permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("ncreatenex"),
+      name(SERIESBADGE_CONTRACT),
+      name("createnext"),
       createnext_args {
         .org = org,
         .series = series,
@@ -47,7 +38,7 @@
     for (auto i = 0 ; i < consumers.size(); i++) {
       action {
         permission_level{get_self(), name("active")},
-        name(get_self()),
+        name(ORCHESTRATOR_CONTRACT),
         name("naddfeatur"),
         addfeature_args {
           .org = org,
@@ -66,8 +57,8 @@
    
     action {
       permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("nissuelates"),
+      name(SERIESBADGE_CONTRACT),
+      name("issuelatest"),
       issuelatest_args {
         .org = org,
         .series = series,
@@ -85,8 +76,8 @@
 
     action {
       permission_level{get_self(), name("active")},
-      name(get_self()),
-      name("nissuean"),
+      name(SERIESBADGE_CONTRACT),
+      name("issueany"),
       issueany_args {
         .org = org,
         .series = series,
@@ -105,8 +96,8 @@
     for( auto i = 0; i < to.size(); i++ ) {
       action {
         permission_level{get_self(), name("active")},
-        name(get_self()),
-        name("nissuelates"),
+        name(SERIESBADGE_CONTRACT),
+        name("issuelatest"),
         issuelatest_args {
           .org = org,
           .series = series,
@@ -117,38 +108,3 @@
     }
   }
 
-
-  ACTION sermanager::ncreateserie (name org, 
-    name series) {
-    require_auth(get_self());
-    require_recipient(name(SERIES_NOTIFICATION_CONTRACT));    
-  }
-
-  ACTION sermanager::ncreatenex (name org,
-    name series, 
-    name badge, 
-    string offchain_lookup_data, 
-    string onchain_lookup_data, 
-    string memo) {
-    require_auth(get_self());
-    require_recipient(name(SERIES_NOTIFICATION_CONTRACT));
-  }
-
-  ACTION sermanager::nissuelates (name org,
-    name series, 
-    name to, 
-    uint64_t count, 
-    string memo) {
-    require_auth(get_self());
-    require_recipient(name(SERIES_NOTIFICATION_CONTRACT));
-  }
-
-  ACTION sermanager::nissuean (name org,
-    name series,
-    uint64_t seq_id,
-    name to,
-    uint64_t count,
-    string memo) {
-    require_auth(get_self());
-    require_recipient(name(SERIES_NOTIFICATION_CONTRACT));  
-  }

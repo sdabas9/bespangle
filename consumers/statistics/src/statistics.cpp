@@ -1,23 +1,22 @@
 #include <statistics.hpp>
 
 
-void statistics::notifyachiev (
-      name org, 
-      name badge_name,
-      name account, 
+void statistics::notifyachiev(
+      name org,
+      name badge,
+      name account,
       name from,
       uint64_t count,
       string memo,
-      uint64_t badge_id,  
       vector<name> notify_accounts) {
 
     keystats_table _keystats( _self, org.value );  
-    auto keystats_itr = _keystats.find(badge_name.value);
+    auto keystats_itr = _keystats.find(badge.value);
 
 
     if(keystats_itr == _keystats.end()) {
       _keystats.emplace(get_self(), [&](auto& row){
-        row.badge = badge_name;
+        row.badge = badge;
         row.max = count;
         row.account_count = 1;
         row.total = row.total + count;
@@ -26,10 +25,10 @@ void statistics::notifyachiev (
 
       achievements_table _achievements( name(CUMULATIVE_CONTRACT_NAME), org.value );
       auto account_badge_index = _achievements.get_index<name("accountbadge")>();
-      uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge_id;
+      uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge.value;
       auto account_badge_iterator = account_badge_index.find (account_badge_key);
 
-      if(account_badge_iterator == account_badge_index.end() || account_badge_iterator->account != account || account_badge_iterator->badge_id!=badge_id) {
+      if(account_badge_iterator == account_badge_index.end() || account_badge_iterator->account != account || account_badge_iterator->badge!=badge) {
         check(false, "possibly cumulative consumer is not followed by stats consumer");
       } else {
         uint64_t balance = account_badge_iterator->count;

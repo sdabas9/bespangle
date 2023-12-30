@@ -3,9 +3,9 @@
 using namespace std;
 using namespace eosio;
 
-#define ANTIBADGE_NOTIFICATION_CONTRACT "abnotifyxxxx"
+#define ANTIBADGE_CONTRACT "antibadgexxx"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
-#define NOTIFICATION_CONTRACT "notification"
+#define ORCHESTRATOR_CONTRACT "orchestrator"
 #define ANTIBADGE_VALIDATION_CONTRACT "antibadgeval"
 
 CONTRACT abmanager : public contract {
@@ -33,33 +33,6 @@ CONTRACT abmanager : public contract {
                  name antibadge,
                  uint64_t amount,
                  string memo);
-
-    ACTION ncreate(name org,
-                  name antibadge,
-                  name badge,
-                  name type,
-                  string offchain_lookup_data,
-                  string onchain_lookup_data,
-                  string memo);
-
-    ACTION ncreateinv(name org,
-                     name antibadge,
-                     name badge,
-                     string offchain_lookup_data,
-                     string onchain_lookup_data,
-                     string memo);
-
-    ACTION nissue(name org,
-                 name to,
-                 name antibadge,
-                 uint64_t amount,
-                 string memo);
-    
-    ACTION naddfeatur (name org,
-      name badge_name, 
-      name notify_account, 
-      string memo);
-
 
   private:
 

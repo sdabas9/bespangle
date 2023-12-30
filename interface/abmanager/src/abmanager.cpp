@@ -1,5 +1,6 @@
 #include <abmanager.hpp>
 
+
 ACTION abmanager::create(name org, name authorized,
               name antibadge,
               name badge,
@@ -16,8 +17,8 @@ ACTION abmanager::create(name org, name authorized,
 
   action(
     permission_level{get_self(), name("active")},
-    get_self(),
-    name("ncreate"),
+    name(ANTIBADGE_CONTRACT),
+    name("create"),
     create_args {
       .org = org,
       .antibadge = antibadge,
@@ -32,8 +33,8 @@ ACTION abmanager::create(name org, name authorized,
   for (auto i = 0; i < consumers.size(); i++) {
     action(
       permission_level{get_self(), name("active")},
-      get_self(),
-      name("naddfeatur"),
+      name(ORCHESTRATOR_CONTRACT),
+      name("addfeature"),
       addfeature_args {
         .org = org,
         .badge_name = antibadge,
@@ -58,8 +59,8 @@ ACTION abmanager::createinv(name org, name authorized,
 
   action(
     permission_level{get_self(), name("active")},
-    get_self(),
-    name("ncreateinv"),
+    name(ANTIBADGE_CONTRACT),
+    name("createinv"),
     createinv_args {
       .org = org,
       .antibadge = antibadge,
@@ -84,8 +85,8 @@ ACTION abmanager::issue(name org, name authorized,
 
   action(
     permission_level{get_self(), name("active")},
-    get_self(),
-    name("nissue"),
+    name(ANTIBADGE_CONTRACT),
+    name("issue"),
     issue_args {
       .org = org,
       .to = to,
@@ -96,40 +97,3 @@ ACTION abmanager::issue(name org, name authorized,
   ).send();
 }
 
-ACTION abmanager::naddfeatur (name org,
-  name badge_name, 
-  name notify_account, 
-  string memo) {
-  require_auth(get_self());
-  require_recipient(name(NOTIFICATION_CONTRACT));
-}
-
-ACTION abmanager::ncreate(name org,
-                name antibadge,
-                name badge,
-                name type,
-                string offchain_lookup_data,
-                string onchain_lookup_data,
-                string memo) {
-  require_auth(get_self());
-  require_recipient(name(ANTIBADGE_NOTIFICATION_CONTRACT));  
-}
-
-ACTION abmanager::ncreateinv(name org,
-                  name antibadge,
-                  name badge,
-                  string offchain_lookup_data,
-                  string onchain_lookup_data,
-                  string memo) {
-  require_auth(get_self());
-  require_recipient(name(ANTIBADGE_NOTIFICATION_CONTRACT));
-}
-
-ACTION abmanager::nissue(name org,
-              name to,
-              name antibadge,
-              uint64_t amount,
-              string memo) {
-  require_auth(get_self());
-  require_recipient(name(ANTIBADGE_NOTIFICATION_CONTRACT));
-}

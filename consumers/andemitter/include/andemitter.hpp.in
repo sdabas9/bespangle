@@ -7,6 +7,7 @@ using namespace eosio;
 #cmakedefine CLAIMASSET_CONTRACT_NAME "@CLAIMASSET_CONTRACT_NAME@"
 #cmakedefine NOTIFICATION_CONTRACT_NAME "@NOTIFICATION_CONTRACT_NAME@"
 #cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
 
@@ -26,15 +27,14 @@ CONTRACT andemitter : public contract {
       }
     };
 
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
+    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]]  void notifyachiev (
       name org, 
-      name badge_name,
+      name badge,
       name account, 
       name from,
       uint64_t count,
-      string memo,
-      uint64_t badge_id,  
-      vector<name> notify_accounts);
+      string memo, 
+      vector<name> notify_accounts );
 
     ACTION newemission (name org,
       name emission_name,
@@ -45,8 +45,6 @@ CONTRACT andemitter : public contract {
     ACTION activate (name org, name emission_name);
 
     ACTION deactivate (name org, name emission_name);
-
-    ACTION givesimple (name org, name to, name badge, uint64_t amount, string memo);
 
     ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo);
 
@@ -63,9 +61,9 @@ CONTRACT andemitter : public contract {
     typedef multi_index<name("emissions"), emissions> emissions_table;
 
     TABLE activelookup {
-      uint64_t badge_id;
+      name badge;
       vector<name> active_emissions;
-      auto primary_key() const { return badge_id; }
+      auto primary_key() const { return badge.value; }
     };
     typedef multi_index<name("activelookup"), activelookup> activelookup_table;
 
@@ -89,20 +87,52 @@ CONTRACT andemitter : public contract {
     > accounts_table;
 
     TABLE badge {
-      uint64_t badge_id;
-      name badge_name;
+      name badge;
       vector<name> notify_accounts;
       string offchain_lookup_data;
       string onchain_lookup_data;
       uint64_t rarity_counts;
-      auto primary_key() const {return badge_id; }
-      uint64_t badge_key() const {
-        return badge_name.value;
+      auto primary_key() const {return badge.value; }
+    };
+    typedef multi_index<name("badge"), badge> badge_table;
+
+    TABLE auth {
+      uint64_t id;
+      name contract;
+      name action;
+      vector<name> authorized_contracts;
+
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
       }
     };
-    typedef multi_index<name("badge"), badge,
-    indexed_by<name("badgename"), const_mem_fun<badge, uint64_t, &badge::badge_key>>    
-    > badge_table;
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    void check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      uint128_t secondary_key = (uint128_t)get_self().value << 64 | action.value;
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+      if (itr != secondary_index.end() && itr->contract!=get_self() && itr->action!=action) {
+          check(false, "No authority found for contract " + get_self().to_string() + " and action " + action.to_string());
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
+          return;
+        }
+      }
+      check(false, "Account not is authorized list of accounts for action " + action.to_string());
+    }
 
     struct issue_args {
       name org;
@@ -135,8 +165,8 @@ CONTRACT andemitter : public contract {
         if(key.issuing_contract == name(SIMPLEBADGE_CONTRACT_NAME)) {
           action {
             permission_level{get_self(), name("active")},
-            name(get_self()),
-            name("givesimple"),
+            name(SIMPLEBADGE_CONTRACT_NAME),
+            name("issue"),
             issue_args {
               .org = org,
               .to = to,
@@ -162,12 +192,10 @@ CONTRACT andemitter : public contract {
 
     }
 
-    uint64_t get_badge_id (name org, name assetname) {
+    void valid_badge (name org, name assetname) {
       badge_table _badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
-      auto badge_index = _badge.get_index<name("badgename")>();
-      auto badge_iterator = badge_index.find (assetname.value);
-      check(badge_iterator->badge_name == assetname, "asset not found");
-      return badge_iterator->badge_id;
+      auto badge_iterator = _badge.find (assetname.value);
+      check(badge_iterator->badge == assetname, "invalid badge");
     }
 
     uint8_t emit_factor (std::map<name, uint64_t> emitter_status, std::map<name, uint64_t> emitter_criteria) {

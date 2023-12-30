@@ -9,7 +9,7 @@ using namespace eosio;
 using eosio::singleton;
 
 #cmakedefine BOUNDED_AGG_CONTRACT_NAME "@BOUNDED_AGG_CONTRACT_NAME@"
-#cmakedefine NOTIFICATION_CONTRACT_NAME "@NOTIFICATION_CONTRACT_NAME@"
+#cmakedefine ANTIBADGE_CONTRACT "@ANTIBADGE_CONTRACT@"
 #cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
 
 CONTRACT redeem : public contract {
@@ -22,7 +22,6 @@ public:
     ACTION redeemdyn(name org, name round, name badge, name account);
     ACTION distfixed(name org, name round, name badge, name account, uint64_t amount_val, name notification_contract);
     ACTION distdynamic(name org, name round, name badge, name account, uint64_t portion, name notification_contract);
-    ACTION issuesbt(name org, name to, name antibadge, uint64_t amount, string memo);
 
     struct issuesbt_args {
         name org;

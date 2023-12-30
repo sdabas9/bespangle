@@ -31,19 +31,32 @@ void hllemitter::notifyachiev(
     auto existing_entry = secondary_index.find(composite_key);
     uint8_t b = 7;
     uint32_t m = 1 << b;
-    if (existing_entry == secondary_index.end() ) {
+    if (existing_entry == secondary_index.end() || 
+        existing_entry->account != account ||
+        existing_entry->badge != badge) {
         // Initialize HyperLogLog data structure
         vector<uint8_t> M(m, 0);
         hll::HyperLogLog hll(b, m, M);
         hll.add(from.to_string().c_str(), from.to_string().size());
 
         // No existing entry found, insert a new record
-        balances.emplace(org, [&](auto& row) {
+        balances.emplace(_self, [&](auto& row) {
             row.id = balances.available_primary_key(); // Generate next available primary key
             row.account = account;
             row.badge = badge;
             row.hll = hll.registers();
         });
+        action {
+            permission_level{get_self(), name("active")},
+            name(SIMPLEBADGE_CONTRACT),
+            name("issue"),
+            issue_args {
+            .org = org,
+            .to = account,
+            .badge = emit_badge,
+            .amount = 1,
+            .memo = "issued from rollup consumer"}
+        }.send(); 
     } else if (existing_entry != secondary_index.end() &&
          existing_entry->account == account && 
          existing_entry->badge == badge) {
@@ -63,34 +76,29 @@ void hllemitter::notifyachiev(
             secondary_index.modify(existing_entry, get_self(), [&](auto& row) {
                 row.hll = hll.registers();
             });
-                      action {
-            permission_level{get_self(), name("active")},
-            name(get_self()),
-            name("issuesimple"),
-            issue_args {
-              .org = org,
-              .to = account,
-              .badge = emit_badge,
-              .amount = 1,
-              .memo = "issued from rollup consumer"}
-          }.send(); 
+            action {
+                permission_level{get_self(), name("active")},
+                name(SIMPLEBADGE_CONTRACT),
+                name("issue"),
+                issue_args {
+                .org = org,
+                .to = account,
+                .badge = emit_badge,
+                .amount = 1,
+                .memo = "issued from rollup consumer"}
+            }.send(); 
         }
     }
 }
 
-ACTION hllemitter::issuesimple (name org, name to, name badge, uint64_t amount, string memo) {
-    require_auth(get_self());
-    require_recipient(name(NOTIFICATION_CONTRACT_NAME));
-}
 
 ACTION hllemitter::newemission(
     name org,
     name badge,
     name sender_uniqueness_badge
 ) {
-    // Ensure the action is authorized by the contract itself
-    require_auth(_self);
-
+    check_internal_auth(name("newemission"));
+    check(badge != sender_uniqueness_badge, "badge and sender_uniqueness_badge can not be same");
     // Create an instance of the emissions_table scoped by the organization
     emissions_table emissions(_self, org.value);
 
