@@ -68,7 +68,9 @@ ACTION metadata::addfeature (name org, name badge, name notify_account, string m
   
   vector<name> new_notify_accounts ;
   for( auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
-    check(notify_account != badge_iterator->notify_accounts[i], "<thiscontractname>,<action name> : <contract> <badge> is already ");
+    if(notify_account == badge_iterator->notify_accounts[i]) {
+      return;
+    }
     new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
   }
   new_notify_accounts.push_back (notify_account);

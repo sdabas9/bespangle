@@ -1,63 +1,80 @@
 #include <roundmanager.hpp>
 
-
-ACTION roundmanager::defineround(name org, 
+// add badges
+// add redeemables
+// 
+ACTION defineround(name org, 
   name authorized_account, 
-  name round, 
+  name round,
   string round_description, 
-  vector<badges> badges_info, 
+  vector<name> badges, 
   vector<redeemable> redeem_badge_info,
-  time_point round_start_time, 
-  time_point round_end_time
+  time_point_sec round_start_time,
+  time_point_sec round_end_time,
+  uint64_t claim_duration_secs
   ) {
   
   require_auth(authorized_account);
-  notify_checks_contract(org);
-  notify_linked_inbuilt_checks_contract(org);
 
-  check(round_start_time < round_end_time, "round_end_time should be greater than round_start_time");
+  notify_checks_contract(org);
+  require_recipient(name(ROUND_MANAGER_VALIDATION_CONTRACT));
+
+  check(round_start_time >= current_time_point(), "round_start_time must be greater than current time");
+  check(round_end_time >= current_time_point(), "round_end_time must be greater than current time");
+  check(round_start_time < round_end_time, "round_end_time must be greater than round_start_time");
+ // check(claim_start_time >= current_time_point(), "claim_start_time must be greater than current time");
+  
+  time_point_sec claim_start_time = round_end_time;
+  time_point_sec claim_end_time = claim_start_time + claim_duration_secs;
 
   // init round
   // future start time
   // future end time
-
+  ACTION rqsetstat(name org, name round, name status, time_point execution_time);
+  ACTION rqaddbgrnd(name org, name round, name badge, time_point execution_time);
+  ACTION rqrembgrnd(name org, name round, name badge, time_point execution_time);
   action(
     permission_level{get_self(), "active"_n},
-    get_self(), "addround"_n,
+    name(BOUNDED_AGG_CONTRACT_NAME), "addrnd"_n,
     addround_args{.org = org, .round = round, .description = round_description}
   ).send();
 
   action(
     permission_level{get_self(), "active"_n},
-    get_self(), "setstatus"_n,
+    name(ROUND_DEFERRED_CONTRACT), "rqsetstat"_n,
     setstatus_args{.org = org, .round = round, .status = name("ongoing"), .execution_time = round_start_time}
   ).send();
 
   action(
     permission_level{get_self(), "active"_n},
-    get_self(), "setstatus"_n,
-    setstatus_args{.org = org, .round = round, .status = name("end"), .execution_time = round_end_time}
+    name(ROUND_DEFERRED_CONTRACT), "rqsetstat"_n,
+    setstatus_args{.org = org, .round = round, .status = name("end"), .execution_time = claim_end_time}
   ).send();
 
-  for(auto i = 0 ; i < badges_info.size(); i++ ) {
-    name badge = badges_info[i].badge;
-    time_point accumulation_start_time = badges_info[i].accumulation_start_time;
-    time_point accumulation_end_time = badges_info[i].accumulation_end_time;
-    
-    check(accumulation_start_time < accumulation_end_time, "accumulation_start_time should be less than accumulation_end_time");
-    check(accumulation_start_time >= round_start_time, "accumulation_start_time should be greater or same as round_start_time");
-    check(accumulation_end_time <= round_end_time, "accumulation_end_time should be less than or same as round_end_time");
+  for(auto i = 0 ; i < badges.size(); i++ ) {
+    name badge = badges[i];
 
+    action {
+      permission_level{get_self(), name("active")},
+      name(ORCHESTRATOR_CONTRACT),
+      name("addfeature"),
+      addfeature_args {
+        .org = org,
+        .badge = badge,
+        .notify_account = name(BOUNDED_AGG_CONTRACT_NAME),
+        .memo = ""}
+    }.send();
+   
     action(
       permission_level{get_self(), "active"_n},
-      get_self(), "addbadge"_n,
-      addbadge_args{.org = org, .round = round, .badge = badge, .execution_time = accumulation_start_time}
+      name(ROUND_DEFERRED_CONTRACT), "rqaddbgrnd"_n,
+      addbadge_args{.org = org, .round = round, .badge = badge, .execution_time = round_start_time}
     ).send();
 
     action(
       permission_level{get_self(), "active"_n},
-      get_self(), "rembadge"_n,
-      rembadge_args{.org = org, .round = round, .badge = badge, .execution_time = accumulation_end_time}
+      name(ROUND_DEFERRED_CONTRACT), "rqrembgrnd"_n,
+      rembadge_args{.org = org, .round = round, .badge = badge, .execution_time = round_end_time}
     ).send();
   }
 

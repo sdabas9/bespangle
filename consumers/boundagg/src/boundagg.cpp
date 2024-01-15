@@ -104,7 +104,9 @@ void boundagg::notifyachiev(
     auto badge_index = _badgerounds.get_index<"badge"_n>();
     auto badge_itr = badge_index.lower_bound(badge.value);
 
-    check(badge_itr != badge_index.end() && badge_itr->badge == badge, "Badge not found for any round");
+    if(badge_itr == badge_index.end() || badge_itr->badge != badge) {
+        return;
+    }
 
     do {
         if(badge_itr->status == name("active")) {
