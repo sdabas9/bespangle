@@ -1,0 +1,75 @@
+#include <eosio/eosio.hpp>
+
+using namespace std;
+using namespace eosio;
+
+#define MUTUAL_RECOGNITION_CONTRACT_NAME "gotchabadgex"
+#define MUTUAL_RECOGNITION_INTERFACE_CONTRACT_NAME "mrmanagerxxx"
+
+#define MUTUAL_RECOGNITION_INTERFACE_CREATE_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT_NAME"::ncreateserie"
+#define MUTUAL_RECOGNITION_INTERFACE_ISSUE_NOTIFICATION MUTUAL_RECOGNITION_INTERFACE_CONTRACT_NAME"::ncreatenex"
+
+
+
+
+CONTRACT mrnotify : public contract {
+  public:
+    using contract::contract;
+
+    [[eosio::on_notify(MUTUAL_RECOGNITION_INTERFACE_CREATE_NOTIFICATION)]] void ainitmr (name org, 
+      name badge, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string offchain_lookup_data,
+      string onchain_lookup_data,  
+      string memo);
+    
+    ACTION initmr(name org, 
+      name badge, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string offchain_lookup_data,
+      string onchain_lookup_data,  
+      string memo);
+
+
+
+    [[eosio::on_notify(MUTUAL_RECOGNITION_INTERFACE_ISSUE_NOTIFICATION)]] void aissuemr (name org, 
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount, 
+      string memo);
+      
+    
+    ACTION givemr(name org, 
+      name badge, 
+      name from, 
+      name to, 
+      uint8_t amount, 
+      string memo);
+
+
+  private:
+    struct create_args { 
+      name org; 
+      name badge; 
+      time_point_sec starttime; 
+      uint64_t cycle_length; 
+      uint8_t supply_per_cycle; 
+      string offchain_lookup_data;
+      string onchain_lookup_data; 
+      string memo; 
+    };
+
+    struct issue_args { 
+      name org; 
+      name badge; 
+      name from; 
+      name to; 
+      uint8_t amount; 
+      string memo; 
+    }; 
+};

@@ -4,7 +4,13 @@ void serval::series (name org,
   name authorized, 
   name series) {
     name action = name("createseries");
-    action_authority_check(org, action, authorized);  
+    if (has_action_authority(org, action, authorized)) {
+        return;
+    }
+    if (has_series_authority(org, action, series, authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
   }
 
 void serval::next (name org, 
@@ -16,7 +22,13 @@ void serval::next (name org,
   vector<name> consumers,
   string memo) {
     name action = name("createnext");
-    action_authority_check(org, action, authorized);  
+    if (has_action_authority(org, action, authorized)) {
+        return;
+    }
+    if (has_series_authority(org, action, series, authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
   }
 
 void serval::latest (name org,
@@ -26,7 +38,13 @@ void serval::latest (name org,
   uint64_t count, 
   string memo) {
     name action = name("issuelatest");
-    action_authority_check(org, action, authorized);  
+    if (has_action_authority(org, action, authorized)) {
+        return;
+    }
+    if (has_series_authority(org, action, series, authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
   }
 
 void serval::any (name org,
@@ -37,7 +55,13 @@ void serval::any (name org,
   uint64_t count,
   string memo) {
     name action = name("issueany");
-    action_authority_check(org, action, authorized);  
+    if (has_action_authority(org, action, authorized)) {
+        return;
+    }
+    if (has_series_authority(org, action, series, authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
   }
 
 void serval::batch (name org, 
@@ -46,9 +70,58 @@ void serval::batch (name org,
   vector<name> to, 
   string memo) {
     name action = name("serieslbatch");
-    action_authority_check(org, action, authorized);  
+    if (has_action_authority(org, action, authorized)) {
+        return;
+    }
+    if (has_series_authority(org, action, series, authorized)) {
+        return;
+    }
+    check(false, "Unauthorized account to execute action");
   }
-ACTION serval::addauth (name org, name action, name authorized_account) {
+
+ACTION serval::addseriesauth(name org, name action, name series, name authorized_account) {
+    require_auth (org);
+
+    seriesauths_table seriesauths(get_self(), org.value);
+    auto secondary_index = seriesauths.get_index<"actionseries"_n>();
+    uint128_t secondary_key = seriesauths::combine_names(action, series);
+    auto itr = secondary_index.find(secondary_key);
+    if(itr == secondary_index.end() || itr->action != action || itr->series != series) {
+      vector<name> authorized_accounts;
+      authorized_accounts.push_back(authorized_account);
+      seriesauths.emplace(get_self(), [&](auto& row) {
+        row.id = seriesauths.available_primary_key();
+        row.action = action;
+        row.series = series;
+        row.authorized_accounts = authorized_accounts;
+      });
+    } else {
+      secondary_index.modify(itr, get_self(), [&](auto& row) {
+        row.authorized_accounts.push_back(authorized_account);
+      });
+    }
+}
+
+ACTION serval::delseriesauth(name org, name action, name series, name authorized_account) {
+    require_auth (org);
+
+    seriesauths_table seriesauths(get_self(), org.value);
+    auto secondary_index = seriesauths.get_index<"actionseries"_n>();
+    uint128_t secondary_key = seriesauths::combine_names(action, series);
+    auto itr = secondary_index.find(secondary_key);
+
+    check(itr != secondary_index.end() && itr->action == action && itr->series == series, "Authority for series and action not found");
+
+    auto& accounts = itr->authorized_accounts;
+    auto acc_itr = std::find(accounts.begin(), accounts.end(), authorized_account);
+    check(acc_itr != accounts.end(), "Account not found in authorized accounts");
+
+    secondary_index.modify(itr, get_self(), [&](auto& row) {
+        row.authorized_accounts.erase(acc_itr);
+    });
+}
+
+ACTION serval::addactionauth (name org, name action, name authorized_account) {
   require_auth (org);
   actionauths_table _actionauths(get_self(), org.value);
   auto itr = _actionauths.find(action.value);
@@ -64,7 +137,7 @@ ACTION serval::addauth (name org, name action, name authorized_account) {
   }
 }
 
-ACTION serval::removeauth (name org, name action, name authorized_account) {
+ACTION serval::delactionauth (name org, name action, name authorized_account) {
   require_auth (org);
   actionauths_table _actionauths(get_self(), get_self().value);
   auto itr = _actionauths.find(action.value);

@@ -1,4 +1,6 @@
 #include <eosio/eosio.hpp>
+#include <json.hpp>
+using json = nlohmann::json;
 
 using namespace std;
 using namespace eosio;
@@ -7,6 +9,7 @@ using namespace eosio;
 #cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
 #cmakedefine CUMULATIVE_CONTRACT_NAME "@CUMULATIVE_CONTRACT_NAME@"
 #cmakedefine SERIESBADGE_CONTRACT_NAME "@SERIESBADGE_CONTRACT_NAME@"
+#cmakedefine BOUNDED_AGG_CONTRACT_NAME "@BOUNDEDAGG_CONTRACT_NAME@"
 
 CONTRACT checks : public contract {
   public:
@@ -23,31 +26,31 @@ CONTRACT checks : public contract {
 
     ACTION haslatest(name org, name account, name series);
 
+    ACTION canissueanti(name org, name account, name antibadge , uint64_t amount);
+    
+    ACTION issuebndanti(name org, name antibadge, name account, uint64_t amount) ;
+
   private:
+ 
+
     TABLE mbadge {
-      uint64_t badge_id;
-      name badge_name;
+      name badge;
       vector<name> notify_accounts;
       string offchain_lookup_data;
       string onchain_lookup_data;
       uint64_t rarity_counts;
-      auto primary_key() const {return badge_id; }
-      uint64_t badge_key() const {
-        return badge_name.value;
-      }
+      auto primary_key() const {return badge.value; }
     };
-    typedef multi_index<name("badge"), mbadge,
-    indexed_by<name("badgename"), const_mem_fun<mbadge, uint64_t, &mbadge::badge_key>>    
-    > metadata_badge_table;
+    typedef multi_index<name("badge"), mbadge> metadata_badge_table;
 
     TABLE achievements {
       uint64_t id;
       name account;
-      uint64_t badge_id;
+      name badge;
       uint64_t count;
       auto primary_key() const {return id; }
       uint128_t acc_badge_key() const {
-        return ((uint128_t) account.value) << 64 | badge_id;
+        return ((uint128_t) account.value) << 64 | badge.value;
       }
     };
     typedef multi_index<name("achievements"), achievements,
@@ -80,22 +83,85 @@ CONTRACT checks : public contract {
     indexed_by<name("seriesbadge"), const_mem_fun<sebadge, uint128_t, &sebadge::series_badge_key>>
     > series_badge_table;
 
-    uint64_t get_badge_id (name org, name assetname) {
+    TABLE rounds {
+        name round;
+        name status;
+        string description;
+
+        uint64_t primary_key() const { return round.value; }
+    };
+    typedef eosio::multi_index<"rounds"_n, rounds> rounds_table;
+
+    TABLE badgeround {
+        uint64_t badgeround_id;
+        name round;
+        name badge;
+        name status;
+        uint64_t primary_key() const { return badgeround_id; }
+        uint128_t round_badge_key() const {
+            return ((uint128_t) round.value) << 64 | badge.value;
+        }
+        uint64_t get_badge() const { return badge.value; }
+    };
+    typedef eosio::multi_index<"badgeround"_n, badgeround,
+        indexed_by<"roundbadge"_n, const_mem_fun<badgeround, uint128_t, &badgeround::round_badge_key>>,
+        indexed_by<"badge"_n, const_mem_fun<badgeround, uint64_t, &badgeround::get_badge>>
+    > badgeround_table;
+
+    TABLE boundedach {
+      uint64_t id;
+      name account;
+      uint64_t badgeround_id;
+      uint64_t count;
+      auto primary_key() const {return id; }
+      uint128_t acc_badge_key() const {
+        return ((uint128_t) account.value) << 64 | badgeround_id;
+      }
+    };
+    typedef eosio::multi_index<"achievements"_n, boundedach,
+        indexed_by<"accbadge"_n, const_mem_fun<boundedach, uint128_t, &boundedach::acc_badge_key>>
+    > bounded_agg_achievements_table;
+
+
+    name get_badge_for_antibadge (name org, name antibadge) {
       metadata_badge_table _badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
-      auto badge_index = _badge.get_index<name("badgename")>();
-      auto badge_iterator = badge_index.find (assetname.value);
-      check(badge_iterator->badge_name == assetname, "asset not found");
-      return badge_iterator->badge_id;
+      auto badge_iterator = _badge.find (antibadge.value);
+      check(badge_iterator != _badge.end(), "antibadge not created"); 
+      auto onchain_lookup_data = json::parse(badge_iterator->onchain_lookup_data);
+      string badge_name = onchain_lookup_data["anti_to"];
+      return name(badge_name);
     }
 
-    uint64_t account_balance(name org, name account, uint64_t badge_id) {
+    vector<name> anti_badge_vector (name org, name badge) {
+      metadata_badge_table _badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
+      auto badge_iterator = _badge.find (badge.value);
+      check(badge_iterator == _badge.end(), "UNEXPECTED: badge not created"); 
+      auto onchain_lookup_data = json::parse(badge_iterator->onchain_lookup_data);
+      json entries = onchain_lookup_data["antibadge"];
+      vector<name> anti_badges;
+      for (const auto& entry : entries) {
+        string badge_name = entry["badge"];
+        anti_badges.push_back(name(badge_name));
+      }
+      return anti_badges;
+    }
+
+    uint64_t multiple_badges_additive_balance (name org, name account, vector<name> badges) {
+      uint64_t balance = 0;
+      for (auto i = 0 ; i < badges.size(); i++) {
+        balance = balance + account_balance(org, account, badges[i]);    
+      }
+      return balance;
+    }
+
+    uint64_t account_balance(name org, name account, name badge) {
       achievements_table _achievements(name(CUMULATIVE_CONTRACT_NAME), org.value);
       auto account_badge_index = _achievements.get_index<name("accountbadge")>();
-      uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge_id;
+      uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge.value;
       auto account_badge_iterator = account_badge_index.find(account_badge_key);
       if(account_badge_iterator == account_badge_index.end() || 
         account_badge_iterator->account != account || 
-        account_badge_iterator->badge_id != badge_id) {
+        account_badge_iterator->badge != badge) {
         return 0;
       } else {
         return account_badge_iterator->count;
@@ -103,15 +169,13 @@ CONTRACT checks : public contract {
     }
 
     void own_check(name org, name account ,name badge, uint64_t count) {
-      uint64_t badge_id = get_badge_id(org,  badge);
-      uint64_t balance = account_balance(org, account, badge_id);
+      uint64_t balance = account_balance(org, account, badge);
       check(balance >= count, "CHECK FAILED: account does not hold enough " + 
         badge.to_string() + ". Has only " + to_string(balance) + ",  needs " + to_string(count) + " to pass check");
     }
 
     void not_own_check(name org, name account ,  name badge, uint64_t count) {
-      uint64_t badge_id = get_badge_id(org, badge);
-      uint64_t balance = account_balance(org, account, badge_id);
+      uint64_t balance = account_balance(org, account, badge);
       check(balance < count, "CHECK FAILED: account has balance of " + to_string(balance) +
       " for " + badge.to_string() + ". to successfully pass check should hold less than " + to_string(count));    
     }
@@ -134,8 +198,7 @@ CONTRACT checks : public contract {
           series_seq_id_iterator->seq_id == sequences[i] &&
           series_seq_id_iterator->series == series) {
           name badge = series_seq_id_iterator->badge;
-          uint64_t badge_id = get_badge_id(org,  badge);
-          uint64_t balance = account_balance(org, account, badge_id);
+          uint64_t balance = account_balance(org, account, badge);
           if(balance > 0) {
             count++;
           }
@@ -145,4 +208,86 @@ CONTRACT checks : public contract {
       }
       return count;
     }
+
+    vector<name> badge_rounds(name org, name badge) {
+        badgeround_table _badgerounds(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
+        auto badge_index = _badgerounds.get_index<"badge"_n>();
+        auto badge_itr = badge_index.lower_bound(badge.value);
+        vector<name> relevant_rounds;
+
+        while (badge_itr != badge_index.end() && badge_itr->badge == badge) {
+            rounds_table _rounds(_self, org.value);
+            auto round_itr = _rounds.find(badge_itr->round.value);
+
+            if (round_itr != _rounds.end() && round_itr->status == "ongoing"_n) {
+                relevant_rounds.push_back(round_itr->round);
+            }
+            badge_itr++;
+        }
+        return relevant_rounds;
+    }
+
+    vector<uint64_t> relevant_badgeround_ids(name org, name round, vector<name> antibadges) {
+        badgeround_table _badgerounds(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
+        vector<uint64_t> badgeround_ids;
+
+        for (auto i = 0; i < antibadges.size(); i++) {
+            auto round_badge_index = _badgerounds.get_index<"roundbadge"_n>();
+            uint128_t round_badge_key = ((uint128_t) round.value) << 64 | antibadges[i].value;
+            auto round_badge_iterator = round_badge_index.find(round_badge_key);
+
+            if (round_badge_iterator != round_badge_index.end() &&
+                round_badge_iterator->round == round &&
+                round_badge_iterator->badge == antibadges[i] &&
+                round_badge_iterator->status == name("active")) {
+                badgeround_ids.push_back(round_badge_iterator->badgeround_id);
+            }
+        }
+        return badgeround_ids;
+    }
+
+    uint64_t bounded_account_balance(name org, name round, name badge, name account) {
+        uint64_t badgeround_id = get_badgeround_id(org, round, badge);
+        uint64_t balance = bounded_account_balance_for_badgeround_id(org, badgeround_id, account);
+        return balance;
+    }
+
+    uint64_t bounded_account_balance_for_badgeround_id(name org, uint64_t badgeround_id, name account) {
+        bounded_agg_achievements_table _achievements(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
+        auto account_badge_index = _achievements.get_index<"accbadge"_n>();
+
+        uint128_t key = ((uint128_t) account.value) << 64 | badgeround_id;
+        auto account_badge_iterator = account_badge_index.find(key);
+
+        if (account_badge_iterator == account_badge_index.end() ||
+            account_badge_iterator->account != account ||
+            account_badge_iterator->badgeround_id != badgeround_id) {
+            return 0;
+        } else {
+            return account_badge_iterator->count;
+        }
+    }
+
+    uint64_t get_badgeround_id(name org, name round, name badge) {
+        badgeround_table _badgeround(name(BOUNDED_AGG_CONTRACT_NAME), org.value);
+        auto round_badge_index = _badgeround.get_index<"roundbadge"_n>();
+        uint128_t round_badge_key = ((uint128_t) round.value) << 64 | badge.value;
+        auto round_badge_iterator = round_badge_index.find(round_badge_key);
+
+        if (round_badge_iterator != round_badge_index.end() &&
+            round_badge_iterator->round == round &&
+            round_badge_iterator->badge == badge) {
+            return round_badge_iterator->badgeround_id;
+        }
+        check(false, "unexpected error in checks contract");
+    }
+
+    uint64_t bounded_multiple_badges_additive_balance(name org, vector<uint64_t> badgeround_ids, name account) {
+        uint64_t balance = 0;
+        for (auto i = 0; i < badgeround_ids.size(); i++) {
+            balance += bounded_account_balance_for_badgeround_id(org, badgeround_ids[i], account);
+        }
+        return balance;
+    }
+
 };

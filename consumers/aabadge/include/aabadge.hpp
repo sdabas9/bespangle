@@ -5,8 +5,8 @@
 using namespace std;
 using namespace eosio;
 
-#define BILLING_CONTRACT "billing.rep"
-#define ORCHESTRATOR_CONTRACT_NAME "meta.rep"
+#define BILLING_CONTRACT "billingxxxxx"
+#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
 #define ATOMIC_ASSETS_CONTRACT "atomicassets"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
@@ -61,10 +61,9 @@ CONTRACT aabadge : public contract {
 
     [[eosio::on_notify(NEW_BADGE_SUBSCRIPTION_NOTIFICATION)]] void notifyinit(
       name org,
-      name badge_name,
+      name badge,
       name notify_account,
-      string memo, 
-      uint64_t badge_id, 
+      string memo,
       string offchain_lookup_data,
       string onchain_lookup_data,
       uint64_t rarity_counts);
@@ -81,19 +80,18 @@ CONTRACT aabadge : public contract {
 
     [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
       name org, 
-      name badge_name,
+      name badge,
       name account, 
       name from,
       uint64_t count,
-      string memo,
-      uint64_t badge_id,  
+      string memo,  
       vector<name> notify_accounts);
 
   private:
     TABLE aatemplate {
-      uint64_t badge_id;
+      name badge;
       uint32_t  template_id;
-      auto primary_key() const { return badge_id; }
+      auto primary_key() const { return badge.value; }
     };
     typedef multi_index<name("aatemplate"), aatemplate> aatemplate_table;
 

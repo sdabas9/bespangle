@@ -2,27 +2,21 @@
 
     void andemitter::notifyachiev (
       name org, 
-      name badge_name,
+      name badge,
       name account, 
       name from,
       uint64_t count,
-      string memo,
-      uint64_t badge_id,  
-      vector<name> notify_accounts) {
+      string memo, 
+      vector<name> notify_accounts ) {
 
       activelookup_table _activelookup( _self, org.value );
-      auto activelookup_itr = _activelookup.find(badge_id);
+      auto activelookup_itr = _activelookup.find(badge.value);
       if(activelookup_itr != _activelookup.end()) {
         for(auto i = 0; i < activelookup_itr->active_emissions.size(); i++) { 
-          emitters(org, activelookup_itr->active_emissions[i], account, badge_name, count); 
+          emitters(org, activelookup_itr->active_emissions[i], account, badge, count); 
         }
       }
 
-    }
-
-    ACTION andemitter::givesimple (name org, name to, name badge, uint64_t amount, string memo) {
-      require_auth(get_self());
-      require_recipient(name(NOTIFICATION_CONTRACT_NAME));
     }
 
     ACTION andemitter::addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo) {
@@ -36,16 +30,13 @@
       std::map<asset_contract_name, uint64_t> emit_assets,
       bool cyclic) {
 
-      require_auth(get_self());
+      check_internal_auth(name("newemission"));
       
-
       check(emitter_criteria.size() > 0, "emitter_criteria should have atleast 1 entry ");
-      check(emit_assets.size() > 0, "emit_assets should have atleast 1 entry ");
-
-      uint64_t badge_id;
+      check(emit_assets.size() > 0, "emit_assets should have atleast 1 entry for emission_name " + emission_name.to_string());
 
       for (const auto& [key, value] : emitter_criteria) { 
-        badge_id = get_badge_id(org, key);
+        valid_badge(org, key);
 
         check( !emit_assets.contains(asset_contract_name {
           .issuing_contract=name(SIMPLEBADGE_CONTRACT_NAME),
@@ -57,7 +48,7 @@
       }
 
       for (const auto& [key, value] : emit_assets) { 
-        badge_id = get_badge_id(org, key.asset_name);
+        valid_badge(org, key.asset_name);
       } 
 
       emissions_table _emissions( _self, org.value );
@@ -74,7 +65,7 @@
     }
 
     ACTION andemitter::activate (name org, name emission_name) {
-      require_auth(get_self());
+      check_internal_auth(name("activate"));
       emissions_table _emissions( _self, org.value );
       auto emissions_itr = _emissions.require_find(emission_name.value, "emission not defined");
       check(emissions_itr->status == name("init"), "emission not in init state");
@@ -85,14 +76,14 @@
 
 
       for (const auto& [key, value] : emissions_itr->emitter_criteria) { 
-        uint64_t badge_id = get_badge_id(org, key);
         activelookup_table _activelookup( _self, org.value );
-        auto itr = _activelookup.find(badge_id);
+        name badge = key;
+        auto itr = _activelookup.find(badge.value);
         if(itr == _activelookup.end()) {
           vector<name> active_emissions ;
           active_emissions.push_back(emission_name);
           _activelookup.emplace(get_self(), [&](auto& row){
-            row.badge_id = badge_id;
+            row.badge = badge;
             row.active_emissions = active_emissions;
           });
         } else {
@@ -106,7 +97,7 @@
     }
 
     ACTION andemitter::deactivate (name org, name emission_name) {
-      require_auth(get_self());
+      check_internal_auth(name("deactivate"));
       emissions_table _emissions( _self, org.value );
       auto emissions_itr = _emissions.require_find(emission_name.value, "emission not defined");
       check(emissions_itr->status == name("init") || emissions_itr->status == name("activated"), "emission not in init/activated state");
@@ -116,9 +107,8 @@
       });
 
       for (const auto& [key, value] : emissions_itr->emitter_criteria) { 
-        uint64_t badge_id = get_badge_id(org, key);
         activelookup_table _activelookup( _self, org.value );
-        auto itr = _activelookup.require_find(badge_id, "somethings wrong, should have found an entry");
+        auto itr = _activelookup.require_find(key.value, "somethings wrong, should have found an entry");
         vector<name> active_emissions = itr->active_emissions;
         vector<name> new_active_emissions ;
         for(auto i = 0 ; i < active_emissions.size(); i++) {

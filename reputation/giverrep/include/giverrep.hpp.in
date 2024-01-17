@@ -1,0 +1,125 @@
+#include <eosio/eosio.hpp>
+
+using namespace std;
+using namespace eosio;
+
+#cmakedefine STATS_CONTRACT_NAME "@STATS_CONTRACT_NAME@"
+#cmakedefine CUMULATIVE_CONTRACT_NAME "@CUMULATIVE_CONTRACT_NAME@"
+#cmakedefine SIMPLEBADGE_CONTRACT "@SIMPLEBADGE_CONTRACT@"
+#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
+#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
+
+CONTRACT giverrep : public contract {
+  public:
+    using contract::contract;
+
+    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]]
+    void notifyachiev (
+      name org, 
+      name badge,
+      name account, 
+      name from,
+      uint64_t count,
+      string memo,  
+      vector<name> notify_accounts
+    );
+
+    ACTION newemission(
+    name org,
+    name badge,
+    name source_account_rep_badge, 
+    name emit_badge);
+
+  private:
+    TABLE emissions {
+      name badge;
+      name source_account_rep_badge;
+      name emit_badge;
+      auto primary_key() const { return badge.value; }
+    };
+    typedef multi_index<name("emissions"), emissions> emissions_table;
+
+    TABLE achievements {
+      uint64_t id;
+      name account;
+      name badge;
+      uint64_t count;
+      auto primary_key() const {return id; }
+      uint128_t acc_badge_key() const {
+        return ((uint128_t) account.value) << 64 | badge.value;
+      }
+    };
+    typedef multi_index<name("achievements"), achievements,
+    indexed_by<name("accountbadge"), const_mem_fun<achievements, uint128_t, &achievements::acc_badge_key>>
+    > achievements_table;
+
+    TABLE keystats {
+      name    badge;
+      uint64_t  max;
+      uint64_t account_count;
+      uint64_t total; 
+      auto primary_key() const { return badge.value; }
+    };
+    typedef multi_index<name("keystats"), keystats> keystats_table;
+
+    TABLE auth {
+      uint64_t id;
+      name contract;
+      name action;
+      vector<name> authorized_contracts;
+
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
+      }
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    void check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      uint128_t secondary_key = (uint128_t)get_self().value << 64 | action.value;
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+      if (itr != secondary_index.end() && itr->contract!=get_self() && itr->action!=action) {
+          check(false, "No authority found for contract " + get_self().to_string() + " and action " + action.to_string());
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
+          return;
+        }
+      }
+      check(false, "Account not is authorized list of accounts for action " + action.to_string());
+    }
+
+    struct issue_args {
+      name org;
+      name to;
+      name badge; 
+      uint64_t amount;
+      string memo;
+    };
+
+    uint64_t account_balance(name org, name account, name badge) {
+      achievements_table _achievements(name(CUMULATIVE_CONTRACT_NAME), org.value);
+      auto account_badge_index = _achievements.get_index<name("accountbadge")>();
+      uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge.value;
+      auto account_badge_iterator = account_badge_index.find(account_badge_key);
+      if(account_badge_iterator == account_badge_index.end() || 
+        account_badge_iterator->account != account || 
+        account_badge_iterator->badge != badge) {
+        return 0;
+      } else {
+        return account_badge_iterator->count;
+      }
+    }
+};

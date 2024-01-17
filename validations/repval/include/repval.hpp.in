@@ -1,0 +1,64 @@
+#include <eosio/eosio.hpp>
+#include <vector>
+
+using namespace std;
+using namespace eosio;
+
+#cmakedefine REPUTATION_INTERFACE_CONTRACT "@REPUTATION_INTERFACE_CONTRACT@"
+#define REPUTATION_INTERFACE_INIT_MUTUAL_RECOGNITION_REP REPUTATION_INTERFACE_CONTRACT "::mrrep" 
+
+CONTRACT repval : public contract {
+public:
+    using contract::contract;
+
+    [[eosio::on_notify(REPUTATION_INTERFACE_INIT_MUTUAL_RECOGNITION_REP)]]
+    void mrrep(name org,
+    name authorized,
+    name rep_badge,
+    string rep_badge_offchain_lookup_data,
+    string rep_badge_onchain_lookup_data,
+    name mutual_recognition_badge, 
+    string mutual_recognition_offchain_lookup_data, 
+    string mutual_recognition_onchain_lookup_data,
+    uint64_t mutual_recognition_badge_rep_multiplier,
+    time_point_sec starttime, 
+    uint64_t cycle_length, 
+    uint8_t supply_per_cycle, 
+    name sender_uniqueness_badge,
+    string sender_uniqueness_badge_offchain_lookup_data, 
+    string sender_uniqueness_badge_onchain_lookup_data,
+    uint64_t sender_uniqueness_badge_rep_multiplier,
+    name giver_rep_badge,
+    string giver_rep_badge_offchain_lookup_data, 
+    string giver_rep_badge_onchain_lookup_data,
+    uint64_t giver_rep_badge_rep_multiplier_per_hundred_badges);
+    
+    ACTION addactionauth(name org, name action, name authorized_account);
+    ACTION delactionauth(name org, name action, name authorized_account);
+
+private:
+    TABLE actionauths {
+        name action;
+        vector<name> authorized_accounts;
+
+        auto primary_key() const { return action.value; }
+    };
+    typedef multi_index<name("actionauths"), actionauths> actionauths_table;
+
+    bool has_action_authority(name org, name action, name account) {
+        actionauths_table _actionauths_table(get_self(), org.value);
+        auto itr = _actionauths_table.find(action.value);
+        if (itr == _actionauths_table.end()) {
+            return false;
+        }
+
+        auto authorized_accounts = itr->authorized_accounts;
+        for (size_t i = 0; i < authorized_accounts.size(); i++) {
+            if (authorized_accounts[i] == account) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+};

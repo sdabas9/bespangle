@@ -10,18 +10,9 @@
 // recognize and addsettings are multisig authorizations.
 // notify is contract authorization.
 
-ACTION orgbill::recognize (name trusted_contract) {
-  require_auth (get_self());
-  authorized_contracts_table _authorized_contracts( get_self(), get_self().value );
-  auto itr = _authorized_contracts.find(trusted_contract.value);
-  check(itr == _authorized_contracts.end(), "<trusted_contract> already authorized to issues badges");
-  _authorized_contracts.emplace(get_self(), [&](auto& row){
-    row.trusted_contract = trusted_contract;
-  });
-}
 
 ACTION orgbill::addsettings (name key, uint32_t value) {
-  require_auth(get_self());
+  check_internal_auth(name("addsettings"));
   settings_table _settings(get_self(), get_self().value);
   auto itr = _settings.find(key.value);
   if(itr == _settings.end()) {
@@ -37,6 +28,7 @@ ACTION orgbill::addsettings (name key, uint32_t value) {
 }
 
 void orgbill::buycredits(name from, name to, asset quantity, string memo) {
+
   if (to != get_self() || from == get_self()){
     eosio::print("Ignoring token transfer of contract to itself and from itself.");
     return;
@@ -46,7 +38,8 @@ void orgbill::buycredits(name from, name to, asset quantity, string memo) {
   uint32_t credits_bought = token_amount_to_credits (quantity.amount);
   uint32_t max_credit_balance = getvalue(name(MAX_CREDIT_BALANCE)); 
   if(itr == _credits.end()) {
-    check(credits_bought <= max_credit_balance, "can not buy more than 10000 credits");
+    
+    check(credits_bought <= max_credit_balance, "billing contract :can not buy more than 10000 credits");
     _credits.emplace(get_self(), [&](auto& row) {
       row.org = name(memo);
       row.total_credits = credits_bought;
@@ -54,20 +47,20 @@ void orgbill::buycredits(name from, name to, asset quantity, string memo) {
     });
   } else {
     _credits.modify(itr, get_self(), [&](auto& row) {
-      check(row.total_credits + credits_bought <= max_credit_balance, "can not hold more than 10000 credits");
+      check(row.total_credits + credits_bought <= max_credit_balance, "billing contract : can not hold more than 10000 credits");
       row.total_credits = row.total_credits + credits_bought;
     });
   }
 }
 
 ACTION orgbill::protocolfees(name org, name feature) {
-  require_auth(name(ORCHESTRATOR_CONTRACT_NAME));
+  check_internal_auth(name("protocolfees"));
   uint32_t credits = getvalue(feature);
   deduct_credit (org, credits);
 }
 
 ACTION orgbill::ramcredits(name org, name contract, uint64_t bytes, string memo) {
-  check_authorization(contract);
+  check_internal_auth(name("ramcredits"));
   uint32_t credits = bytes_to_credits(bytes);
   deduct_credit (org, credits);
 }

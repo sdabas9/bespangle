@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(hllemitter)
+set(AUTHORITY_CONTRACT ${AUTHORITY_CONTRACT})
+set(ORCHESTRATOR_CONTRACT_NAME ${ORCHESTRATOR_CONTRACT_NAME})
+set(SIMPLEBADGE_CONTRACT ${SIMPLEBADGE_CONTRACT})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/hllemitter.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/hllemitter.hpp @ONLY)

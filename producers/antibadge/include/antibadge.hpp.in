@@ -1,0 +1,146 @@
+#include <eosio/eosio.hpp>
+
+using namespace std;
+using namespace eosio;
+
+#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine CHECKS_CONTRACT_NAME "@CHECKS_CONTRACT_NAME@"
+#cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
+#cmakedefine BOUNDEDAGG_CONTRACT_NAME "@BOUNDEDAGG_CONTRACT_NAME@"
+#cmakedefine CUMULATIVE_CONTRACT_NAME "@CUMULATIVE_CONTRACT_NAME@"
+
+
+CONTRACT antibadge : public contract {
+public:
+    using contract::contract;
+
+    ACTION create(name org,
+                  name antibadge,
+                  name badge,
+                  name type,
+                  string offchain_lookup_data,
+                  string onchain_lookup_data,
+                  string memo);
+
+    ACTION createinv(name org,
+                     name antibadge,
+                     name badge,
+                     string offchain_lookup_data,
+                     string onchain_lookup_data,
+                     string memo);
+
+    ACTION issue(name org,
+                 name to,
+                 name antibadge,
+                 uint64_t amount,
+                 string memo);
+
+private:
+    TABLE badge {
+      name badge;
+      vector<name> notify_accounts;
+      string offchain_lookup_data;
+      string onchain_lookup_data;
+      uint64_t rarity_counts;
+      auto primary_key() const {return badge.value; }
+    };
+    typedef multi_index<name("badge"), badge> badge_table;
+
+    TABLE auth {
+      uint64_t id;
+      name contract;
+      name action;
+      vector<name> authorized_contracts;
+
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
+      }
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    bool check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      auto secondary_key = (uint128_t)(name(get_self()).value << 64 | action.value);
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+
+      if (itr == secondary_index.end() || itr->contract!=name(get_self()) || itr->action!=action) {
+          return false; // No authority found for the specified contract and action
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    struct create_args {
+        name org;
+        name antibadge;
+        name badge;
+        name type;
+        string offchain_lookup_data;
+        string onchain_lookup_data;
+        string memo;
+    };
+
+    struct createinv_args {
+        name org;
+        name antibadge;
+        name badge;
+        string offchain_lookup_data;
+        string onchain_lookup_data;
+        string memo;
+    };
+
+    struct issue_args {
+        name org;
+        name to;
+        name antibadge;
+        uint64_t amount;
+        string memo;
+    };
+
+    struct achievement_args {
+        name org;
+        name badge_name;
+        name account;
+        name from;
+        uint64_t count;
+        string memo;
+    };
+
+    struct initbadge_args {
+        name org;
+        name badge_name;
+        string offchain_lookup_data;
+        string onchain_lookup_data;
+        string memo;
+    };
+
+    struct mergeinfo_args {
+        name org;
+        name badge;
+        string offchain_lookup_data;
+        string onchain_lookup_data;
+        string memo;
+    };
+
+    struct canissueanti_args {
+        name org;
+        name account;
+        name antibadge;
+        uint64_t amount;
+    };
+};

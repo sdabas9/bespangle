@@ -37,7 +37,7 @@ ACTION aabadge::initcoll (name org, name collection_name) {
   vector <FORMAT> schema_format;
   schema_format.push_back(FORMAT{.name = "name", .type = "string"});
   schema_format.push_back(FORMAT{.name = "badge",.type = "string"});
-  schema_format.push_back(FORMAT{.name = "badge_id",.type = "string"});
+  schema_format.push_back(FORMAT{.name = "issuing_org",.type = "string"});
   schema_format.push_back(FORMAT{.name = "img",.type = "string"});
   schema_format.push_back(FORMAT{.name = "offchain_lookup_data",.type = "string"});
   schema_format.push_back(FORMAT{.name = "onchain_lookup_data",.type = "string"});
@@ -56,10 +56,9 @@ ACTION aabadge::initcoll (name org, name collection_name) {
 
 void aabadge::notifyinit(
     name org,
-    name badge_name,
+    name badge,
     name notify_account,
-    string memo, 
-    uint64_t badge_id, 
+    string memo,
     string offchain_lookup_data,
     string onchain_lookup_data,
     uint64_t rarity_counts) {
@@ -76,8 +75,8 @@ void aabadge::notifyinit(
   string ipfs_image = offchain_info["img"];
   string display_name = onchain_info["name"];
 
-  mdata["badge"] = string(badge_name.to_string());
-  mdata["badge_id"] = to_string(badge_id);
+  mdata["badge"] = string(badge.to_string());
+  mdata["issuing_org"] = string(org.to_string());
   mdata["img"] = ipfs_image;
   mdata["name"] = display_name;
   mdata["offchain_lookup_data"] = offchain_lookup_data;
@@ -86,11 +85,11 @@ void aabadge::notifyinit(
   // todo? check if template already exists, update mdata then
   // have a notifyupdate
   aatemplate_table _aatemplate (_self, org.value);
-  auto aatemplate_itr = _aatemplate.find( badge_id );
+  auto aatemplate_itr = _aatemplate.find( badge.value );
   if (aatemplate_itr == _aatemplate.end()) {
 
     _aatemplate.emplace(get_self(), [&](auto& row){
-      row.badge_id = badge_id;
+      row.badge = badge;
     });
 
     action {
@@ -123,22 +122,21 @@ void aabadge::updatebadge(
   auto collection_iterator = collection_index.require_find (collection_name.value, "somethings wrong, collection not found");
   name org = collection_iterator->org;
   
-  uint64_t badge_id = std::stoull(get<string>(immutable_data["badge_id"]));
+  name badge = name(get<string>(immutable_data["badge"]));
 
   aatemplate_table _aatemplate (_self, org.value);
-  auto itr = _aatemplate.require_find(badge_id, "somethings wrong , not found");
+  auto itr = _aatemplate.require_find(badge.value, "somethings wrong , not found");
   _aatemplate.modify(itr, get_self(), [&](auto& row){
     row.template_id = template_id;
   });
 }
 
 void aabadge::notifyachiev (name org, 
-    name badge_name,
+    name badge,
     name account, 
     name from,
     uint64_t count,
-    string memo,
-    uint64_t badge_id,  
+    string memo,  
     vector<name> notify_accounts) {
 
   aacollection_table _aacollection (_self, _self.value);
@@ -147,7 +145,7 @@ void aabadge::notifyachiev (name org,
   name collection = itr->collection;
 
   aatemplate_table _aatemplate (_self, org.value);
-  auto template_itr = _aatemplate.require_find(badge_id, "somethings wrong , not found");
+  auto template_itr = _aatemplate.require_find(badge.value, "somethings wrong , not found");
 
   std::map <std::string, ATOMIC_ATTRIBUTE> immutable_data;
   std::map <std::string, ATOMIC_ATTRIBUTE> mutable_data;

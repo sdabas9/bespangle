@@ -7,6 +7,7 @@ BILLING_CONTRACT="billing11111"
 SIMPLEBADGE_CONTRACT="basicissue11"
 GOTCHABADGE_CONTRACT="gotchabadge1"
 SERIESBADGE_CONTRACT="seriesbadge1"
+ANTIBADGE="antibadge111"
 
 AABADGE_CONTRACT="aabadge11111"
 ATOMIC_ASSETS_CONTRACT="atomicassets"
@@ -22,6 +23,7 @@ TAP_CONTRACT="tap111111111"
 CHECKS_CONTRACT="checks111111"
 STATISTICS="statistics13"
 SERIESVALIDATION="seriesval111"
+BOUNDAGG_CONTRACT="boundagg1111"
 
 CLEOS_URL="http://jungle4.cryptolions.io"
 
@@ -61,6 +63,11 @@ cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DNOTIFICATION_CONTR
 eosio-cpp -abigen -I ./include -R ./resource -contract seriesbadge -o seriesbadge.wasm src/seriesbadge.cpp
 cd ../..
 
+cd producers/antibadge
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DCHECKS_CONTRACT_NAME=$CHECKS_CONTRACT 
+eosio-cpp -abigen -I ./include -R ./resource -contract antibadge -o antibadge.wasm src/antibadge.cpp
+cd ../..
+
 #cd producers/claimasset
 #cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DNOTIFICATION_CONTRACT_NAME=$NOTIFICATION_CONTRACT
 #eosio-cpp -abigen -I ./include -R ./resource -contract claimasset -o claimasset.wasm src/claimasset.cpp
@@ -70,6 +77,12 @@ cd consumers/cumulative
 cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DBILLING_CONTRACT=$BILLING_CONTRACT
 eosio-cpp -abigen -I ./include -R ./resource -contract cumulative -o cumulative.wasm src/cumulative.cpp
 cd ../..
+
+cd consumers/boundagg
+cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT
+eosio-cpp -abigen -I ./include -R ./resource -contract boundagg -o boundagg.wasm src/boundagg.cpp
+cd ../..
+
 
 #cd consumers/rounds
 #cmake . -DORCHESTRATOR_CONTRACT_NAME=$ORCHESTRATOR_CONTRACT -DBILLING_CONTRACT=$BILLING_CONTRACT
@@ -172,3 +185,11 @@ cleos -u $CLEOS_URL set account permission $CHECKS_CONTRACT active --add-code -p
 
 cleos -u $CLEOS_URL set contract $SERIESVALIDATION validations/serval serval.wasm serval.abi -p $SERIESVALIDATION@active
 cleos -u $CLEOS_URL set account permission $SERIESVALIDATION active --add-code -p $SERIESVALIDATION@active
+
+cleos -u $CLEOS_URL set contract $ANTIBADGE producers/antibadge antibadge.wasm antibadge.abi -p $ANTIBADGE@active
+cleos -u $CLEOS_URL set account permission $ANTIBADGE active --add-code -p $ANTIBADGE@active
+
+cleos -u $CLEOS_URL set contract $BOUNDAGG_CONTRACT consumers/boundagg boundagg.wasm boundagg.abi -p $BOUNDAGG_CONTRACT@active
+cleos -u $CLEOS_URL set account permission $BOUNDAGG_CONTRACT active --add-code -p $BOUNDAGG_CONTRACT@active
+
+
