@@ -1,10 +1,11 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
+#define CUMULATIVE_CONTRACT "cumulativezz"
+#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
+#define AUTHORITY_CONTRACT "authorityzzz"
 
-#define CUMULATIVE_CONTRACT_NAME "cumulativexx"
-#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-
-#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
+#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 
 using namespace std;
@@ -14,42 +15,53 @@ CONTRACT statistics : public contract {
   public:
     using contract::contract;
 
-    ACTION bootstrap(name org,
-      name badge, 
-      uint64_t max, 
-      uint64_t account_count, 
-      uint64_t total);
+  ACTION bootstrap(symbol badge_symbol, 
+    uint64_t max_issued,
+    uint64_t account_count, 
+    uint64_t total_issued);
 
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
-      name org,
-      name badge,
-      name account,
-      name from,
-      uint64_t count,
-      string memo,
-      vector<name> notify_accounts);
+  [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
+    asset badge_asset, 
+    name from, 
+    name to, 
+    string memo, 
+    vector<name> notify_accounts);
 
   private:
     TABLE keystats {
-      name    badge;
-      uint64_t  max;
+      symbol    badge_symbol;
+      uint64_t  max_issued;
       uint64_t account_count;
-      uint64_t total; 
-      auto primary_key() const { return badge.value; }
+      uint64_t total_issued; 
+      auto primary_key() const { return badge_symbol.code().raw(); }
     };
     typedef multi_index<name("keystats"), keystats> keystats_table;
 
-    TABLE achievements {
-      uint64_t id;
-      name account;
-      name badge;
-      uint64_t count;
-      auto primary_key() const {return id; }
-      uint128_t acc_badge_key() const {
-        return ((uint128_t) account.value) << 64 | badge.value;
-      }
+    TABLE account {
+      asset    balance;
+      uint64_t primary_key() const { return balance.symbol.code().raw(); }
     };
-    typedef multi_index<name("achievements"), achievements,
-    indexed_by<name("accountbadge"), const_mem_fun<achievements, uint128_t, &achievements::acc_badge_key>>
-    > achievements_table;
+    typedef eosio::multi_index<"accounts"_n, account> accounts;
+
+    // scoped by contract
+    TABLE auth {
+      name action;
+      vector<name> authorized_contracts;
+      uint64_t primary_key() const { return action.value; }
+    };
+    typedef eosio::multi_index<"auth"_n, auth> auth_table;
+
+    void check_internal_auth (name action, string failure_identifier) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
+      auto itr = _auth.find(action.value);
+      check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
+      auto authorized_contracts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
+        if(has_auth(authorized_contracts[i])) {
+          return;
+        }
+      }
+      check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
+    }
+
 };

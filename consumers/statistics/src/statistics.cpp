@@ -2,82 +2,80 @@
 
 
 void statistics::notifyachiev(
-      name org,
-      name badge,
-      name account,
-      name from,
-      uint64_t count,
-      string memo,
-      vector<name> notify_accounts) {
-
-    keystats_table _keystats( _self, org.value );  
-    auto keystats_itr = _keystats.find(badge.value);
-
+    asset badge_asset, 
+    name from, 
+    name to, 
+    string memo, 
+    vector<name> notify_accounts) {
+    string action_name = "notifyachiev";
+    string failure_identifier = "CONTRACT: statistics, ACTION: " + action_name + ", MESSAGE: ";
+    keystats_table _keystats( _self, _self.value );
+    auto sym = badge_asset.symbol;  
+    auto keystats_itr = _keystats.find(sym.code().raw());
+    
 
     if(keystats_itr == _keystats.end()) {
       _keystats.emplace(get_self(), [&](auto& row){
-        row.badge = badge;
-        row.max = count;
+        row.badge_symbol = badge_asset.symbol;
+        row.max_issued = badge_asset.amount;
         row.account_count = 1;
-        row.total = row.total + count;
+        row.total_issued = badge_asset.amount;
       });
     } else {
 
-      achievements_table _achievements( name(CUMULATIVE_CONTRACT_NAME), org.value );
-      auto account_badge_index = _achievements.get_index<name("accountbadge")>();
-      uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge.value;
-      auto account_badge_iterator = account_badge_index.find (account_badge_key);
-
-      if(account_badge_iterator == account_badge_index.end() || account_badge_iterator->account != account || account_badge_iterator->badge!=badge) {
-        check(false, "possibly cumulative consumer is not followed by stats consumer");
+      accounts _accounts( name(CUMULATIVE_CONTRACT), to.value );
+      auto accounts_itr = _accounts.find(sym.code().raw());
+      check(accounts_itr != _accounts.end(), failure_identifier + "possibly cumulative consumer is not followed by stats consumer");
+      uint64_t balance = accounts_itr->balance.amount;
+      uint64_t max;
+      uint64_t account_count;
+      uint64_t total; 
+      if(balance > keystats_itr->max_issued) {
+        max = balance;
       } else {
-        uint64_t balance = account_badge_iterator->count;
-        uint64_t  max;
-        uint64_t account_count;
-        uint64_t total; 
-        if(balance > keystats_itr->max) {
-          max = balance;
-        } else {
-          max = keystats_itr->max;
-        }
-        if(balance == count) {
-          account_count = keystats_itr->account_count + 1;
-        } else {
-          account_count = keystats_itr->account_count;
-        }
-        total = keystats_itr->total + count;
-
-        _keystats.modify(keystats_itr, get_self(), [&](auto& row) {
-          row.max = max;
-          row.account_count = account_count;
-          row.total = total;
-        });
+        max = keystats_itr->max_issued;
       }
+      if(balance == badge_asset.amount) {
+        account_count = keystats_itr->account_count + 1;
+      } else {
+        account_count = keystats_itr->account_count;
+      }
+      total = keystats_itr->total_issued + badge_asset.amount;
+
+      _keystats.modify(keystats_itr, get_self(), [&](auto& row) {
+        row.max_issued = max;
+        row.account_count = account_count;
+        row.total_issued = total;
+      });
+
 
     }
 }
 
-ACTION statistics::bootstrap(name org,
-      name badge, 
-      uint64_t max,
+ACTION statistics::bootstrap(symbol badge_symbol, 
+      uint64_t max_issued,
       uint64_t account_count, 
-      uint64_t total) {
-    require_auth(get_self());
-    keystats_table _keystats( _self, org.value );  
-    auto keystats_itr = _keystats.find(badge.value);
+      uint64_t total_issued) {
+
+    string action_name = "bootstrap";
+    string failure_identifier = "CONTRACT: statistics, ACTION: " + action_name + ", MESSAGE: ";
+ 
+    check_internal_auth(name("bootstrap"), failure_identifier);
+    keystats_table _keystats( _self, _self.value );  
+    auto keystats_itr = _keystats.find(badge_symbol.code().raw());
 
     if(keystats_itr == _keystats.end()) {
       _keystats.emplace(get_self(), [&](auto& row){
-        row.badge = badge;
-        row.max = max;
+        row.badge_symbol = badge_symbol;
+        row.max_issued = max_issued;
         row.account_count = account_count;
-        row.total = row.total;
+        row.total_issued = total_issued;
       });
     } else {
       _keystats.modify(keystats_itr, get_self(), [&](auto& row) {
-        row.max = max;
+        row.max_issued = max_issued;
         row.account_count = account_count;
-        row.total = total;
+        row.total_issued = total_issued;
       });
     }
 

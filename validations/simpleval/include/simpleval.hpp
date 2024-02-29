@@ -5,32 +5,32 @@ using namespace std;
 using namespace eosio;
 using std::vector;
 
-#define SIMPLE_INTERFACE_CONTRACT "simmanagerxx"
+#define SIMPLE_MANAGER_CONTRACT "simmanagerzz"
 
-#define SIMPLE_INTERFACE_CREATE_NOTIFICATION SIMPLE_INTERFACE_CONTRACT"::initsimple" 
-#define SIMPLE_INTERFACE_ISSUE_NOTIFICATION SIMPLE_INTERFACE_CONTRACT"::givesimple" 
-#define SIMPLE_INTERFACE_ISSUE_BATCH_NOTIFICATION SIMPLE_INTERFACE_CONTRACT"::simplebatch" 
+#define SIMPLE_MANAGER_CREATE_NOTIFICATION SIMPLE_MANAGER_CONTRACT"::initsimple" 
+#define SIMPLE_MANAGER_ISSUE_NOTIFICATION SIMPLE_MANAGER_CONTRACT"::givesimple" 
+#define SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION SIMPLE_MANAGER_CONTRACT"::simplebatch" 
 
 
 CONTRACT simpleval : public contract {
   public:
     using contract::contract;
 
-    [[eosio::on_notify(SIMPLE_INTERFACE_CREATE_NOTIFICATION)]] void initsimple (name org, name creator, 
-      name badge, 
-      vector<name> parent_badges,
+    [[eosio::on_notify(SIMPLE_MANAGER_CREATE_NOTIFICATION)]] void initsimple (name org,
+      name creator, 
+      name badge,
       string offchain_lookup_data, 
-      string onchain_lookup_data,
+      string onchain_lookup_data, 
       vector<name> consumers,
       string memo);
       
-    [[eosio::on_notify(SIMPLE_INTERFACE_ISSUE_NOTIFICATION)]] void givesimple (name org,
+    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_NOTIFICATION)]] void givesimple (name org,
      name badge, 
      name authorizer, 
      name to, 
      string memo );
 
-    [[eosio::on_notify(SIMPLE_INTERFACE_ISSUE_BATCH_NOTIFICATION)]] void simplebatch (name org, 
+    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION)]] void simplebatch (name org, 
       name badge, 
       name authorizer, 
       vector<name> to, 

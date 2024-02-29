@@ -27,14 +27,23 @@ CONTRACT andemitter : public contract {
       }
     };
 
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]]  void notifyachiev (
-      name org, 
-      name badge,
-      name account, 
-      name from,
-      uint64_t count,
+    struct contract_asset {
+      name contract;
+      asset emit_asset;
+    };
+
+    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
+      asset amount, 
+      name from, 
+      name to, 
       string memo, 
-      vector<name> notify_accounts );
+      vector<name> notify_accounts);
+
+    ACTION newemission (
+      name emission_name,
+      vector<asset> emitter_criteria,
+      vector<contract_asset> emit_assets,
+      bool cyclic);
 
     ACTION newemission (name org,
       name emission_name,
@@ -42,8 +51,10 @@ CONTRACT andemitter : public contract {
       std::map<asset_contract_name, uint64_t> emit_assets,
       bool cyclic);
 
+    ACTION activate (name emission_name);
     ACTION activate (name org, name emission_name);
 
+    ACTION deactivate (name emission_name);
     ACTION deactivate (name org, name emission_name);
 
     ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo);
@@ -59,6 +70,32 @@ CONTRACT andemitter : public contract {
       auto primary_key() const { return emission_name.value; }
     };
     typedef multi_index<name("emissions"), emissions> emissions_table;
+
+    TABLE emissions {
+      name emission_name;
+      vector<asset> emitter_criteria;
+      vector<contract_asset> emit_assets;
+      name status; // INIT, ACTIVATE, DEACTIVATE
+      bool cyclic;
+      auto primary_key() const { return emission_name.value; }
+    };
+    typedef multi_index<name("emissions"), emissions> emissions_table;
+
+    TABLE activelookup {
+      symbol badge_symbol;
+      vector<name> active_emissions;
+      auto primary_key() const { return badge_symbol.code().raw(); }
+    };
+    typedef multi_index<name("activelookup"), activelookup> activelookup_table;
+
+    TABLE accounts {
+      name emission_name;
+      uint8_t emission_status;
+      vector<asset> expanded_emitter_status;
+      auto primary_key() const { return emission_name.value; }
+
+    };
+    typedef multi_index<name("accounts"), accounts> accounts_table;
 
     TABLE activelookup {
       name badge;

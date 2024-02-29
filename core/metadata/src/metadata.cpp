@@ -2,195 +2,206 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
-/*ACTION metadata::recognize (name trusted_contract) {
-  require_auth (get_self());
-  authorized_contracts_table _authorized_contracts( _self, _self.value );
-  auto itr = _authorized_contracts.find(trusted_contract.value);
-  check(itr == _authorized_contracts.end(), "<trusted_contract> already authorized to issues badges");
-  _authorized_contracts.emplace(get_self(), [&](auto& row){
-    row.trusted_contract = trusted_contract;
-  });
-}*/
+ACTION metadata::initbadge(symbol badge_symbol, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    string memo) {
 
-/*ACTION metadata::isrecognized (name org, name contract) {
-  authorized_contracts_table _authorized_contracts( _self, org.value );
-  auto itr = _authorized_contracts.find(contract.value);
-  check(itr != _authorized_contracts.end(), "<contract> is not recognized for <org>");
-}*/
+    string action_name = "initbadge";
+    string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+    // Open the badge table, scoped to this contract's self account
+    badge_table badges(get_self(), get_self().value);
 
-ACTION metadata::initbadge (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_internal_auth(name("initbadge"));
-  init(org, badge, offchain_lookup_data, onchain_lookup_data, memo);
+    // Check if the badge with the given symbol already exists
+    auto badge_itr = badges.find(badge_symbol.code().raw());
+    check(badge_itr == badges.end(), failure_identifier + "Badge with this symbol already exists");
 
+    // Add new badge record to the table
+    badges.emplace(get_self(), [&](auto& new_badge) {
+      new_badge.badge_symbol = badge_symbol;
+      new_badge.offchain_lookup_data = offchain_lookup_data;
+      new_badge.onchain_lookup_data = onchain_lookup_data;
+    });
 }
 
-ACTION metadata::mergeinfo (name org, name badge, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-  check_internal_auth(name("mergeinfo"));
-  badge_table _badge( _self, org.value );
-  auto badge_iterator = _badge.find (badge.value);
-  check(badge_iterator != _badge.end(), "<action name> : <org> <contract> <badge> not found");
+ACTION metadata::addfeature(symbol badge_symbol, 
+    name notify_account, 
+    string memo) {
 
-  
-  if(!offchain_lookup_data.empty()) {
-    check(json::accept(offchain_lookup_data), "offchain_lookup_data is not a valid json"); 
-    string existing_offchain_data = badge_iterator->offchain_lookup_data;
-    check(json::accept(existing_offchain_data), "existing offchain_lookup_data is not a valid json"); 
-    json existing_offchain_lookup_json = json::parse(existing_offchain_data);
-    json new_offchain_lookup_json = json::parse(offchain_lookup_data);
-    existing_offchain_lookup_json.merge_patch(new_offchain_lookup_json);
-    _badge.modify(badge_iterator, get_self(), [&](auto& row){
-      row.offchain_lookup_data = existing_offchain_lookup_json.dump();
-    });
-  }
+    string action_name = "addfeature";
+    string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
 
-  
-  if(!onchain_lookup_data.empty()) {
-    check(json::accept(onchain_lookup_data), "onchain_lookup_data is not a valid json"); 
-    string existing_onchain_data = badge_iterator->onchain_lookup_data;
-    check(json::accept(existing_onchain_data), "existing onchain_lookup_data is not a valid json"); 
-    json existing_onchain_lookup_json = json::parse(existing_onchain_data);
-    json new_onchain_lookup_json = json::parse(onchain_lookup_data);
-    existing_onchain_lookup_json.merge_patch(new_onchain_lookup_json);
-    _badge.modify(badge_iterator, get_self(), [&](auto& row){
-      row.onchain_lookup_data = existing_onchain_lookup_json.dump();
-    });
-    
-  }
+    badge_table _badge(get_self(), get_self().value);
+    auto badge_iterator = _badge.find(badge_symbol.code().raw());
+    check(badge_iterator != _badge.end(), failure_identifier + " badge_symbol not initialized ");
 
-
-}
-
-ACTION metadata::addfeature (name org, name badge, name notify_account, string memo) {
-  check_internal_auth(name("addfeature"));  
-  badge_table _badge( _self, org.value );
-  auto badge_iterator = _badge.find (badge.value);
-  check(badge_iterator != _badge.end(), "addfeature action, metadata contract : <org> <contract> <badge> not found");
-  
-  vector<name> new_notify_accounts ;
-  for( auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
-    if(notify_account == badge_iterator->notify_accounts[i]) {
-      return;
+    vector<name> new_notify_accounts;
+    for (auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
+        if (notify_account == badge_iterator->notify_accounts[i]) {
+            return;
+        }
+        new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
     }
-    new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
-  }
-  new_notify_accounts.push_back (notify_account);
-  _badge.modify(badge_iterator, get_self(), [&](auto& row){
-    row.notify_accounts = new_notify_accounts;
-  });
-  // image
-  // display name
-  action {
-    permission_level{get_self(), name("active")},
-    get_self(),
-    name("addnotify"),
-    downstream_notify_args {
-      .org = org,
-      .badge = badge_iterator->badge,
-      .notify_account = notify_account,
-      .memo = memo,
-      .offchain_lookup_data = badge_iterator->offchain_lookup_data,
-      .onchain_lookup_data = badge_iterator->onchain_lookup_data,
-      .rarity_counts = badge_iterator->rarity_counts
-      }
-  }.send();
+    new_notify_accounts.push_back(notify_account);
+    _badge.modify(badge_iterator, get_self(), [&](auto& row) {
+        row.notify_accounts = new_notify_accounts;
+    });
 
+    action {
+        permission_level{get_self(), name("active")},
+        get_self(),
+        name("addnotify"),
+        downstream_notify_args {
+            .badge_symbol = badge_symbol,
+            .notify_account = notify_account,
+            .memo = memo,
+            .offchain_lookup_data = badge_iterator->offchain_lookup_data,
+            .onchain_lookup_data = badge_iterator->onchain_lookup_data,
+            .rarity_counts = badge_iterator->rarity_counts
+        }
+    }.send();
 }
 
-ACTION metadata::addnotify(
-  name org,
-  name badge,
-  name notify_account,
-  string memo,
-  string offchain_lookup_data,
-  string onchain_lookup_data,
-  uint64_t rarity_counts) {
+ACTION metadata::addnotify(symbol badge_symbol, 
+    name notify_account, 
+    string memo, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    uint64_t rarity_counts) {
+
     require_auth(get_self());
-    require_recipient (notify_account); 
+    require_recipient(notify_account);
 }
 
-ACTION metadata::delfeature (name org, name badge, name notify_account, string memo) {
-  check_internal_auth(name("delfeature"));  
-  badge_table _badge( _self, org.value );
-  auto badge_iterator = _badge.find (badge.value);
-  check(badge_iterator != _badge.end() , "<action name> : <org> <contract> <badge> not found");
+ACTION metadata::delfeature(symbol badge_symbol, 
+    name notify_account, 
+    string memo) {
 
-  vector<name> new_notify_accounts ;
-  for( auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
-    if(notify_account != badge_iterator->notify_accounts[i]) {
-      new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
-    }       
-  }
-  _badge.modify(badge_iterator, get_self(), [&](auto& row){
-    row.notify_accounts = new_notify_accounts;
-  });
-  action {
-    permission_level{get_self(), name("active")},
-    get_self(),
-    name("delnotify"),
-    downstream_notify_args {
-      .org = org,
-      .badge = badge_iterator->badge,
-      .notify_account = notify_account,
-      .memo = memo,
-      .offchain_lookup_data = badge_iterator->offchain_lookup_data,
-      .onchain_lookup_data = badge_iterator->onchain_lookup_data,
-      .rarity_counts = badge_iterator->rarity_counts
-      }
-  }.send();
+    string action_name = "delfeature";
+    string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+    badge_table _badge(_self, _self.value);
+
+    auto badge_iterator = _badge.find(badge_symbol.code().raw());
+    check(badge_iterator != _badge.end(), failure_identifier + " badge_symbol not initialized ");
+
+    vector<name> new_notify_accounts;
+    for (auto i = 0; i < badge_iterator->notify_accounts.size(); i++) {
+        if (notify_account != badge_iterator->notify_accounts[i]) {
+            new_notify_accounts.push_back(badge_iterator->notify_accounts[i]);
+        }
+    }
+    _badge.modify(badge_iterator, get_self(), [&](auto& row) {
+        row.notify_accounts = new_notify_accounts;
+    });
+
+    action {
+        permission_level{get_self(), name("active")},
+        get_self(),
+        name("delnotify"),
+        downstream_notify_args {
+            .badge_symbol = badge_symbol,
+            .notify_account = notify_account,
+            .memo = memo,
+            .offchain_lookup_data = badge_iterator->offchain_lookup_data,
+            .onchain_lookup_data = badge_iterator->onchain_lookup_data,
+            .rarity_counts = badge_iterator->rarity_counts
+        }
+    }.send();
 }
 
-ACTION metadata::delnotify( 
-  name org,
-  name badge,
-  name notify_account,
-  string memo, 
-  string offchain_lookup_data,
-  string onchain_lookup_data,
-  uint64_t rarity_counts) {
+ACTION metadata::delnotify(symbol badge_symbol, 
+    name notify_account, 
+    string memo, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    uint64_t rarity_counts) {
+
     require_auth(get_self());
-    require_recipient (notify_account); 
-}
-
-ACTION metadata::achievement (name org, name badge, name account, name from, uint64_t count, string memo) {
-  check_internal_auth(name("achievement"));
-  //check_account_prefs (org, account);
-  badge_table _badge( _self, org.value );
-  auto badge_iterator = _badge.find (badge.value);
-
-  check(badge_iterator != _badge.end() , "<contractname>,<action name> : <org> <contract> <badge> not found");
- 
-  _badge.modify(badge_iterator, get_self(), [&](auto& row){
-    row.rarity_counts = row.rarity_counts + count;
-  });
-   
-  action {
-    permission_level{get_self(), name("active")},
-    get_self(),
-    name("notifyachiev"),
-    notifyachievement_args {
-      .org = org,
-      .badge = badge,
-      .account = account,
-      .from = from,
-      .count = count,
-      .memo = memo,
-      .notify_accounts = badge_iterator->notify_accounts}
-  }.send();
-
-  //deduct_platform_fees (org);
+    require_recipient(notify_account);
 
 }
+ACTION metadata::achievement(asset badge_asset, 
+    name from,
+    name to, 
+    string memo) {
 
-ACTION metadata::notifyachiev (name org, 
-  name badge,
-  name account, 
-  name from,
-  uint64_t count,
-  string memo,
-  vector<name> notify_accounts) {
-  
-  require_auth(get_self());
-  for(auto i = 0; i < notify_accounts.size(); i++) {
-    require_recipient (notify_accounts[i]);
-  }
+    string action_name = "achievement";
+    string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+    badge_table _badge(_self, _self.value);
+
+    auto badge_iterator = _badge.find(badge_asset.symbol.code().raw());
+    check(badge_iterator != _badge.end(), failure_identifier + " symbol for asset not initialized ");
+
+    _badge.modify(badge_iterator, get_self(), [&](auto& row) {
+        row.rarity_counts += badge_asset.amount;
+    });
+
+    action {
+        permission_level{get_self(), name("active")},
+        get_self(),
+        name("notifyachiev"),
+        notifyachievement_args {
+            .badge_asset = badge_asset,
+            .from = from,
+            .to = to,
+            .memo = memo,
+            .notify_accounts = badge_iterator->notify_accounts
+        }
+    }.send();    
+}
+
+ACTION metadata::mergeinfo(symbol badge_symbol, 
+    string offchain_lookup_data, 
+    string onchain_lookup_data, 
+    string memo) {
+
+    string action_name = "mergeinfo";
+    string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+
+    badge_table _badge(_self, _self.value);
+    auto badge_iterator = _badge.find(badge_symbol.code().raw());
+
+    check(badge_iterator != _badge.end(), failure_identifier + " badge_symbol is not initialized ");
+
+    if (!offchain_lookup_data.empty()) {
+        check(json::accept(offchain_lookup_data), failure_identifier + "offchain_lookup_data is not a valid json");
+        string existing_offchain_data = badge_iterator->offchain_lookup_data;
+        check(json::accept(existing_offchain_data), failure_identifier + "existing offchain_lookup_data is not a valid json");
+        json existing_offchain_lookup_json = json::parse(existing_offchain_data);
+        json new_offchain_lookup_json = json::parse(offchain_lookup_data);
+        existing_offchain_lookup_json.merge_patch(new_offchain_lookup_json);
+        _badge.modify(badge_iterator, get_self(), [&](auto& row) {
+            row.offchain_lookup_data = existing_offchain_lookup_json.dump();
+        });
+    }
+
+    if (!onchain_lookup_data.empty()) {
+        check(json::accept(onchain_lookup_data), failure_identifier + "onchain_lookup_data is not a valid json");
+        string existing_onchain_data = badge_iterator->onchain_lookup_data;
+        check(json::accept(existing_onchain_data), failure_identifier + "existing onchain_lookup_data is not a valid json");
+        json existing_onchain_lookup_json = json::parse(existing_onchain_data);
+        json new_onchain_lookup_json = json::parse(onchain_lookup_data);
+        existing_onchain_lookup_json.merge_patch(new_onchain_lookup_json);
+        _badge.modify(badge_iterator, get_self(), [&](auto& row) {
+            row.onchain_lookup_data = existing_onchain_lookup_json.dump();
+        });
+    }
+}
+
+ACTION metadata::notifyachiev(asset badge_asset, 
+    name from, 
+    name to, 
+    string memo, 
+    vector<name> notify_accounts) {
+
+    require_auth(get_self());
+    for (auto& notify_account : notify_accounts) {
+        require_recipient(notify_account);
+    }
+
 }

@@ -2,28 +2,30 @@
 
   ACTION simmanager::initsimple (name org,
     name creator, 
-    name badge, 
-    vector<name> parent_badges,
+    name badge,
     string offchain_lookup_data, 
     string onchain_lookup_data, 
     vector<name> consumers,
     string memo) {
-    require_auth(creator);
 
+    require_auth(creator);
     notify_checks_contract(org);
     require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
 
+    string action_name = "initsimple";
+    string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
+    
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+    
     action {
     permission_level{get_self(), name("active")},
     name(SIMPLEBADGE_CONTRACT),
     name("create"),
     createsimple_args {
-      .org = org,
-      .badge = badge,
-      .parent_badges = parent_badges,
+      .badge_symbol = badge_symbol,
       .offchain_lookup_data = offchain_lookup_data,
       .onchain_lookup_data = onchain_lookup_data,
-      .memo = memo}
+      .memo = memo }
     }.send();
 
     for (auto i = 0 ; i < consumers.size(); i++) {
@@ -32,8 +34,7 @@
       name(ORCHESTRATOR_CONTRACT),
       name("addfeature"),
       addfeature_args {
-        .org = org,
-        .badge_name = badge,
+        .badge_symbol = badge_symbol,
         .notify_account = consumers[i],
         .memo = memo}
       }.send();
@@ -45,16 +46,20 @@
     notify_checks_contract(org);
     require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
 
+    string action_name = "simplebatch";
+    string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
+    
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+    asset badge_asset(1, badge_symbol);
+    
     for( auto i = 0; i < to.size(); i++ ) {
       action {
       permission_level{get_self(), name("active")},
       name(SIMPLEBADGE_CONTRACT),
       name("issue"),
       issuesimple_args {
-        .org = org,
+        .badge_asset = badge_asset,
         .to = to[i],
-        .badge = badge,
-        .amount = 1,
         .memo = memo }
       }.send();
     }
@@ -67,15 +72,19 @@
     notify_checks_contract(org);
     require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
 
+    string action_name = "givesimple";
+    string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
+    
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+    asset badge_asset(1, badge_symbol);
+
     action {
     permission_level{get_self(), name("active")},
     name(SIMPLEBADGE_CONTRACT),
     name("issue"),
     issuesimple_args {
-      .org = org,
+      .badge_asset = badge_asset,
       .to = to,
-      .badge = badge,
-      .amount = 1,
       .memo = memo }
     }.send();
 
