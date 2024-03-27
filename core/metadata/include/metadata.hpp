@@ -55,6 +55,8 @@ public:
     string onchain_lookup_data, 
     string memo);
 
+  ACTION ckvalidbadge (symbol badge_symbol);
+
 private:
 
   struct ramcredits_arg {
