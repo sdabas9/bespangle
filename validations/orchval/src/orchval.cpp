@@ -1,67 +1,25 @@
-#include <simpleval.hpp>
+#include <orchval.hpp>
 
-void simpleval::initsimple (name org,
-    name creator, 
+void orchval::delfeature (name org,
+    name authorized, 
     name badge,
-    string offchain_lookup_data, 
-    string onchain_lookup_data, 
-    vector<name> consumers,
+    name consumer,
     string memo) {
 
-    string action_name = "initsimple";
-    string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
+    string action_name = "delfeature";
+    string failure_identifier = "CONTRACT: orchval, ACTION: " + action_name + ", MESSAGE: ";
 
-    if (has_action_authority(org, name("initsimple"), creator)) {
+    if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
-    if (has_badge_authority(org, name("initsimple"), badge, creator)) {
+    if (has_badge_authority(org, name(action_name), badge, authorized)) {
         return;
     }
     check(false, failure_identifier + "Unauthorized account to execute action");
 
 }
 
-void simpleval::givesimple (name org,
-    name badge,
-    uint64_t amount, 
-    name authorizer, 
-    name to, 
-    string memo) {
-
-    string action_name = "givesimple";
-    string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
-    
-    if (has_action_authority(org, name("givesimple"), authorizer)) {
-        return;
-    }
-    if (has_badge_authority(org, name("givesimple"), badge, authorizer)) {
-        return;
-    }
-    check(false, failure_identifier + "Unauthorized account to execute action");
-
-}
-
-void simpleval::simplebatch (name org, 
-    name badge,
-    uint64_t amount,
-    name authorizer, 
-    vector<name> to, 
-    string memo) {
-
-    string action_name = "simplebatch";
-    string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
-
-    if (has_action_authority(org, name("simplebatch"), authorizer)) {
-        return;
-    }
-    if (has_badge_authority(org, name("simplebatch"), badge, authorizer)) {
-        return;
-    }
-    check(false, failure_identifier + "Unauthorized account to execute action");
-
-}
-
-ACTION simpleval::addbadgeauth(name org, name action, name badge, name authorized_account) {
+ACTION orchval::addbadgeauth(name org, name action, name badge, name authorized_account) {
     require_auth (org);
 
     badgeauths_table badgeauths(get_self(), org.value);
@@ -76,11 +34,11 @@ ACTION simpleval::addbadgeauth(name org, name action, name badge, name authorize
     });
 }
 
-ACTION simpleval::delbadgeauth(name org, name action, name badge, name authorized_account) {
+ACTION orchval::delbadgeauth(name org, name action, name badge, name authorized_account) {
     require_auth (org);
 
     string action_name = "delbadgeauth";
-    string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
+    string failure_identifier = "CONTRACT: orchval, ACTION: " + action_name + ", MESSAGE: ";
  
     badgeauths_table badgeauths(get_self(), org.value);
     auto secondary_index = badgeauths.get_index<"byactionbadge"_n>();
@@ -98,7 +56,7 @@ ACTION simpleval::delbadgeauth(name org, name action, name badge, name authorize
     });
 }
 
-ACTION simpleval::addactionauth (name org, name action, name authorized_account) {
+ACTION orchval::addactionauth (name org, name action, name authorized_account) {
   require_auth (org);
   actionauths_table _actionauths(get_self(), org.value);
   auto itr = _actionauths.find(action.value);
@@ -114,7 +72,7 @@ ACTION simpleval::addactionauth (name org, name action, name authorized_account)
   }
 }
 
-ACTION simpleval::delactionauth (name org, name action, name authorized_account) {
+ACTION orchval::delactionauth (name org, name action, name authorized_account) {
   require_auth (org);
   actionauths_table _actionauths(get_self(), org.value);
   auto itr = _actionauths.find(action.value);

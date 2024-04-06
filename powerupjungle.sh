@@ -13,6 +13,10 @@ accounts=(
     "orchzzzzzzzz"
     "authorityzzz"
     "simplebadgez"
+    "boundaggvalz"
+    "dummyorg1111"
+    "sachitsachit"
+    "authorityzzz"
 )
 
 # Loop through each account and power up

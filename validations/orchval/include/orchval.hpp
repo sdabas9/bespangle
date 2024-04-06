@@ -5,37 +5,18 @@ using namespace std;
 using namespace eosio;
 using std::vector;
 
-#cmakedefine SIMPLE_MANAGER_CONTRACT "@SIMPLE_MANAGER_CONTRACT@"
+#define ORCHESTRATOR_MANAGER_CONTRACT "orchmanagerz"
 
-#define SIMPLE_MANAGER_CREATE_NOTIFICATION SIMPLE_MANAGER_CONTRACT"::initsimple" 
-#define SIMPLE_MANAGER_ISSUE_NOTIFICATION SIMPLE_MANAGER_CONTRACT"::givesimple" 
-#define SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION SIMPLE_MANAGER_CONTRACT"::simplebatch" 
+#define ORCHESTRATOR_MANAGER_DELETE_FEATURE_NOTIFICATION ORCHESTRATOR_MANAGER_CONTRACT"::delfeature" 
 
-
-CONTRACT simpleval : public contract {
+CONTRACT orchval : public contract {
   public:
     using contract::contract;
-
-    [[eosio::on_notify(SIMPLE_MANAGER_CREATE_NOTIFICATION)]] void initsimple (name org,
-      name creator, 
-      name badge,
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      vector<name> consumers,
-      string memo);
       
-    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_NOTIFICATION)]] void givesimple (name org,
-     name badge,
-     uint64_t amount,
-     name authorizer, 
-     name to, 
-     string memo );
-
-    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION)]] void simplebatch (name org, 
+    [[eosio::on_notify(ORCHESTRATOR_MANAGER_DELETE_FEATURE_NOTIFICATION)]] void delfeature (name org,
+      name authorized, 
       name badge,
-      uint64_t amount,
-      name authorizer, 
-      vector<name> to, 
+      name consumer,
       string memo);
 
     ACTION addbadgeauth (name org, name action, name badge, name authorized_account);

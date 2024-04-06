@@ -13,17 +13,23 @@ CONTRACT bamanager : public contract {
   public:
     using contract::contract;
 
-    ACTION activeseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
-    ACTION activeseqli(name authorized, name org, name agg);
-    ACTION activeseqlp(name authorized, name org, name agg);
-    ACTION initagg(name authorized, name org, name agg, string description);
-
+    ACTION initagg(name authorized, name org, name agg, string first_seq_description);
     ACTION initseq(name authorized, name org, name agg, string description);
-    ACTION pauseseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
+    ACTION actseq(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);
+    ACTION actseqai(name authorized, name org, name agg, vector<name> badges);
+    ACTION actseqfi(name authorized, name org, name agg, vector<name> badges);
     ACTION endseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
-
-    ACTION addbadgeli(name authorized, name org, name agg, vector<name> badges);
+    ACTION endseqaa(name authorized, name org, name agg);
+    ACTION endseqfa(name authorized, name org, name agg);
     ACTION addbadge(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);
+
+    ACTION pauseall(name authorized, name org, name agg, uint64_t seq_id);
+    ACTION pausebadge(name authorized, name org, name agg, uint64_t badge_agg_seq_id);
+    ACTION pausebadges(name authorized, name org, name agg, uint64_t seq_id, vector<name> badges);
+    ACTION pauseallfa(name authorized, name org, name agg);
+    ACTION resumeall(name authorized, name org, name agg, uint64_t seq_id);
+    ACTION resumebadge(name authorized, name org, name agg, uint64_t badge_agg_seq_id);
+    ACTION resumebadges(name authorized, name org, name agg, uint64_t seq_id, vector<name> badges);
 
   private:
 
@@ -99,23 +105,11 @@ CONTRACT bamanager : public contract {
       std::transform(symbol_string.begin(), symbol_string.end(), symbol_string.begin(), ::toupper);
       return symbol(symbol_code(symbol_string), 0);
     }
-    
-    struct activeseq_args {
-      symbol agg_symbol;
-      vector<uint64_t> seq_ids;
-    };
 
-    struct activeseqli_args {
-      symbol agg_symbol;
-    };
-
-    struct activeseqlp_args {
-      symbol agg_symbol;
-    };
 
     struct initagg_args {
       symbol agg_symbol;
-      string description;
+      string first_seq_description;
     };
 
     struct initseq_args {
@@ -123,19 +117,30 @@ CONTRACT bamanager : public contract {
       string description;
     };
 
-    struct pauseseq_args {
+    struct actseq_args {
       symbol agg_symbol;
       vector<uint64_t> seq_ids;
+    };
+
+    struct actseqai_args {
+      symbol agg_symbol;
+    };
+
+    struct actseqfi_args {
+      symbol agg_symbol;
     };
 
     struct endseq_args {
       symbol agg_symbol;
       vector<uint64_t> seq_ids;
     };
-
-    struct addbadgeli_args {
+ 
+    struct endseqaa_args {
       symbol agg_symbol;
-      vector<symbol> badge_symbols;
+    };
+
+    struct endseqfa_args {
+      symbol agg_symbol;
     };
 
     struct addbadge_args {
@@ -144,9 +149,67 @@ CONTRACT bamanager : public contract {
       vector<symbol> badge_symbols;
     };
 
+    struct addbadgefa_args {
+      symbol agg_symbol;
+      vector<symbol> badge_symbols;
+    };
+
+    struct addbadgeaa_args {
+      symbol agg_symbol;
+      vector<symbol> badge_symbols;
+    };
+
+    struct addbadgefi_args {
+      symbol agg_symbol;
+      vector<symbol> badge_symbols;
+    };  
+
+    struct addbadgeai_args {
+      symbol agg_symbol;
+      vector<symbol> badge_symbols;
+    };
+
     struct addfeature_args {
       symbol badge_symbol;
       name notify_account;
       string memo;
     };
+
+    struct pauseall_args {
+      symbol agg_symbol;
+      uint64_t seq_id;
+    };
+
+    struct pausebadge_args {
+      symbol agg_symbol;
+      uint64_t badge_agg_seq_id;
+    };
+
+    struct pausebadges_args {
+      symbol agg_symbol;
+      uint64_t seq_id;
+      vector<symbol> badge_symbols;
+    };
+
+    struct pauseallfa_args {
+      symbol agg_symbol;
+    };
+
+    struct resumeall_args {
+      symbol agg_symbol;
+      uint64_t seq_id;
+    };
+
+    struct resumebadge_args {
+      symbol agg_symbol;
+      uint64_t badge_agg_seq_id;
+    };
+
+    struct resumebadges_args {
+      symbol agg_symbol;
+      uint64_t seq_id;
+      vector<symbol> badge_symbols;
+    };
+
 };
+

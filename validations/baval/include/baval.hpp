@@ -3,48 +3,49 @@
 using namespace std;
 using namespace eosio;
 
-#define BOUNDED_AGG_MANAGER_CONTRACT "fadf"
+#define BOUNDED_AGG_MANAGER_CONTRACT "bamanagerzzz"
 
-#define BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::activeseq"
-#define BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_LAST_INITIALIZED_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::activeseqli"
-#define BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_LAST_PAUSED_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::activeseqlp"
-#define BOUNDED_AGG_MANAGER_INITIALIZE_AGG_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::initagg"
-#define BOUNDED_AGG_MANAGER_INITIALIZE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::initseq"
-#define BOUNDED_AGG_MANAGER_PAUSE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::pauseseq"
+#define BOUNDED_AGG_MANAGER_INIT_AGG_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::initagg"
+#define BOUNDED_AGG_MANAGER_INIT_SEQ_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::initseq"
+#define BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::actseq"
+#define BOUNDED_AGG_MANAGER_ACTIVATE_ALL_INIT_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::actseqai"
+#define BOUNDED_AGG_MANAGER_ACTIVATE_FIRST_INIT_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::actseqfi"
 #define BOUNDED_AGG_MANAGER_END_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::endseq"
-#define BOUNDED_AGG_MANAGER_ADD_BADGES_LAST_INITIALIZED_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::addbadgeli"
+#define BOUNDED_AGG_MANAGER_END_ALL_ACTIVE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::endseqaa"
+#define BOUNDED_AGG_MANAGER_END_FIRST_ACTIVE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::endseqfa"
 #define BOUNDED_AGG_MANAGER_ADD_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::addbadge"
 
 CONTRACT baval : public contract {
   public:
     using contract::contract;
 
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_NOTIFICATION)]] 
-    void activeseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_INIT_AGG_NOTIFICATION)]]
+    void initagg(name authorized, name org, name agg, string first_seq_description);
 
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_LAST_INITIALIZED_NOTIFICATION)]] 
-    void activeseqli(name authorized, name org, name agg);
-
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_LAST_PAUSED_NOTIFICATION)]] 
-    void activeseqlp(name authorized, name org, name agg);
-
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_INITIALIZE_AGG_NOTIFICATION)]] 
-    void initagg(name authorized, name org, name agg, string description);
-
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_INITIALIZE_SEQUENCE_NOTIFICATION)]] 
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_INIT_SEQ_NOTIFICATION)]]
     void initseq(name authorized, name org, name agg, string description);
 
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_PAUSE_SEQUENCE_NOTIFICATION)]] 
-    void pauseseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
-
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_SEQUENCE_NOTIFICATION)]] 
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_NOTIFICATION)]]
+    void actseq(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_ALL_INIT_SEQUENCE_NOTIFICATION)]]
+    void actseqai(name authorized, name org, name agg, vector<name> badges);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_FIRST_INIT_SEQUENCE_NOTIFICATION)]]
+    void actseqfi(name authorized, name org, name agg, vector<name> badges);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_SEQUENCE_NOTIFICATION)]]
     void endseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
-
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ADD_BADGES_LAST_INITIALIZED_NOTIFICATION)]] 
-    void addbadgeli(name authorized, name org, name agg, vector<name> badges);
-
-    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ADD_BADGES_NOTIFICATION)]] 
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_ALL_ACTIVE_SEQUENCE_NOTIFICATION)]]
+    void endseqaa(name authorized, name org, name agg);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_FIRST_ACTIVE_SEQUENCE_NOTIFICATION)]]
+    void endseqfa(name authorized, name org, name agg);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ADD_BADGES_NOTIFICATION)]]
     void addbadge(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);
+
 
     ACTION addaggauth(name org, name action, name agg, name authorized_account);
     ACTION delaggauth(name org, name action, name agg, name authorized_account);

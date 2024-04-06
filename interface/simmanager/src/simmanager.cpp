@@ -41,7 +41,7 @@
     }
   }
 
-  ACTION simmanager::simplebatch (name org, name badge, name authorizer, vector<name> to, string memo) {
+  ACTION simmanager::simplebatch (name org, name badge, uint64_t amount, name authorizer, vector<name> to, string memo) {
     require_auth(authorizer);
     notify_checks_contract(org);
     require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
@@ -50,7 +50,7 @@
     string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
-    asset badge_asset(1, badge_symbol);
+    asset badge_asset(amount, badge_symbol);
     
     for( auto i = 0; i < to.size(); i++ ) {
       action {
@@ -66,7 +66,7 @@
   }
 
 
-  ACTION simmanager::givesimple (name org, name badge, name authorizer, name to, string memo ) {
+  ACTION simmanager::givesimple (name org, name badge, uint64_t amount, name authorizer, name to, string memo ) {
     require_auth(authorizer);
 
     notify_checks_contract(org);
@@ -76,7 +76,7 @@
     string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
-    asset badge_asset(1, badge_symbol);
+    asset badge_asset(amount, badge_symbol);
 
     action {
     permission_level{get_self(), name("active")},

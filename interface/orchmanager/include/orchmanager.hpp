@@ -4,36 +4,19 @@
 using namespace std;
 using namespace eosio;
 
-#cmakedefine SIMPLEBADGE_CONTRACT "@SIMPLEBADGE_CONTRACT@"
-#cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
-#cmakedefine SIMPLE_VALIDATION_CONTRACT "@SIMPLE_VALIDATION_CONTRACT@"
-#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#define ORG_CONTRACT "orgzzzzzzzzz"
+#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
+#define ORCHESTRATOR_VALIDATION_CONTRACT "orchvalzzzzz"
 
-CONTRACT simmanager : public contract {
+CONTRACT orchmanager : public contract {
   public:
     using contract::contract;
 
-    ACTION initsimple (name org, name creator, 
+  ACTION delfeature (name org,
+      name authorized, 
       name badge,
-      string offchain_lookup_data, 
-      string onchain_lookup_data,
-      vector<name> consumers,
-      string memo);
-      
-    ACTION givesimple (name org,
-     name badge,
-     uint64_t amount, 
-     name authorizer, 
-     name to, 
-     string memo );
-
-    ACTION simplebatch (name org, 
-      name badge,
-      uint64_t amount,
-      name authorizer, 
-      vector<name> to, 
-      string memo);
-    
+      name consumer,
+      string memo); 
 
   private:
     TABLE checks {
@@ -92,22 +75,9 @@ CONTRACT simmanager : public contract {
       return symbol(symbol_code(symbol_string), 0);
     }
     
-    struct addfeature_args {
+    struct delfeature_args {
       symbol badge_symbol;
       name notify_account;
-      string memo;
-    };
-
-    struct createsimple_args {
-      symbol badge_symbol;
-      string offchain_lookup_data; 
-      string onchain_lookup_data;
-      string memo;
-    };
-
-    struct issuesimple_args {
-      asset badge_asset;
-      name to;
       string memo;
     };
 };

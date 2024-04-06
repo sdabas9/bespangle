@@ -25,13 +25,15 @@ CONTRACT simpleval : public contract {
       string memo);
       
     [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_NOTIFICATION)]] void givesimple (name org,
-     name badge, 
+     name badge,
+     uint64_t amount,
      name authorizer, 
      name to, 
      string memo );
 
     [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION)]] void simplebatch (name org, 
-      name badge, 
+      name badge,
+      uint64_t amount,
       name authorizer, 
       vector<name> to, 
       string memo);

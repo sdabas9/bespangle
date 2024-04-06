@@ -21,13 +21,15 @@ CONTRACT simmanager : public contract {
       string memo);
       
     ACTION givesimple (name org,
-     name badge, 
+     name badge,
+     uint64_t amount, 
      name authorizer, 
      name to, 
      string memo );
 
     ACTION simplebatch (name org, 
-      name badge, 
+      name badge,
+      uint64_t amount,
       name authorizer, 
       vector<name> to, 
       string memo);
