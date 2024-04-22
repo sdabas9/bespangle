@@ -5,38 +5,44 @@ using namespace std;
 using namespace eosio;
 using std::vector;
 
-#define ANTIBADGE_INTERFACE_CONTRACT "abmanagerxxx"
+#define ANTIBADGE_MANAGER_CONTRACT "abmanagerxxx"
 
-#define ANTIBADGE_INTERFACE_CREATE_NOTIFICATION ANTIBADGE_INTERFACE_CONTRACT"::initsimple" 
-#define ANTIBADGE_INTERFACE_CREATEINV_NOTIFICATION ANTIBADGE_INTERFACE_CONTRACT"::givesimple" 
-#define ANTIBADGE_INTERFACE_ISSUE_NOTIFICATION ANTIBADGE_INTERFACE_CONTRACT"::simplebatch" 
+#define ANTIBADGE_MANAGER_CREATE_NOTIFICATION ANTIBADGE_MANAGER_CONTRACT"::create" 
+#define ANTIBADGE_MANAGER_CREATEINV_NOTIFICATION ANTIBADGE_MANAGER_CONTRACT"::createinv" 
+#define ANTIBADGE_MANAGER_ISSUE_NOTIFICATION ANTIBADGE_MANAGER_CONTRACT"::issue" 
 
 
 CONTRACT abval : public contract {
   public:
     using contract::contract;
 
-    [[eosio::on_notify(ANTIBADGE_INTERFACE_CREATE_NOTIFICATION)]] void create(name org, name authorized,
-      name antibadge,
-      name badge,
-      name type,
-      string offchain_lookup_data,
-      string onchain_lookup_data,
-      vector<name> consumers,
-      string memo);
+  [[eosio::on_notify(ANTIBADGE_MANAGER_CREATE_NOTIFICATION)]] void  create(name authorized, 
+                name org, 
+                name anti_badge,
+                name badge,
+                name type,
+                string offchain_lookup_data,
+                string onchain_lookup_data,
+                vector<name> consumers,
+                string memo);
 
-    [[eosio::on_notify(ANTIBADGE_INTERFACE_CREATEINV_NOTIFICATION)]] void createinv(name org, name authorized,
-      name antibadge,
-      name badge,
-      string offchain_lookup_data,
-      string onchain_lookup_data,
-      string memo);
+  [[eosio::on_notify(ANTIBADGE_MANAGER_CREATEINV_NOTIFICATION)]] void createinv(name authorized, 
+                name org, 
+                name anti_badge,
+                name badge,
+                string offchain_lookup_data,
+                string onchain_lookup_data,
+                vector<name> consumers,
+                string memo);
 
-    [[eosio::on_notify(ANTIBADGE_INTERFACE_ISSUE_NOTIFICATION)]] void issue(name org, name authorized,
-      name to,
-      name antibadge,
-      uint64_t amount,
-      string memo);
+  [[eosio::on_notify(ANTIBADGE_MANAGER_ISSUE_NOTIFICATION)]] void issue(name authorized, 
+               name org,
+               name anti_badge, 
+               uint64_t amount,
+               name to, 
+               string memo);
+
+
 
     ACTION addbadgeauth (name org, name action, name badge, name authorized_account);
 

@@ -26,7 +26,7 @@ CONTRACT aeval : public contract {
       name org, 
       name emission_name, 
       vector<asset> emitter_criteria, 
-      vector<contract_asset> emit_assets, 
+      vector<asset> emit_badges, 
       bool cyclic);
       
     [[eosio::on_notify(ANDEMITTER_MANAGER_ACTIVATE_NOTIFICATION)]] void activate(name authorized, 

@@ -13,6 +13,7 @@ public:
   using contract::contract;
   
   [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
+    name org,
     asset badge_asset, 
     name from, 
     name to, 

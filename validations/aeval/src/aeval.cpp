@@ -4,7 +4,7 @@ void aeval::newemission(name authorized,
     name org, 
     name emission_name, 
     vector<asset> emitter_criteria, 
-    vector<contract_asset> emit_assets, 
+    vector<asset> emit_badges, 
     bool cyclic) {
 
     string action_name = "newemission";

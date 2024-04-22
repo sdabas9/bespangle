@@ -8,23 +8,26 @@ using namespace eosio;
 #define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
 #define BOUNDED_AGG_CONTRACT "baggzzzzzzzz"
 #define AUTHORITY_CONTRACT "authorityzzz"
+#define ORG_CONTRACT "orgzzzzzzzzz"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT boundedstats : public contract {
   public:
     using contract::contract;
 
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(asset badge_asset, 
+    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
+        name org,
+        asset badge_asset, 
         name from, 
         name to, 
         string memo, 
         vector<name> notify_accounts);
 
 
-    ACTION settings(symbol agg_symbol, uint64_t seq_id, symbol badge_symbol, uint64_t max_no_of_ranks);
+    ACTION settings(name org, symbol agg_symbol, uint64_t seq_id, symbol badge_symbol, uint64_t max_no_of_ranks);
 
   private:
-
+    //scoped by org
     TABLE  statssetting {
         uint64_t badge_agg_seq_id;
         uint64_t max_no_of_ranks;
@@ -33,6 +36,7 @@ CONTRACT boundedstats : public contract {
     };
     typedef multi_index<"statssetting"_n, statssetting> statssetting_table;
 
+    // scoped by org
     TABLE counts {
         uint64_t badge_agg_seq_id;
         uint64_t total_recipients;
@@ -41,6 +45,7 @@ CONTRACT boundedstats : public contract {
     };
     typedef multi_index<"counts"_n, counts> counts_table;
 
+    // scoped by badge_agg_seq_id
     TABLE ranks {
         vector<name> accounts;
         uint64_t balance;
@@ -48,19 +53,27 @@ CONTRACT boundedstats : public contract {
     };
     typedef multi_index<"ranks"_n, ranks> ranks_table;
 
-    TABLE badgeaggseq {
+    // scoped by org.
+    TABLE badgestatus {
         uint64_t badge_agg_seq_id; // Primary key: Unique ID for each badge-sequence association
         symbol agg_symbol;         // The aggregation symbol associated with this badge
         uint64_t seq_id;           // The sequence ID this badge is associated with
         symbol badge_symbol;       // The symbol representing the badge
         name badge_status;         // The status of the badge (e.g., "active")
-        name seq_status;           // The status of the sequence copied from the agg table
+        name seq_status;           // The status of the sequence copied from the sequence table
 
         uint64_t primary_key() const { return badge_agg_seq_id; }
         uint128_t by_agg_seq() const { return combine_keys(agg_symbol.code().raw(), seq_id); }
+
         checksum256 by_badge_status() const {
             // Example hashing for badge status; adjust according to actual implementation needs
             auto data = badge_symbol.code().to_string() + badge_status.to_string() + seq_status.to_string();
+            return sha256(data.data(), data.size());
+        }
+
+        checksum256 by_agg_seq_badge() const {
+            // Example hashing for badge status; adjust according to actual implementation needs
+            auto data = agg_symbol.code().to_string() + std::to_string(seq_id) + badge_symbol.code().to_string();
             return sha256(data.data(), data.size());
         }
 
@@ -69,11 +82,29 @@ CONTRACT boundedstats : public contract {
             return (static_cast<uint128_t>(a) << 64) | b;
         }
     };
-    typedef eosio::multi_index<"badgeaggseqs"_n, badgeaggseq,
-        eosio::indexed_by<"byaggseq"_n, eosio::const_mem_fun<badgeaggseq, uint128_t, &badgeaggseq::by_agg_seq>>,
-        eosio::indexed_by<"bybadgestat"_n, eosio::const_mem_fun<badgeaggseq, checksum256, &badgeaggseq::by_badge_status>>
-    > badgeaggseq_table;
-    
+    typedef eosio::multi_index<"badgestatus"_n, badgestatus,
+        eosio::indexed_by<"byaggseq"_n, eosio::const_mem_fun<badgestatus, uint128_t, &badgestatus::by_agg_seq>>,
+        eosio::indexed_by<"bybadgestat"_n, eosio::const_mem_fun<badgestatus, checksum256, &badgestatus::by_badge_status>>,
+        eosio::indexed_by<"aggseqbadge"_n, eosio::const_mem_fun<badgestatus, checksum256, &badgestatus::by_agg_seq_badge>>
+    > badgestatus_table;
+
+    checksum256 hash_active_status(const symbol& badge_symbol, const name& badge_status, const name& seq_status) {
+        // Create a data string from badge_symbol, badge_status, and seq_status
+        string data_str = badge_symbol.code().to_string() + badge_status.to_string() + seq_status.to_string();
+
+        // Return the sha256 hash of the concatenated string
+        return sha256(data_str.data(), data_str.size());
+    }
+
+    checksum256 hash_agg_seq_badge(const symbol& agg_symbol, uint64_t seq_id, symbol badge_symbol) {
+        // Create a data string from badge_symbol, badge_status, and seq_status
+        string data_str = agg_symbol.code().to_string() + std::to_string(seq_id) + badge_symbol.code().to_string();
+
+        // Return the sha256 hash of the concatenated string
+        return sha256(data_str.data(), data_str.size());
+    }
+
+    // scoped by account
     TABLE achievements {
         uint64_t badge_agg_seq_id;
         uint64_t count;
@@ -82,24 +113,7 @@ CONTRACT boundedstats : public contract {
     };
     typedef eosio::multi_index<"achievements"_n, achievements> achievements_table;
 
-        // Define the structure of the table
-    TABLE orgcode {
-        name org;         // Organization identifier, used as primary key
-        name org_code;    // Converted org_code, ensuring uniqueness and specific format
-
-        // Specify the primary key
-        auto primary_key() const { return org.value; }
-
-        // Specify a secondary index for org_code to ensure its uniqueness
-        uint64_t by_org_code() const { return org_code.value; }
-    };
-
-    // Declare the table
-    typedef eosio::multi_index<"orgcodes"_n, orgcode,
-      eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
-    > orgcode_index;
-
-      // scoped by contract
+    // scoped by contract
     TABLE auth {
         name action;
         vector<name> authorized_contracts;
@@ -120,10 +134,10 @@ CONTRACT boundedstats : public contract {
         check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
     }
 
-    void update_rank(name account, uint64_t badge_agg_seq_id, uint64_t old_balance, uint64_t new_balance) {
+    void update_rank(name org, name account, uint64_t badge_agg_seq_id, uint64_t old_balance, uint64_t new_balance) {
 
         ranks_table _ranks(get_self(), badge_agg_seq_id); // Use badge_agg_seq_id as scope
-        statssetting_table _statssetting(get_self(), get_self().value);
+        statssetting_table _statssetting(get_self(), org.value);
         auto statssetting_itr = _statssetting.find(badge_agg_seq_id);
         check(statssetting_itr != _statssetting.end(), "no record in statssetting table");
         
@@ -207,12 +221,5 @@ CONTRACT boundedstats : public contract {
         }
     }
     
-    checksum256 hash_active_status(const symbol& badge_symbol, const name& badge_status, const name& seq_status) {
-        // Create a data string from badge_symbol, badge_status, and seq_status
-        string data_str = badge_symbol.code().to_string() + badge_status.to_string() + seq_status.to_string();
-
-        // Return the sha256 hash of the concatenated string
-        return sha256(data_str.data(), data_str.size());
-    }
 
 };

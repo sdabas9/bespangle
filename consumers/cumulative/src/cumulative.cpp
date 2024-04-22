@@ -1,6 +1,6 @@
 #include <cumulative.hpp>
 
-void cumulative::notifyachiev(asset badge_asset, name from, name to, std::string memo, std::vector<name> notify_accounts) {
+void cumulative::notifyachiev(name org, asset badge_asset, name from, name to, std::string memo, std::vector<name> notify_accounts) {
     // Access the accounts table scoped by "to"
     accounts to_accounts(get_self(), to.value);
 

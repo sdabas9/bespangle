@@ -11,12 +11,14 @@ CONTRACT simplebadge : public contract {
   public:
     using contract::contract;
 
-    ACTION create (symbol badge_symbol,
+    ACTION create (
+      name org,
+      symbol badge_symbol,
       string offchain_lookup_data, 
       string onchain_lookup_data, 
       string memo);
 
-    ACTION issue (asset badge_asset, name to, string memo );
+    ACTION issue (name org, asset badge_asset, name to, string memo );
 
 
   private:
@@ -42,6 +44,7 @@ CONTRACT simplebadge : public contract {
     }
 
     struct achievement_args {
+      name org,
       asset badge_asset;
       name from;
       name to;
@@ -49,6 +52,7 @@ CONTRACT simplebadge : public contract {
     };
 
     struct initbadge_args {
+      name org,
       symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data; 

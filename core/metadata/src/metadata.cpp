@@ -2,7 +2,9 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
-ACTION metadata::initbadge(symbol badge_symbol, 
+ACTION metadata::initbadge(
+    name org,
+    symbol badge_symbol, 
     string offchain_lookup_data, 
     string onchain_lookup_data, 
     string memo) {
@@ -10,8 +12,8 @@ ACTION metadata::initbadge(symbol badge_symbol,
     string action_name = "initbadge";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);
-    // Open the badge table, scoped to this contract's self account
-    badge_table badges(get_self(), get_self().value);
+
+    badge_table badges(get_self(), org.value);
 
     // Check if the badge with the given symbol already exists
     auto badge_itr = badges.find(badge_symbol.code().raw());
@@ -25,7 +27,9 @@ ACTION metadata::initbadge(symbol badge_symbol,
     });
 }
 
-ACTION metadata::addfeature(symbol badge_symbol, 
+ACTION metadata::addfeature(
+    name org, 
+    symbol badge_symbol, 
     name notify_account, 
     string memo) {
 
@@ -33,7 +37,8 @@ ACTION metadata::addfeature(symbol badge_symbol,
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);
 
-    badge_table _badge(get_self(), get_self().value);
+    badge_table _badge(get_self(), org.value);
+
     auto badge_iterator = _badge.find(badge_symbol.code().raw());
     check(badge_iterator != _badge.end(), failure_identifier + " badge_symbol not initialized ");
 
@@ -54,6 +59,7 @@ ACTION metadata::addfeature(symbol badge_symbol,
         get_self(),
         name("addnotify"),
         downstream_notify_args {
+            .org = org,
             .badge_symbol = badge_symbol,
             .notify_account = notify_account,
             .memo = memo,
@@ -64,7 +70,9 @@ ACTION metadata::addfeature(symbol badge_symbol,
     }.send();
 }
 
-ACTION metadata::addnotify(symbol badge_symbol, 
+ACTION metadata::addnotify(
+    name org,
+    symbol badge_symbol, 
     name notify_account, 
     string memo, 
     string offchain_lookup_data, 
@@ -75,14 +83,17 @@ ACTION metadata::addnotify(symbol badge_symbol,
     require_recipient(notify_account);
 }
 
-ACTION metadata::delfeature(symbol badge_symbol, 
+ACTION metadata::delfeature(
+    name org,
+    symbol badge_symbol, 
     name notify_account, 
     string memo) {
 
     string action_name = "delfeature";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);
-    badge_table _badge(_self, _self.value);
+
+    badge_table _badge(get_self(), org.value);
 
     auto badge_iterator = _badge.find(badge_symbol.code().raw());
     check(badge_iterator != _badge.end(), failure_identifier + " badge_symbol not initialized ");
@@ -102,6 +113,7 @@ ACTION metadata::delfeature(symbol badge_symbol,
         get_self(),
         name("delnotify"),
         downstream_notify_args {
+            .org = org,
             .badge_symbol = badge_symbol,
             .notify_account = notify_account,
             .memo = memo,
@@ -112,7 +124,9 @@ ACTION metadata::delfeature(symbol badge_symbol,
     }.send();
 }
 
-ACTION metadata::delnotify(symbol badge_symbol, 
+ACTION metadata::delnotify(
+    name org,
+    symbol badge_symbol, 
     name notify_account, 
     string memo, 
     string offchain_lookup_data, 
@@ -123,7 +137,9 @@ ACTION metadata::delnotify(symbol badge_symbol,
     require_recipient(notify_account);
 
 }
-ACTION metadata::achievement(asset badge_asset, 
+ACTION metadata::achievement(
+    name org,
+    asset badge_asset, 
     name from,
     name to, 
     string memo) {
@@ -131,7 +147,8 @@ ACTION metadata::achievement(asset badge_asset,
     string action_name = "achievement";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);
-    badge_table _badge(_self, _self.value);
+
+    badge_table _badge(get_self(), org.value);
 
     auto badge_iterator = _badge.find(badge_asset.symbol.code().raw());
     check(badge_iterator != _badge.end(), failure_identifier + " symbol for asset not initialized ");
@@ -145,6 +162,7 @@ ACTION metadata::achievement(asset badge_asset,
         get_self(),
         name("notifyachiev"),
         notifyachievement_args {
+            .org = org,
             .badge_asset = badge_asset,
             .from = from,
             .to = to,
@@ -154,7 +172,9 @@ ACTION metadata::achievement(asset badge_asset,
     }.send();    
 }
 
-ACTION metadata::mergeinfo(symbol badge_symbol, 
+ACTION metadata::mergeinfo(
+    name org,
+    symbol badge_symbol, 
     string offchain_lookup_data, 
     string onchain_lookup_data, 
     string memo) {
@@ -163,7 +183,8 @@ ACTION metadata::mergeinfo(symbol badge_symbol,
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);
 
-    badge_table _badge(_self, _self.value);
+    badge_table _badge(get_self(), org.value);
+
     auto badge_iterator = _badge.find(badge_symbol.code().raw());
 
     check(badge_iterator != _badge.end(), failure_identifier + " badge_symbol is not initialized ");
@@ -193,7 +214,9 @@ ACTION metadata::mergeinfo(symbol badge_symbol,
     }
 }
 
-ACTION metadata::notifyachiev(asset badge_asset, 
+ACTION metadata::notifyachiev(
+    name org,
+    asset badge_asset, 
     name from, 
     name to, 
     string memo, 

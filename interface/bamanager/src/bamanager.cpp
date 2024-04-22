@@ -1,6 +1,6 @@
 #include <bamanager.hpp>
 
-ACTION bamanager::initagg(name authorized, name org, name agg, string first_seq_description) {
+ACTION bamanager::initagg(name authorized, name org, name agg, string agg_description) {
     require_auth(authorized);
     notify_checks_contract(org);
     require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
@@ -15,13 +15,14 @@ ACTION bamanager::initagg(name authorized, name org, name agg, string first_seq_
       name(BOUNDED_AGG_CONTRACT),
       name("initagg"),
       initagg_args {
+        .org = org,
         .agg_symbol = agg_symbol,
-        .first_seq_description = first_seq_description
+        .agg_description = agg_description
       }
     }.send();
 }
 
-ACTION bamanager::initseq(name authorized, name org, name agg, string description) {
+ACTION bamanager::initseq(name authorized, name org, name agg, string sequence_description) {
     require_auth(authorized);
     notify_checks_contract(org);
     require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
@@ -36,8 +37,9 @@ ACTION bamanager::initseq(name authorized, name org, name agg, string descriptio
       name(BOUNDED_AGG_CONTRACT),
       name("initseq"),
       initseq_args {
+        .org = org,
         .agg_symbol = agg_symbol,
-        .description = description
+        .sequence_description = sequence_description
       }
     }.send();
 }
@@ -61,6 +63,7 @@ ACTION bamanager::actseq(name authorized, name org, name agg, vector<uint64_t> s
         name(ORCHESTRATOR_CONTRACT),
         name("addfeature"),
         addfeature_args{
+          .org = org,
           .badge_symbol = badge_symbol,
           .notify_account = name(BOUNDED_AGG_CONTRACT),
           .memo = ""
@@ -73,6 +76,7 @@ ACTION bamanager::actseq(name authorized, name org, name agg, vector<uint64_t> s
       name(BOUNDED_AGG_CONTRACT),
       name("addbadge"),
       addbadge_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_ids = seq_ids,
         .badge_symbols = badge_symbols
@@ -84,6 +88,7 @@ ACTION bamanager::actseq(name authorized, name org, name agg, vector<uint64_t> s
       name(BOUNDED_AGG_CONTRACT),
       name("actseq"),
       actseq_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_ids = seq_ids
       }
@@ -110,6 +115,7 @@ ACTION bamanager::actseqai(name authorized, name org, name agg, vector<name> bad
         name(ORCHESTRATOR_CONTRACT),
         name("addfeature"),
         addfeature_args{
+          .org = org,
           .badge_symbol = badge_symbol,
           .notify_account = name(BOUNDED_AGG_CONTRACT),
           .memo = ""
@@ -122,6 +128,7 @@ ACTION bamanager::actseqai(name authorized, name org, name agg, vector<name> bad
       name(BOUNDED_AGG_CONTRACT),
       name("addbadgeai"),
       addbadgeai_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .badge_symbols = badge_symbols
       }
@@ -132,6 +139,7 @@ ACTION bamanager::actseqai(name authorized, name org, name agg, vector<name> bad
       name(BOUNDED_AGG_CONTRACT),
       name("actseqai"),
       actseqai_args {
+        .org = org,
         .agg_symbol = agg_symbol
       }
     }.send();
@@ -156,6 +164,7 @@ ACTION bamanager::actseqfi(name authorized, name org, name agg, vector<name> bad
         name(ORCHESTRATOR_CONTRACT),
         name("addfeature"),
         addfeature_args{
+          .org = org,
           .badge_symbol = badge_symbol,
           .notify_account = name(BOUNDED_AGG_CONTRACT),
           .memo = ""
@@ -168,6 +177,7 @@ ACTION bamanager::actseqfi(name authorized, name org, name agg, vector<name> bad
       name(BOUNDED_AGG_CONTRACT),
       name("addbadgefi"),
       addbadgefi_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .badge_symbols = badge_symbols
       }
@@ -178,6 +188,7 @@ ACTION bamanager::actseqfi(name authorized, name org, name agg, vector<name> bad
       name(BOUNDED_AGG_CONTRACT),
       name("actseqfi"),
       actseqfi_args {
+        .org = org,
         .agg_symbol = agg_symbol
       }
     }.send();
@@ -198,6 +209,7 @@ ACTION bamanager::endseq(name authorized, name org, name agg, vector<uint64_t> s
       name(BOUNDED_AGG_CONTRACT),
       name("endseq"),
       endseq_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_ids = seq_ids
       }
@@ -219,6 +231,7 @@ ACTION bamanager::endseqaa(name authorized, name org, name agg) {
       name(BOUNDED_AGG_CONTRACT),
       name("endseqaa"),
       endseqaa_args {
+        .org = org,
         .agg_symbol = agg_symbol
       }
     }.send();
@@ -239,6 +252,7 @@ ACTION bamanager::endseqfa(name authorized, name org, name agg) {
       name(BOUNDED_AGG_CONTRACT),
       name("endseqfa"),
       actseq_args {
+        .org = org,
         .agg_symbol = agg_symbol
       }
     }.send();
@@ -263,6 +277,7 @@ ACTION bamanager::addbadge(name authorized, name org, name agg, vector<uint64_t>
         name(ORCHESTRATOR_CONTRACT),
         name("addfeature"),
         addfeature_args{
+          .org = org,
           .badge_symbol = badge_symbol,
           .notify_account = name(BOUNDED_AGG_CONTRACT),
           .memo = ""
@@ -275,6 +290,7 @@ ACTION bamanager::addbadge(name authorized, name org, name agg, vector<uint64_t>
       name(BOUNDED_AGG_CONTRACT),
       name("addbadge"),
       addbadge_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_ids = seq_ids,
         .badge_symbols = badge_symbols
@@ -297,6 +313,7 @@ ACTION bamanager::pauseall(name authorized, name org, name agg, uint64_t seq_id)
       name(BOUNDED_AGG_CONTRACT),
       name("pauseall"),
       pauseall_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_id = seq_id
       }
@@ -318,6 +335,7 @@ ACTION bamanager::pausebadge(name authorized, name org, name agg, uint64_t badge
       name(BOUNDED_AGG_CONTRACT),
       name("pausebadge"),
       pausebadge_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .badge_agg_seq_id = badge_agg_seq_id
       }
@@ -344,6 +362,7 @@ ACTION bamanager::pausebadges(name authorized, name org, name agg, uint64_t seq_
       name(BOUNDED_AGG_CONTRACT),
       name("pausebadges"),
       pausebadges_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_id = seq_id,
         .badge_symbols = badge_symbols
@@ -365,6 +384,7 @@ ACTION bamanager::pauseallfa(name authorized, name org, name agg) {
       name(BOUNDED_AGG_CONTRACT),
       name("pauseallfa"),
       pauseallfa_args {
+        .org = org,
         .agg_symbol = agg_symbol
       }
     }.send();
@@ -384,6 +404,7 @@ ACTION bamanager::resumeall(name authorized, name org, name agg, uint64_t seq_id
       name(BOUNDED_AGG_CONTRACT),
       name("resumeall"),
       resumeall_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_id = seq_id
       }
@@ -404,6 +425,7 @@ ACTION bamanager::resumebadge(name authorized, name org, name agg, uint64_t badg
       name(BOUNDED_AGG_CONTRACT),
       name("resumebadge"),
       resumebadge_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .badge_agg_seq_id = badge_agg_seq_id
       }
@@ -428,6 +450,7 @@ ACTION bamanager::resumebadges(name authorized, name org, name agg, uint64_t seq
       name(BOUNDED_AGG_CONTRACT),
       name("resumebadges"),
       resumebadges_args {
+        .org = org,
         .agg_symbol = agg_symbol,
         .seq_id = seq_id,
         .badge_symbols = badge_symbols

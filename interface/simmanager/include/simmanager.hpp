@@ -8,32 +8,44 @@ using namespace eosio;
 #define ORG_CONTRACT "orgzzzzzzzzz"
 #define SIMPLE_VALIDATION_CONTRACT "simplevalzzz"
 #define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
+#define STATISTICS_CONTRACT "statisticszz"
+
+#define CUMULATIVE_CONTRACT "cumulativezz"
+#define STATISTICS_CONTRACT "statisticszz"
+#define ANDEMITTER_CONTRACT "andemitterzz"
+#define BOUNDED_AGG_CONTRACT "baggzzzzzzzz"
+#define BOUNDED_STATS_CONTRACT "bstatszzzzzz"
 
 CONTRACT simmanager : public contract {
   public:
     using contract::contract;
 
-    ACTION initsimple (name org, name creator, 
+    ACTION initsimple (name authorized, 
+      name org, 
       name badge,
       string offchain_lookup_data, 
       string onchain_lookup_data,
-      vector<name> consumers,
+      bool lifetime_aggregate,
+      bool lifetime_stats,
+      bool emit_secondary_token,
+      bool bounded_aggregate,
+      bool bounded_stats,
+      vector<name> other_consumers,
       string memo);
       
-    ACTION givesimple (name org,
+    ACTION givesimple (name authorized,
+     name org,
      name badge,
-     uint64_t amount, 
-     name authorizer, 
+     uint64_t amount,
      name to, 
      string memo );
 
-    ACTION simplebatch (name org, 
+    ACTION simplebatch (name authorized,
+      name org, 
       name badge,
       uint64_t amount,
-      name authorizer, 
       vector<name> to, 
       string memo);
-    
 
   private:
     TABLE checks {
@@ -93,12 +105,14 @@ CONTRACT simmanager : public contract {
     }
     
     struct addfeature_args {
+      name org;
       symbol badge_symbol;
       name notify_account;
       string memo;
     };
 
     struct createsimple_args {
+      name org;
       symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data;
@@ -106,8 +120,14 @@ CONTRACT simmanager : public contract {
     };
 
     struct issuesimple_args {
+      name org;
       asset badge_asset;
       name to;
       string memo;
+    };
+
+    struct settings_args {
+      symbol badge_symbol;
+      uint64_t max_no_of_ranks;
     };
 };

@@ -1,17 +1,18 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 #include <eosio/system.hpp>
 
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-#define AUTHORITY_CONTRACT "authorityxxx"
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
 
-CONTRACT gotchabadge : public contract {
+CONTRACT mrbadge : public contract {
   public:
     using contract::contract;
 
-    ACTION create (symbol badge_symbol, 
+    ACTION create (name org, symbol badge_symbol, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
       uint8_t supply_per_cycle, 
@@ -19,16 +20,16 @@ CONTRACT gotchabadge : public contract {
       string onchain_lookup_data,
       string memo);
       
-    ACTION issue (asset badge_asset
+    ACTION issue (name org, asset badge_asset,
       name from, 
       name to,
       string memo);
     
-    ACTION starttime(name org, name badge, time_point_sec new_starttime);
+    ACTION starttime(name org, symbol badge_symbol, time_point_sec new_starttime);
 
-    ACTION cyclelength(name org, name badge, uint64_t new_cycle_length);
+    ACTION cyclelength(name org, symbol badge_symbol, uint64_t new_cycle_length);
 
-    ACTION cyclesupply(name org, name badge, uint8_t new_supply_per_cycle);
+    ACTION cyclesupply(name org, symbol badge_symbol, uint8_t new_supply_per_cycle);
   
 
   private:
@@ -47,6 +48,7 @@ CONTRACT gotchabadge : public contract {
     // scoped by account
     TABLE stats {
       asset badge_asset;
+      name org;
       time_point last_claimed_time;
       auto primary_key() const {return badge_asset.symbol.code().raw(); }
     };
@@ -73,22 +75,20 @@ CONTRACT gotchabadge : public contract {
       check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
     }
 
+
     struct achievement_args {
-      name org;
-      name badge;
-      name account;
+      asset badge_asset;
       name from;
-      uint64_t count;
+      name to;
       string memo;
     };
 
     struct initbadge_args {
-      name org;
-      name badge_name;
+      symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data; 
       string memo;
-    }; 
+    };
 
     struct create_args { 
       name org; 

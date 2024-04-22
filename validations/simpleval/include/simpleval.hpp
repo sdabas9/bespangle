@@ -16,25 +16,30 @@ CONTRACT simpleval : public contract {
   public:
     using contract::contract;
 
-    [[eosio::on_notify(SIMPLE_MANAGER_CREATE_NOTIFICATION)]] void initsimple (name org,
-      name creator, 
+    [[eosio::on_notify(SIMPLE_MANAGER_CREATE_NOTIFICATION)]] void initsimple (name authorized, 
+      name org, 
       name badge,
       string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      vector<name> consumers,
+      string onchain_lookup_data,
+      bool lifetime_aggregate,
+      bool lifetime_stats,
+      bool emit_secondary_token,
+      bool bounded_aggregate,
+      bool bounded_stats,
+      vector<name> other_consumers,
       string memo);
       
-    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_NOTIFICATION)]] void givesimple (name org,
-     name badge,
-     uint64_t amount,
-     name authorizer, 
-     name to, 
-     string memo );
-
-    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION)]] void simplebatch (name org, 
+    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_NOTIFICATION)]] void givesimple (name authorized,
+      name org,
       name badge,
       uint64_t amount,
-      name authorizer, 
+      name to, 
+      string memo );
+
+    [[eosio::on_notify(SIMPLE_MANAGER_ISSUE_BATCH_NOTIFICATION)]] void simplebatch (name authorized,
+      name org, 
+      name badge,
+      uint64_t amount,
       vector<name> to, 
       string memo);
 

@@ -1,9 +1,15 @@
 #include <andemitter.hpp>
 
-void andemitter::notifyachiev(asset amount, name from, name to, string memo, vector<name> notify_accounts) {
+void andemitter::notifyachiev(name org, asset amount, name from, name to, string memo, vector<name> notify_accounts) {
+    string action_name = "notifyachiev";
+    string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier); 
+
     activelookup_table active_lookup(get_self(), get_self().value);
     auto lookup_itr = active_lookup.find(amount.symbol.code().raw());
-    check(lookup_itr != active_lookup.end(), "No active emissions for this badge symbol");
+    if(lookup_itr == active_lookup.end()) {
+        return;
+    }
 
     emissions_table emissions(get_self(), get_self().value);
     accounts_table accounts(get_self(), to.value);
@@ -29,7 +35,7 @@ void andemitter::notifyachiev(asset amount, name from, name to, string memo, vec
             // });
         }
         auto expanded_emitter_status_map = account_itr->expanded_emitter_status;
-        update_expanded_emitter_status(to, expanded_emitter_status_map, amount, *emission_itr, emission_status);
+        update_expanded_emitter_status(to, expanded_emitter_status_map, amount, *emission_itr, emission_status, failure_identifier);
 
         accounts.modify(account_itr, get_self(), [&](auto& acc) {
             acc.expanded_emitter_status = expanded_emitter_status_map;
@@ -42,7 +48,7 @@ ACTION andemitter::newemission(name org, name emission_name, vector<asset> emitt
     string action_name = "newemission";
     string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
-    validate_org_assets(org, emitter_criteria_vector, emit_assets);
+    validate_org_assets(org, emitter_criteria_vector, emit_assets, failure_identifier);
 
     emissions_table emissions(get_self(), get_self().value);
     auto emission_itr = emissions.find(emission_name.value);
@@ -64,7 +70,9 @@ ACTION andemitter::newemission(name org, name emission_name, vector<asset> emitt
 
 ACTION andemitter::chkorgasset(name org, vector<asset> emitter_criteria, vector<contract_asset> emit_assets) {
     require_auth(get_self());
-    validate_org_assets(org, emitter_criteria, emit_assets);
+    string action_name = "chkorgasset";
+    string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
+    validate_org_assets(org, emitter_criteria, emit_assets, failure_identifier);
 }
 
 ACTION andemitter::activate(name org, name emission_name) {
@@ -81,7 +89,7 @@ ACTION andemitter::activate(name org, name emission_name) {
     for (const auto& pair : emission_itr->emitter_criteria) {
         asset_vector.push_back(pair.second);
     }
-    validate_org_assets(org, asset_vector, emission_itr->emit_assets);
+    validate_org_assets(org, asset_vector, emission_itr->emit_assets, failure_identifier);
 
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
         mod.status = name("activate");
@@ -120,7 +128,7 @@ ACTION andemitter::deactivate(name org, name emission_name) {
         asset_vector.push_back(pair.second);
     }
 
-    validate_org_assets(org, asset_vector, emission_itr->emit_assets);
+    validate_org_assets(org, asset_vector, emission_itr->emit_assets, failure_identifier);
 
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
         mod.status = name("deactivate");
@@ -161,17 +169,19 @@ void andemitter::check_internal_auth(name action, string failure_identifier) {
     check(false, failure_identifier + " - Calling contract not in authorized list of accounts for action " + action.to_string());
 }
 
-void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor) {
+void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor, string failure_identifier) {
     for (const auto& rec : emit_assets) {
         int64_t new_amount = rec.emit_asset.amount * emit_factor;
         asset badge_asset = asset(new_amount, rec.emit_asset.symbol);
+        name destination_org = get_org_from_badge_symbol(badge_asset.symbol, failure_identifier);
 
         if (rec.contract == name(SIMPLEBADGE_CONTRACT)) {
             action(
                 permission_level{get_self(), "active"_n},
-                rec.contract,
+                name(SIMPLEBADGE_CONTRACT),
                 "issue"_n,
                 issue_args {
+                    .org = destination_org,
                     .badge_asset = badge_asset,
                     .to = to,
                     .memo = "issued from andemitter" }
@@ -181,7 +191,7 @@ void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint
     }
 }
 
-void andemitter::update_expanded_emitter_status(name account, map<symbol_code, int64_t>& expanded_emitter_status, const asset& new_asset, emissions emission, uint8_t& emission_status) {
+void andemitter::update_expanded_emitter_status(name account, map<symbol_code, int64_t>& expanded_emitter_status, const asset& new_asset, emissions emission, uint8_t& emission_status, string failure_identifier) {
     expanded_emitter_status[new_asset.symbol.code()] += new_asset.amount;
 
     bool criteria_met = true;
@@ -213,30 +223,21 @@ void andemitter::update_expanded_emitter_status(name account, map<symbol_code, i
                 amount -= emission.emitter_criteria[symbol].amount * min_multiplier;
                 if (amount < 0) amount = 0; // Prevent negative values
             }
-            invoke_action(account, emission.emit_assets, min_multiplier); // Take action based on the new status
+            invoke_action(account, emission.emit_assets, min_multiplier, failure_identifier); // Take action based on the new status
         }
     }
 }
 
-void andemitter::validate_org_assets(name org, const vector<asset>& emitter_criteria, const vector<contract_asset>& emit_assets) {
-    orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+void andemitter::validate_org_assets(name org, const vector<asset>& emitter_criteria, const vector<contract_asset>& emit_assets, string failure_identifier) {
 
-    auto org_itr = orgcodes.find(org.value);
-    check(org_itr != orgcodes.end(), "Organization does not exist");
-
-    // Extract org_code for validation
-    string org_code_str = org_itr->org_code.to_string();
-    transform(org_code_str.begin(), org_code_str.end(), org_code_str.begin(), ::toupper);
     // Validate emitter_criteria assets belong to org
     for (const auto& rec : emitter_criteria) {
-        string symbol_code_str = rec.symbol.code().to_string().substr(0, org_code_str.length());
-        check(symbol_code_str == org_code_str, symbol_code_str +"," + org_code_str +" Asset in emitter_criteria does not belong to the organization");
+        validate_org_badge_symbol(org, rec.symbol, failure_identifier);
     }
     
     // Validate emit_assets belong to org
     for (const auto& contract_asset : emit_assets) {
-        string symbol_code_str = contract_asset.emit_asset.symbol.code().to_string().substr(0, org_code_str.length());
-        check(symbol_code_str == org_code_str, "Emit asset does not belong to the organization");
+        validate_org_badge_symbol(org, contract_asset.emit_asset.symbol, failure_identifier);
     }
 
 }

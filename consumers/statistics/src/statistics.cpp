@@ -2,82 +2,65 @@
 
 
 void statistics::notifyachiev(
+    name org,
     asset badge_asset, 
     name from, 
     name to, 
     string memo, 
     vector<name> notify_accounts) {
+
     string action_name = "notifyachiev";
     string failure_identifier = "CONTRACT: statistics, ACTION: " + action_name + ", MESSAGE: ";
-    keystats_table _keystats( _self, _self.value );
-    auto sym = badge_asset.symbol;  
-    auto keystats_itr = _keystats.find(sym.code().raw());
+    accounts _accounts(name(CUMULATIVE_CONTRACT), to.value);
+    auto accounts_itr = _accounts.find(badge_asset.symbol.code().raw());
     
-
-    if(keystats_itr == _keystats.end()) {
-      _keystats.emplace(get_self(), [&](auto& row){
-        row.badge_symbol = badge_asset.symbol;
-        row.max_issued = badge_asset.amount;
-        row.account_count = 1;
-        row.total_issued = badge_asset.amount;
-      });
+    uint64_t new_balance = (accounts_itr == _accounts.end()) ? 0 : accounts_itr->balance.amount;
+    update_rank(org, to, badge_asset.symbol, new_balance - badge_asset.amount, new_balance);
+    
+    counts_table _counts(get_self(), org.value);
+    auto counts_itr = _counts.find(badge_asset.symbol.code().raw());
+    uint64_t total_recipients;
+    uint64_t total_issued;
+    if(counts_itr == _counts.end()) {
+        total_recipients = 1;
+        total_issued = badge_asset.amount;
+        _counts.emplace(get_self(), [&](auto& entry) {
+            entry.badge_symbol = badge_asset.symbol;
+            entry.total_recipients = total_recipients;
+            entry.total_issued = total_issued;
+        });
     } else {
-
-      accounts _accounts( name(CUMULATIVE_CONTRACT), to.value );
-      auto accounts_itr = _accounts.find(sym.code().raw());
-      check(accounts_itr != _accounts.end(), failure_identifier + "possibly cumulative consumer is not followed by stats consumer");
-      uint64_t balance = accounts_itr->balance.amount;
-      uint64_t max;
-      uint64_t account_count;
-      uint64_t total; 
-      if(balance > keystats_itr->max_issued) {
-        max = balance;
-      } else {
-        max = keystats_itr->max_issued;
-      }
-      if(balance == badge_asset.amount) {
-        account_count = keystats_itr->account_count + 1;
-      } else {
-        account_count = keystats_itr->account_count;
-      }
-      total = keystats_itr->total_issued + badge_asset.amount;
-
-      _keystats.modify(keystats_itr, get_self(), [&](auto& row) {
-        row.max_issued = max;
-        row.account_count = account_count;
-        row.total_issued = total;
-      });
-
-
+        total_recipients = counts_itr->total_recipients;
+        if(new_balance == badge_asset.amount) {
+            total_recipients++;
+        }
+        total_issued = counts_itr->total_issued + badge_asset.amount;
+        _counts.modify(counts_itr, get_self(), [&](auto& entry) {
+            entry.total_recipients = total_recipients;
+            entry.total_issued = total_issued;
+        });
     }
 }
 
-ACTION statistics::bootstrap(symbol badge_symbol, 
-      uint64_t max_issued,
-      uint64_t account_count, 
-      uint64_t total_issued) {
-
-    string action_name = "bootstrap";
+ACTION statistics::settings(name org, symbol badge_symbol, uint64_t max_no_of_ranks) {
+    string action_name = "settings";
     string failure_identifier = "CONTRACT: statistics, ACTION: " + action_name + ", MESSAGE: ";
- 
-    check_internal_auth(name("bootstrap"), failure_identifier);
-    keystats_table _keystats( _self, _self.value );  
-    auto keystats_itr = _keystats.find(badge_symbol.code().raw());
-
-    if(keystats_itr == _keystats.end()) {
-      _keystats.emplace(get_self(), [&](auto& row){
-        row.badge_symbol = badge_symbol;
-        row.max_issued = max_issued;
-        row.account_count = account_count;
-        row.total_issued = total_issued;
-      });
+    check_internal_auth(name(action_name), failure_identifier);
+      
+    badge_table _badges(name(ORCHESTRATOR_CONTRACT), org.value); // Adjust scope as necessary
+    auto itr = _badges.find(badge_symbol.code().raw());
+    
+    if(itr != _badges.end()) {
+        statssetting_table _statssetting(get_self(), org.value);
+        auto stats_itr = _statssetting.find(badge_symbol.code().raw());
+        check(stats_itr == _statssetting.end(), "record already exist in statssetting table");
+        _statssetting.emplace(get_self(), [&](auto& entry) {
+            entry.badge_symbol = badge_symbol;
+            entry.max_no_of_ranks = max_no_of_ranks;
+            entry.current_no_of_ranks = 0;
+        });        
     } else {
-      _keystats.modify(keystats_itr, get_self(), [&](auto& row) {
-        row.max_issued = max_issued;
-        row.account_count = account_count;
-        row.total_issued = total_issued;
-      });
+        check(false, failure_identifier + "no record in badge table with badge_symbol");    
     }
-
 }
 

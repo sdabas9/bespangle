@@ -8,32 +8,44 @@ using namespace eosio;
 #cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
 #cmakedefine SIMPLE_VALIDATION_CONTRACT "@SIMPLE_VALIDATION_CONTRACT@"
 #cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#cmakedefine STATISTICS_CONTRACT "@STATISTICS_CONTRACT@"
+
+#cmakedefine CUMULATIVE_CONTRACT "@CUMULATIVE_CONTRACT@"
+#cmakedefine STATISTICS_CONTRACT "@STATISTICS_CONTRACT@"
+#cmakedefine ANDEMITTER_CONTRACT "@ANDEMITTER_CONTRACT@"
+#cmakedefine BOUNDED_AGG_CONTRACT "@BOUNDED_AGG_CONTRACT@"
+#cmakedefine BOUNDED_STATS_CONTRACT "@BOUNDED_STATS_CONTRACT@"
 
 CONTRACT simmanager : public contract {
   public:
     using contract::contract;
 
-    ACTION initsimple (name org, name creator, 
+    ACTION initsimple (name authorized, 
+      name org, 
       name badge,
       string offchain_lookup_data, 
       string onchain_lookup_data,
-      vector<name> consumers,
+      bool lifetime_aggregate,
+      bool lifetime_stats,
+      bool emit_secondary_token,
+      bool bounded_aggregate,
+      bool bounded_stats,
+      vector<name> other_consumers,
       string memo);
       
-    ACTION givesimple (name org,
+    ACTION givesimple (name authorized,
+     name org,
      name badge,
-     uint64_t amount, 
-     name authorizer, 
+     uint64_t amount,
      name to, 
      string memo );
 
-    ACTION simplebatch (name org, 
+    ACTION simplebatch (name authorized,
+      name org, 
       name badge,
       uint64_t amount,
-      name authorizer, 
       vector<name> to, 
       string memo);
-    
 
   private:
     TABLE checks {
@@ -93,12 +105,14 @@ CONTRACT simmanager : public contract {
     }
     
     struct addfeature_args {
+      name org;
       symbol badge_symbol;
       name notify_account;
       string memo;
     };
 
     struct createsimple_args {
+      name org;
       symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data;
@@ -106,8 +120,15 @@ CONTRACT simmanager : public contract {
     };
 
     struct issuesimple_args {
+      name org;
       asset badge_asset;
       name to;
       string memo;
+    };
+
+    struct settings_args {
+      name org;
+      symbol badge_symbol;
+      uint64_t max_no_of_ranks;
     };
 };

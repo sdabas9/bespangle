@@ -1,6 +1,6 @@
 #include <baval.hpp>
 
-void baval::initagg(name authorized, name org, name agg, string first_seq_description) {
+void baval::initagg(name authorized, name org, name agg, string agg_description) {
     string action_name = "initagg";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
@@ -13,7 +13,7 @@ void baval::initagg(name authorized, name org, name agg, string first_seq_descri
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::initseq(name authorized, name org, name agg, string description) {
+void baval::initseq(name authorized, name org, name agg, string sequence_description) {
     string action_name = "initseq";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 

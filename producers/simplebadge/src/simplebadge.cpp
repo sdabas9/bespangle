@@ -7,7 +7,9 @@
     // 4) add action to update image json.
     // 5) add action to update details json.
 
-  ACTION simplebadge::create (symbol badge_symbol, 
+  ACTION simplebadge::create (
+      name org,
+      symbol badge_symbol, 
       string offchain_lookup_data, 
       string onchain_lookup_data, 
       string memo) {
@@ -20,6 +22,7 @@
       name(ORCHESTRATOR_CONTRACT),
       name("initbadge"),
       initbadge_args {
+        .org = org,
         .badge_symbol = badge_symbol,
         .offchain_lookup_data = offchain_lookup_data,
         .onchain_lookup_data = onchain_lookup_data,
@@ -27,7 +30,7 @@
     }.send();
   }
 
-  ACTION simplebadge::issue (asset badge_asset, name to, string memo) {
+  ACTION simplebadge::issue (name org, asset badge_asset, name to, string memo) {
     string action_name = "issue";
     string failure_identifier = "CONTRACT: simplebadge, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);   
@@ -37,6 +40,7 @@
       name(ORCHESTRATOR_CONTRACT),
       name("achievement"),
       achievement_args {
+        .org = org,
         .badge_asset = badge_asset,
         .from = get_self(),
         .to = to,

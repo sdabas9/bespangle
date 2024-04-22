@@ -20,10 +20,10 @@ CONTRACT baval : public contract {
     using contract::contract;
 
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_INIT_AGG_NOTIFICATION)]]
-    void initagg(name authorized, name org, name agg, string first_seq_description);
+    void initagg(name authorized, name org, name agg, string agg_description);
 
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_INIT_SEQ_NOTIFICATION)]]
-    void initseq(name authorized, name org, name agg, string description);
+    void initseq(name authorized, name org, name agg, string sequence_description);
 
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_NOTIFICATION)]]
     void actseq(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);

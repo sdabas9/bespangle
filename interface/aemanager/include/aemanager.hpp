@@ -8,6 +8,7 @@ using namespace eosio;
 #define ANDEMITTER_CONTRACT "andemitterzz"
 #define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
 #define ORG_CONTRACT "orgzzzzzzzzz"
+#define SIMPLEBADGE_CONTRACT "simplebadgez"
 
 CONTRACT aemanager : public contract {
 public:
@@ -18,7 +19,7 @@ public:
     asset emit_asset;
   };
 
-  ACTION newemission(name authorized, name org, name emission_name, vector<asset> emitter_criteria, vector<contract_asset> emit_assets, bool cyclic);
+  ACTION newemission(name authorized, name org, name emission_name, vector<asset> emitter_criteria, vector<asset> emit_badges, bool cyclic);
   ACTION activate(name authorized, name org, name emission_name);
   ACTION deactivate(name authorized, name org, name emission_name);
 
@@ -41,6 +42,7 @@ public:
   };
 
   struct addfeature_args {
+    name org;
     symbol badge_symbol;
     name notify_account;
     string memo;
