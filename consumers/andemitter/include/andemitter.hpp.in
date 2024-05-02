@@ -31,42 +31,42 @@ public:
 
     ACTION newemission(
         name org,
-        name emission_name,
+        symbol emission_symbol,
         vector<asset> emitter_criteria,
         vector<contract_asset> emit_assets,
         bool cyclic
     );
     
     ACTION chkorgasset(name org, vector<asset> emitter_criteria, vector<contract_asset> emit_assets);
-    ACTION activate(name org, name emission_name);
-    ACTION deactivate(name org, name emission_name);
+    ACTION activate(name org, symbol emission_symbol);
+    ACTION deactivate(name org, symbol emission_symbol);
 
 private:
     // scoped by andemitter contract
     TABLE emissions {
-        name emission_name;
+        symbol emission_symbol;
         map<symbol_code, asset> emitter_criteria;
         vector<contract_asset> emit_assets;
         name status; // INIT, ACTIVATE, DEACTIVATE
         bool cyclic;
-        auto primary_key() const { return emission_name.value; }
+        auto primary_key() const { return emission_symbol.code().raw(); }
     };
     typedef multi_index<name("emissions"), emissions> emissions_table;
 
     // scoped by andemitter contract
     TABLE activelookup {
         symbol badge_symbol;
-        vector<name> active_emissions;
+        vector<symbol> active_emissions;
         auto primary_key() const { return badge_symbol.code().raw(); }
     };
     typedef multi_index<name("activelookup"), activelookup> activelookup_table;
 
     // scoped by account
     TABLE accounts {
-        name emission_name;
+        symbol emission_symbol;
         uint8_t emission_status;
         map<symbol_code, int64_t> expanded_emitter_status;
-        auto primary_key() const { return emission_name.value; }
+        auto primary_key() const { return emission_symbol.code().raw(); }
     };
     typedef multi_index<"accounts"_n, accounts> accounts_table;
 
@@ -82,16 +82,16 @@ private:
     void validate_org_assets(name org, const vector<asset>& emitter_criteria, const vector<contract_asset>& emit_assets, string failure_identifier);
     
     void validate_org_badge_symbol(name org, symbol badge_symbol, string failure_identifier) {
-        name badge_org = get_org_from_badge_symbol (badge_symbol, failure_identifier);
+        name badge_org = get_org_from_internal_symbol (badge_symbol, failure_identifier);
         check(org == badge_org, failure_identifier + " org not same as in badge_symbol");
     }
     
-    name get_org_from_badge_symbol(const symbol& badge_symbol, string failure_identifier) {
-        string badge_symbol_str = badge_symbol.code().to_string(); // Convert symbol to string
-        check(badge_symbol_str.size() >= 4, failure_identifier + "Badge symbol must have at least 4 characters.");
+    name get_org_from_internal_symbol(const symbol& _symbol, string failure_identifier) {
+        string _symbol_str = _symbol.code().to_string(); // Convert symbol to string
+        check(_symbol_str.size() >= 4, failure_identifier + "symbol must have at least 4 characters.");
 
         // Extract the first 4 characters as org_code
-        string org_code_str = badge_symbol_str.substr(0, 4);
+        string org_code_str = _symbol_str.substr(0, 4);
 
         for (auto & c: org_code_str) {
             c = tolower(c);

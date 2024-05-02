@@ -1,10 +1,10 @@
 #include <eosio/eosio.hpp>
 #include <eosio/asset.hpp>
 
-#define CUMULATIVE_CONTRACT "cumulativezz"
-#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
-#define AUTHORITY_CONTRACT "authorityzzz"
-#define ORG_CONTRACT "orgzzzzzzzzz"
+#define CUMULATIVE_CONTRACT "cumulativeyy"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define AUTHORITY_CONTRACT "authorityyyy"
+#define ORG_CONTRACT "organizayyyy"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
@@ -16,7 +16,7 @@ CONTRACT statistics : public contract {
   public:
     using contract::contract;
 
-    ACTION settings(name org, symbol badge_symbol, uint64_t max_no_of_ranks);
+    ACTION dummy();
 
     [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
     name org,
@@ -27,15 +27,6 @@ CONTRACT statistics : public contract {
     vector<name> notify_accounts);
 
   private:
-    // scoped by org
-    TABLE statssetting {
-        symbol badge_symbol;
-        uint64_t max_no_of_ranks;
-        uint64_t current_no_of_ranks;
-        uint64_t primary_key() const { return badge_symbol.code().raw(); }
-    };
-    typedef multi_index<"statssetting"_n, statssetting> statssetting_table;
-
     // scoped by org
     TABLE counts {
         symbol badge_symbol;
@@ -95,72 +86,63 @@ CONTRACT statistics : public contract {
     void update_rank(name org, name account, symbol badge_symbol, uint64_t old_balance, uint64_t new_balance) {
 
         ranks_table _ranks(get_self(), badge_symbol.code().raw()); // Use badge_agg_seq_id as scope
-        statssetting_table _statssetting(get_self(), org.value);
-        auto statssetting_itr = _statssetting.find(badge_symbol.code().raw());
-        check(statssetting_itr != _statssetting.end(), "no record in statssetting table");
-        
-        uint64_t current_no_of_ranks = statssetting_itr->current_no_of_ranks;
-        uint64_t max_no_of_ranks = statssetting_itr->max_no_of_ranks;
-
-        bool new_account = false;
-
         // Check and remove the player's name from the old score, if provided and different
 
-        if(_ranks.begin() == _ranks.end() || new_balance > _ranks.begin()->balance || max_no_of_ranks > current_no_of_ranks) {
-
-            if (old_balance != new_balance) {
-                auto old_itr = _ranks.find(old_balance);
-                if (old_itr != _ranks.end()) {
-                    auto old_names = old_itr->accounts;
-                    auto old_size = old_names.size();
-                    old_names.erase(std::remove(old_names.begin(), old_names.end(), account), old_names.end());
-                    auto new_old_size = old_names.size();
-                    if(old_size == new_old_size) {
-                        new_account = true;
-                    }
-                    if (old_names.empty()) {
-                        _ranks.erase(old_itr); // Remove the score entry if no names are left
-                    } else {
-                        _ranks.modify(old_itr, get_self(), [&](auto& entry) {
-                            entry.accounts = old_names;
-                        });
-                    }
+        if (old_balance != new_balance) {
+            auto old_itr = _ranks.find(old_balance);
+            if (old_itr != _ranks.end()) {
+                auto old_names = old_itr->accounts;
+                old_names.erase(std::remove(old_names.begin(), old_names.end(), account), old_names.end());
+                if (old_names.empty()) {
+                    _ranks.erase(old_itr); // Remove the score entry if no names are left
                 } else {
-                    new_account = true;
-                }
-            }
-            auto new_itr = _ranks.find(new_balance);
-            if (new_itr == _ranks.end()) {
-                _ranks.emplace(get_self(), [&](auto& entry) {
-                    entry.balance = new_balance;
-                    entry.accounts.push_back(account);
-                });
-            } else {
-                if (std::find(new_itr->accounts.begin(), new_itr->accounts.end(), account) == new_itr->accounts.end()) {
-                    _ranks.modify(new_itr, get_self(), [&](auto& entry) {
-                        entry.accounts.push_back(account);
-                    });
-                } // If player name already exists for this score, no action needed
-            }
-            if(new_account && max_no_of_ranks == current_no_of_ranks) {
-                auto rank_itr = _ranks.begin();
-                auto lowest_rank_names = rank_itr->accounts;
-                lowest_rank_names.pop_back();
-                if (lowest_rank_names.empty()) {
-                    _ranks.erase(rank_itr); 
-                } else {
-                    _ranks.modify(rank_itr, get_self(), [&](auto& entry) {
-                        entry.accounts = lowest_rank_names;
+                    _ranks.modify(old_itr, get_self(), [&](auto& entry) {
+                        entry.accounts = old_names;
                     });
                 }
-            } else if (new_account && max_no_of_ranks > current_no_of_ranks) {
-                _statssetting.modify(statssetting_itr, get_self(), [&](auto& entry) {
-                    entry.current_no_of_ranks++;
-                });
             }
         }
-        
+        auto new_itr = _ranks.find(new_balance);
+        if (new_itr == _ranks.end()) {
+            _ranks.emplace(get_self(), [&](auto& entry) {
+                entry.balance = new_balance;
+                entry.accounts.push_back(account);
+            });
+        } else {
+            if (std::find(new_itr->accounts.begin(), new_itr->accounts.end(), account) == new_itr->accounts.end()) {
+                _ranks.modify(new_itr, get_self(), [&](auto& entry) {
+                    entry.accounts.push_back(account);
+                });
+            } // If player name already exists for this score, no action needed
+        }
+            
 
+    }
+
+    void update_count(name org, name account, symbol badge_symbol, uint64_t old_balance, uint64_t new_balance) {
+        counts_table _counts(get_self(), org.value);
+        auto counts_itr = _counts.find(badge_symbol.code().raw());
+        uint64_t total_recipients;
+        uint64_t total_issued;
+        if(counts_itr == _counts.end()) {
+            total_recipients = 1;
+            total_issued = new_balance;
+            _counts.emplace(get_self(), [&](auto& entry) {
+                entry.badge_symbol = badge_symbol;
+                entry.total_recipients = total_recipients;
+                entry.total_issued = total_issued;
+            });
+        } else {
+            total_recipients = counts_itr->total_recipients;
+            if(old_balance == 0) {
+                total_recipients++;
+            }
+            total_issued = counts_itr->total_issued + new_balance - old_balance;
+            _counts.modify(counts_itr, get_self(), [&](auto& entry) {
+                entry.total_recipients = total_recipients;
+                entry.total_issued = total_issued;
+            });
+        }
     }
 
 };

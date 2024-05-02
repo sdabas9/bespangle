@@ -5,13 +5,14 @@ using namespace std;
 using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-#define AUTHORITY_CONTRACT "authorityxxx"
+#define AUTHORITY_CONTRACT "authorityzzz"
 
 CONTRACT gotchabadge : public contract {
   public:
     using contract::contract;
 
-    ACTION create (symbol badge_symbol, 
+    ACTION create (name org, 
+      name badge, 
       time_point_sec starttime, 
       uint64_t cycle_length, 
       uint8_t supply_per_cycle, 
@@ -19,10 +20,12 @@ CONTRACT gotchabadge : public contract {
       string onchain_lookup_data,
       string memo);
       
-    ACTION issue (asset badge_asset
+    ACTION give (name org, 
+      name badge, 
       name from, 
-      name to,
-      string memo);
+      name to, 
+      uint64_t amount, 
+      string memo );
     
     ACTION starttime(name org, name badge, time_point_sec new_starttime);
 
@@ -34,43 +37,68 @@ CONTRACT gotchabadge : public contract {
   private:
    // scoped by org
     TABLE metadata {
-      symbol badge_symbol;
+      name badge;
       time_point_sec starttime; //0000
       uint64_t cycle_length; // 24 hrs
       time_point_sec last_known_cycle_start;
       time_point_sec last_known_cycle_end;
       uint8_t supply_per_cycle;
-      auto primary_key() const {return badge_symbol.code().raw(); }
+      auto primary_key() const {return badge.value; }
     };
     typedef multi_index<name("metadata"), metadata> metadata_table;
 
-    // scoped by account
+    // scoped by org
     TABLE stats {
-      asset badge_asset;
+      uint64_t id;
+      name account;
+      name badge;
+      uint8_t balance;
       time_point last_claimed_time;
-      auto primary_key() const {return badge_asset.symbol.code().raw(); }
+      auto primary_key() const {return id; }
+      uint128_t acc_badge_key() const {
+        return ((uint128_t) account.value) << 64 | badge.value;
+      }
     };
-    typedef multi_index<name("stats"), stats> stats_table;
+    typedef multi_index<name("stats"), stats,
+    indexed_by<name("accountbadge"), const_mem_fun<stats, uint128_t, &stats::acc_badge_key>>
+    > stats_table;
 
-    // scoped by contract
     TABLE auth {
+      uint64_t id;
+      name contract;
       name action;
       vector<name> authorized_contracts;
-      uint64_t primary_key() const { return action.value; }
-    };
-    typedef eosio::multi_index<"auth"_n, auth> auth_table;
 
-    void check_internal_auth (name action, string failure_identifier) {
-      auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
-      auto itr = _auth.find(action.value);
-      check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
-      auto authorized_contracts = itr->authorized_contracts;
-      for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
-        if(has_auth(authorized_contracts[i])) {
+      uint64_t primary_key() const { return id; }
+      uint128_t get_secondary_key() const { return combine_names(contract, action); }
+
+      static uint128_t combine_names(const name& a, const name& b) {
+          return (uint128_t)a.value << 64 | b.value;
+      }
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"auth"_n, auth,
+        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
+    > auth_table;
+
+    void check_internal_auth (name action) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
+
+      // Find the authority entry
+      uint128_t secondary_key = (uint128_t)get_self().value << 64 | action.value;
+      auto secondary_index = _auth.get_index<"bycontract"_n>();
+      auto itr = secondary_index.find(secondary_key);
+      if (itr != secondary_index.end() && itr->contract!=get_self() && itr->action!=action) {
+          check(false, "No authority found for contract " + get_self().to_string() + " and action " + action.to_string());
+      }
+      auto authorzied_accounts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
+        if(has_auth(authorzied_accounts[i])) {
           return;
         }
       }
-      check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
+      check(false, "Account not is authorized list of accounts for action " + action.to_string());
     }
 
     struct achievement_args {

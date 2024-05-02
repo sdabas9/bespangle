@@ -44,7 +44,7 @@ CONTRACT simplebadge : public contract {
     }
 
     struct achievement_args {
-      name org,
+      name org;
       asset badge_asset;
       name from;
       name to;
@@ -52,7 +52,7 @@ CONTRACT simplebadge : public contract {
     };
 
     struct initbadge_args {
-      name org,
+      name org;
       symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data; 

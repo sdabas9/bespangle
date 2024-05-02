@@ -1,168 +1,133 @@
 #include <boundedhll.hpp>
 
-void boundedhll::notifyachiev(
-    name org, 
-    name badge,
-    name account, 
+void boundedhll::notifyachiev (
+    name org,
+    asset badge_asset,
     name from,
-    uint64_t count,
-    string memo,  
+    name to,
+    string memo,
     vector<name> notify_accounts
 ) {
-    badgeround_table _badgerounds(_self, org.value);
-    auto badge_index = _badgerounds.get_index<"badge"_n>();
-    auto badge_itr = badge_index.lower_bound(badge.value);
+    string action_name = "notifyachiev";
+    string failure_identifier = "CONTRACT: boundedhll, ACTION: " + action_name + ", MESSAGE: ";
+    badgestatus_table badgestatus(name(BOUNDED_AGG_CONTRACT), org.value);
+    auto badge_status_index = badgestatus.get_index<"bybadgestat"_n>();
+    auto hashed_active_status = hash_active_status(badge_asset.symbol, "active"_n, "active"_n);
+    auto itr = badge_status_index.find(hashed_active_status);
 
-    check(badge_itr != badge_index.end() && badge_itr->badge == badge, "Badge not found for any round");
+    while(itr != badge_status_index.end() && itr->badge_symbol == badge_asset.symbol && itr->badge_status == "active"_n && itr->seq_status == "active"_n) {
+        emissions_table emissions(_self, itr->agg_symbol.code().raw());
+        auto emissions_itr = emissions.find(itr->badge_symbol.code().raw());
 
-    while (badge_itr != badge_index.end() && badge_itr->badge == badge) {
-        rounds_table _rounds(_self, org.value);
-        auto round_itr = _rounds.find(badge_itr->round.value);
-        check(round_itr != _rounds.end(), "Round not found");
-
-        if (round_itr->status == name("ongoing")) {
-            name emit_badge = badge_itr->sender_uniqueness_badge;
-
-            // Create an instance of the balances_table scoped by the organization
-            balances_table balances(_self, org.value);
-
-            // Generate composite key: combination of account and badge
-            uint128_t composite_key = (static_cast<uint128_t>(account.value) << 64) | badge_itr->badgeround_id;
-
-            // Find an existing record by composite key
-            auto secondary_index = balances.get_index<"accountbadge"_n>();
-            auto existing_entry = secondary_index.find(composite_key);
+        if(emissions_itr != emissions.end() && emissions_itr->status == name("active")) {
+            balances_table _balances(_self, to.value);
+            auto balances_itr = _balances.find(itr->badge_agg_seq_id);
 
             uint8_t b = 7;
             uint32_t m = 1 << b;
 
-            if (existing_entry == secondary_index.end() ||
-                existing_entry->account != account ||
-                existing_entry->badgeround_id != badge_itr->badgeround_id) {
-                // Initialize HyperLogLog data structure
+            if (balances_itr == _balances.end()) {
                 vector<uint8_t> M(m, 0);
                 hll::HyperLogLog hll(b, m, M);
                 hll.add(from.to_string().c_str(), from.to_string().size());
 
-                // No existing entry found, insert a new record
-                balances.emplace(org, [&](auto& row) {
-                    row.id = balances.available_primary_key();
-                    row.account = account;
-                    row.badgeround_id = badge_itr->badgeround_id;
+                _balances.emplace(get_self(), [&](auto& row) {
+                    row.badge_agg_seq_id = itr->badge_agg_seq_id;
                     row.hll = hll.registers();
                 });
 
-                action {
-                    permission_level{get_self(), name("active")},
-                    name(name(SIMPLEBADGE_CONTRACT)),
-                    name("issue"),
-                    issue_args {
-                        .org = org,
-                        .to = account,
-                        .badge = emit_badge,
-                        .amount = 1,
-                        .memo = "issued from rollup consumer"
-                    }
-                }.send();
-            } else if (existing_entry != secondary_index.end() &&
-                       existing_entry->account == account && 
-                       existing_entry->badgeround_id == badge_itr->badgeround_id) {
-                // Check for increment condition
-                bool increment = false;
-                
-                // Get existing HyperLogLog data
-                vector<uint8_t> M = existing_entry->hll;
-                hll::HyperLogLog hll(b, m, M);
-                
-                // Estimate cardinality before and after adding new element
-                double estimate_before = hll.estimate();
-                hll.add(from.to_string().c_str(), from.to_string().size());
-                double estimate_after = hll.estimate();
-
-                // Check if cardinality has increased
-                if (estimate_before != estimate_after) {
-                    secondary_index.modify(existing_entry, get_self(), [&](auto& row) {
-                        row.hll = hll.registers();
-                    });
-
+                for(auto i = 0 ; i < emissions_itr->sender_uniqueness_badge_symbols.size(); i++) {
                     action {
                         permission_level{get_self(), name("active")},
                         name(name(SIMPLEBADGE_CONTRACT)),
                         name("issue"),
                         issue_args {
                             .org = org,
-                            .to = account,
-                            .badge = emit_badge,
-                            .amount = 1,
+                            .badge_asset = eosio::asset(1, emissions_itr->sender_uniqueness_badge_symbols[i]),
+                            .to = to,
                             .memo = "issued from rollup consumer"
                         }
                     }.send();
                 }
+            } else {
+                vector<uint8_t> M = balances_itr->hll;
+                hll::HyperLogLog hll(b, m, M);
+                double estimate_before = hll.estimate();
+                hll.add(from.to_string().c_str(), from.to_string().size());
+                double estimate_after = hll.estimate();
+
+                if (estimate_before != estimate_after) {
+                    _balances.modify(balances_itr, get_self(), [&](auto& row) {
+                        row.hll = hll.registers();
+                    });
+                    for(auto i = 0 ; i < emissions_itr->sender_uniqueness_badge_symbols.size(); i++) {
+                        action {
+                            permission_level{get_self(), name("active")},
+                            name(name(SIMPLEBADGE_CONTRACT)),
+                            name("issue"),
+                            issue_args {
+                                .org = org,
+                                .badge_asset = eosio::asset(1, emissions_itr->sender_uniqueness_badge_symbols[i]),
+                                .to = to,
+                                .memo = "issued from rollup consumer"
+                            }
+                        }.send();
+                    }
+                }
             }
         }
-
-        badge_itr++;
+        itr++;
     }
 }
 
-
-
-ACTION boundedhll::addround(name org, name round, string description) {
-    require_auth(_self);
-    check(description.size() <= 40, "Description can only be up to 40 characters long");
-    
-    rounds_table _rounds(_self, org.value);
-    auto round_itr = _rounds.find(round.value);
-    check(round_itr == _rounds.end(), "Round already exists");
-
-    _rounds.emplace(_self, [&](auto& new_round) {
-        new_round.round = round;
-        new_round.status = "init"_n;
-        new_round.description = description;
-    });
-}
-
-ACTION boundedhll::setstatus(name org, name round, name status) {
-    require_auth(_self);
-
-    rounds_table _rounds(_self, org.value);
-    auto round_itr = _rounds.find(round.value);
-    check(round_itr != _rounds.end(), "Round not found");
-
-    check(
-        (round_itr->status == "init"_n && status == "ongoing"_n) || 
-        (round_itr->status == "ongoing"_n && status == "end"_n), 
-        "Invalid status transition"
-    );
-
-    _rounds.modify(round_itr, _self, [&](auto& update_round) {
-        update_round.status = status;
-    });
-}
-
-ACTION boundedhll::newemission(
-    name org,
-    name round,
-    name badge,
-    name sender_uniqueness_badge
+ACTION boundedhll::newemission (
+    name org, 
+    symbol agg_symbol,
+    symbol badge_symbol,
+    vector<symbol> sender_uniqueness_badge_symbols
 ) {
-    require_auth(_self);
+    string action_name = "newemission";
+    string failure_identifier = "CONTRACT: boundedhll, ACTION: " + action_name + ", MESSAGE: ";    
+    check_internal_auth(name(action_name), failure_identifier);
+    
+    emissions_table emissions(_self, agg_symbol.code().raw());
+    auto emissions_itr = emissions.find(badge_symbol.code().raw());
+    check(emissions_itr == emissions.end(), failure_identifier + "emission already exist");
 
-    rounds_table _rounds(_self, org.value);
-    auto round_itr = _rounds.find(round.value);
-    check(round_itr != _rounds.end(), "Round not found");
-    check(round_itr->status == "init"_n, "Can only add badges to rounds in 'init' status");
-
-    badgeround_table _badgerounds(_self, org.value);
-    auto badge_index = _badgerounds.get_index<"roundbadge"_n>();
-    uint128_t composite_key = ((uint128_t) round.value) << 64 | badge.value;
-    check(badge_index.find(composite_key) == badge_index.end(), "Badge already added to this round");
-
-    _badgerounds.emplace(_self, [&](auto& new_badgeround) {
-        new_badgeround.badgeround_id = _badgerounds.available_primary_key();
-        new_badgeround.round = round;
-        new_badgeround.badge = badge;
-        new_badgeround.sender_uniqueness_badge = sender_uniqueness_badge;
+    emissions.emplace(get_self(), [&](auto& row) {
+        row.badge_symbol = badge_symbol;
+        row.status = name("init");
+        row.sender_uniqueness_badge_symbols = sender_uniqueness_badge_symbols;
     });
 }
 
+ACTION boundedhll::activate(name org, symbol agg_symbol, symbol badge_symbol) {
+    string action_name = "activate";
+    string failure_identifier = "CONTRACT: boundedhll, ACTION: " + action_name + ", MESSAGE: ";    
+    check_internal_auth(name(action_name), failure_identifier);
+    
+    emissions_table emissions(_self, agg_symbol.code().raw());
+    auto emissions_itr = emissions.find(badge_symbol.code().raw());
+    check(emissions_itr != emissions.end(), failure_identifier + " emission does not exist for agg, seq, badge");
+
+    emissions.modify(emissions_itr, get_self(), [&](auto& row) {
+        row.status = name("active");
+    });
+
+
+}
+
+ACTION boundedhll::deactivate(name org, symbol agg_symbol, symbol badge_symbol) {
+    string action_name = "deactivate";
+    string failure_identifier = "CONTRACT: boundedhll, ACTION: " + action_name + ", MESSAGE: ";    
+    check_internal_auth(name(action_name), failure_identifier);
+    
+    emissions_table emissions(_self, agg_symbol.code().raw());
+    auto emissions_itr = emissions.find(badge_symbol.code().raw());
+    check(emissions_itr != emissions.end(), failure_identifier + " emission does not exist for agg, seq, badge");
+
+    emissions.modify(emissions_itr, get_self(), [&](auto& row) {
+        row.status = name("inactive");
+    });
+
+}

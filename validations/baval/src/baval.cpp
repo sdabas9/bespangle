@@ -1,9 +1,11 @@
 #include <baval.hpp>
 
-void baval::initagg(name authorized, name org, name agg, string agg_description) {
+void baval::initagg(name authorized, symbol agg_symbol, vector<symbol> badge_symbols, vector<symbol> stats_badge_symbols, string agg_description) {
     string action_name = "initagg";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -13,10 +15,73 @@ void baval::initagg(name authorized, name org, name agg, string agg_description)
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::initseq(name authorized, name org, name agg, string sequence_description) {
+void baval::addinitbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols){
+    string action_name = "addinitbadge";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");    
+}
+
+void baval::reminitbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "reminitbadge";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::addstatbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "addstatbadge";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::remstatbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "remstatbadge";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::initseq(name authorized, symbol agg_symbol, string sequence_description) {
     string action_name = "initseq";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);
+    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -26,10 +91,12 @@ void baval::initseq(name authorized, name org, name agg, string sequence_descrip
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::actseq(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges) {
+void baval::actseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids) {
     string action_name = "actseq";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -39,10 +106,12 @@ void baval::actseq(name authorized, name org, name agg, vector<uint64_t> seq_ids
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::actseqai(name authorized, name org, name agg, vector<name> badges) {
+void baval::actseqai(name authorized, symbol agg_symbol) {
     string action_name = "actseqai";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -52,23 +121,27 @@ void baval::actseqai(name authorized, name org, name agg, vector<name> badges) {
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::actseqfi(name authorized, name org, name agg, vector<name> badges) {
+void baval::actseqfi(name authorized, symbol agg_symbol) {
     string action_name = "actseqfi";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
     if (has_agg_authority(org, name(action_name), agg, authorized)) {
         return;
     }
-    check(false, failure_identifier + "Unauthorized account to execute action");
+    check(false, failure_identifier + "Unauthorized account to execute action");    
 }
 
-void baval::endseq(name authorized, name org, name agg, vector<uint64_t> seq_ids) {
+void baval::endseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids) {
     string action_name = "endseq";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -78,10 +151,12 @@ void baval::endseq(name authorized, name org, name agg, vector<uint64_t> seq_ids
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::endseqaa(name authorized, name org, name agg) {
+void baval::endseqaa(name authorized, symbol agg_symbol) {
     string action_name = "endseqaa";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -91,10 +166,12 @@ void baval::endseqaa(name authorized, name org, name agg) {
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::endseqfa(name authorized, name org, name agg) {
+void baval::endseqfa(name authorized, symbol agg_symbol) {
     string action_name = "endseqfa";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -104,10 +181,12 @@ void baval::endseqfa(name authorized, name org, name agg) {
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
 
-void baval::addbadge(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges) {
+void baval::addbadge(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids, vector<symbol> badge_symbols) {
     string action_name = "addbadge";
     string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
     }
@@ -116,6 +195,113 @@ void baval::addbadge(name authorized, name org, name agg, vector<uint64_t> seq_i
     }
     check(false, failure_identifier + "Unauthorized account to execute action");
 }
+
+void baval::pauseall(name authorized, symbol agg_symbol, uint64_t seq_id) {
+    string action_name = "pauseall";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::pausebadge(name authorized, symbol agg_symbol, uint64_t badge_agg_seq_id) {
+    string action_name = "pausebadge";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::pausebadges(name authorized, symbol agg_symbol, uint64_t seq_id, vector<symbol> badge_symbols) {
+    string action_name = "pausebadges";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::pauseallfa(name authorized, symbol agg_symbol) {
+    string action_name = "pauseallfa";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);   
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::resumeall(name authorized, symbol agg_symbol, uint64_t seq_id) {
+    string action_name = "resumeall";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);   
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::resumebadge(name authorized, symbol agg_symbol, uint64_t badge_agg_seq_id) {
+    string action_name = "resumebadge";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+void baval::resumebadges(name authorized, symbol agg_symbol, uint64_t seq_id, vector<symbol> badge_symbols) {
+    string action_name = "resumebadges";
+    string failure_identifier = "CONTRACT: baval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+    name agg = get_name_from_agg_symbol(agg_symbol, failure_identifier);    
+    if (has_action_authority(org, name(action_name), authorized)) {
+        return;
+    }
+    if (has_agg_authority(org, name(action_name), agg, authorized)) {
+        return;
+    }
+    check(false, failure_identifier + "Unauthorized account to execute action");
+}
+
+
 
 
 ACTION baval::addaggauth(name org, name action, name agg, name authorized_account) {

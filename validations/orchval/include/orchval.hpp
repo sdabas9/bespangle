@@ -5,7 +5,7 @@ using namespace std;
 using namespace eosio;
 using std::vector;
 
-#define ORCHESTRATOR_MANAGER_CONTRACT "orchmanagerz"
+#define ORCHESTRATOR_MANAGER_CONTRACT "orchmanagery"
 
 #define ORCHESTRATOR_MANAGER_DELETE_FEATURE_NOTIFICATION ORCHESTRATOR_MANAGER_CONTRACT"::delfeature" 
 

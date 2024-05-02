@@ -4,12 +4,12 @@
 using namespace std;
 using namespace eosio;
 
-#define STATISTICS_CONTRACT "statisticsxx"
-#define CUMULATIVE_CONTRACT "cumulativexx"
-#define SIMPLEBADGE_CONTRACT "simplebadgex"
-#define ORCHESTRATOR_CONTRACT "orchestrator"
-#define AUTHORITY_CONTRACT "authorityxxx"
-#define ORG_CONTRACT "asdffd"
+#define STATISTICS_CONTRACT "statisticsyy"
+#define CUMULATIVE_CONTRACT "cumulativeyy"
+#define SIMPLEBADGE_CONTRACT "simplebadgey"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define AUTHORITY_CONTRACT "authorityyyy"
+#define ORG_CONTRACT "organizayyyy"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
@@ -30,18 +30,18 @@ CONTRACT giverrep : public contract {
     ACTION newemission(
       name org,
       symbol badge_symbol,
-      symbol source_account_rep_badge_symbol, 
+      symbol giver_rep_badge_symbol, 
       vector<symbol> emit_badge_symbols);
 
-    ACTION activate(name org, name emission_name);
+    ACTION activate(name org, symbol badge_symbol);
 
-    ACTION deactivate(name org, name emission_name);
+    ACTION deactivate(name org, symbol badge_symbol);
 
   private:
     // scoped by self
     TABLE emissions {
       symbol badge_symbol;
-      symbol source_account_rep_badge_symbol; 
+      symbol giver_rep_badge_symbol; 
       vector<symbol> emit_badge_symbols;
       name status; // init, activate, deactivate 
       auto primary_key() const { return badge_symbol.code().raw(); }

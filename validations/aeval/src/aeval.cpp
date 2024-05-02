@@ -1,14 +1,16 @@
 #include <aeval.hpp>
 
 void aeval::newemission(name authorized, 
-    name org, 
-    name emission_name, 
+    symbol emission_symbol, 
     vector<asset> emitter_criteria, 
     vector<asset> emit_badges, 
     bool cyclic) {
 
     string action_name = "newemission";
     string failure_identifier = "CONTRACT: aeval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name emission_name = get_name_from_internal_symbol(emission_symbol, failure_identifier);
+    name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
 
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
@@ -20,12 +22,14 @@ void aeval::newemission(name authorized,
 
 }
     
-void aeval::activate(name authorized, 
-    name org, 
-    name emission_name) {
+void aeval::activate(name authorized,
+      symbol emission_symbol) {
 
     string action_name = "activate";
     string failure_identifier = "CONTRACT: aeval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name emission_name = get_name_from_internal_symbol(emission_symbol, failure_identifier);
+    name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
 
     if (has_action_authority(org, name(action_name), authorized)) {
         return;
@@ -38,11 +42,13 @@ void aeval::activate(name authorized,
 }
 
 void aeval::deactivate(name authorized, 
-    name org, 
-    name emission_name) {
+    symbol emission_symbol) {
 
     string action_name = "deactivate";
     string failure_identifier = "CONTRACT: aeval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name emission_name = get_name_from_internal_symbol(emission_symbol, failure_identifier);
+    name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
 
     if (has_action_authority(org, name(action_name), authorized)) {
         return;

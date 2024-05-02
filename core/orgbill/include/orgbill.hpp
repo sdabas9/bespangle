@@ -8,7 +8,7 @@ using namespace eosio;
 #define RAM_IN_BYTES_PER_SYS_TOKEN "ramrate"
 #define MAX_CREDIT_BALANCE "maxcredits"
 
-#define AUTHORITY_CONTRACT "authorityxxx"
+#define AUTHORITY_CONTRACT "authorityzzz"
 
 CONTRACT orgbill : public contract {
   public:

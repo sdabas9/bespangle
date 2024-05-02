@@ -18,11 +18,11 @@ void giverrep::notifyachiev (
     // Ensure that the emission does not already exist
     eosio::check(existing_emission != emissions.end(), "Giver rep badge not setup");
 
-    if(existing_emission->status != name("activate")) {
+    if(existing_emission->status != name("active")) {
         return;
     }
     
-    symbol giver_rep_badge_symbol = existing_emission->source_account_rep_badge_symbol;
+    symbol giver_rep_badge_symbol = existing_emission->giver_rep_badge_symbol;
     vector<symbol> emit_badge_symbols = existing_emission->emit_badge_symbols;
 
     counts_table counts(name(STATISTICS_CONTRACT), org.value);
@@ -44,7 +44,7 @@ void giverrep::notifyachiev (
     if(emit_amount > 0) {
         for( auto i = 0; i < emit_badge_symbols.size(); i++ ) {
             name issuing_org = get_org_from_badge_symbol(emit_badge_symbols[i], failure_identifier);
-            asset emit_asset = eosio::asset(1, emit_badge_symbols[i]);
+            asset emit_asset = eosio::asset(emit_amount, emit_badge_symbols[i]);
             action(
                 permission_level{get_self(), "active"_n},
                 name(SIMPLEBADGE_CONTRACT),
@@ -63,7 +63,7 @@ void giverrep::notifyachiev (
 ACTION giverrep::newemission(
       name org,  
       symbol badge_symbol,
-      symbol source_account_rep_badge_symbol, 
+      symbol giver_rep_badge_symbol, 
       vector<symbol> emit_badge_symbols) {
 
     string action_name = "newemission";
@@ -71,7 +71,7 @@ ACTION giverrep::newemission(
     check_internal_auth(name(action_name), failure_identifier);
 
     validate_org_badge_symbol(org, badge_symbol, failure_identifier);
-    validate_org_badge_symbol(org, source_account_rep_badge_symbol, failure_identifier);
+    validate_org_badge_symbol(org, giver_rep_badge_symbol, failure_identifier);
     for(auto i = 0 ; i < emit_badge_symbols.size(); i++) {
         validate_org_badge_symbol(org, emit_badge_symbols[i], failure_identifier);
     }
@@ -88,50 +88,50 @@ ACTION giverrep::newemission(
     // Insert the new emission into the table with status set to "INIT"
     emissions.emplace(_self, [&](auto& new_emission) {
         new_emission.badge_symbol = badge_symbol;
-        new_emission.source_account_rep_badge_symbol = source_account_rep_badge_symbol;
+        new_emission.giver_rep_badge_symbol = giver_rep_badge_symbol;
         new_emission.emit_badge_symbols = emit_badge_symbols;
         new_emission.status = name("init");
     });
 }
 
-ACTION giverrep::activate(name org, name emission_name) {
+ACTION giverrep::activate(name org, symbol badge_symbol) {
     string action_name = "activate";
     string failure_identifier = "CONTRACT: giverrep, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
 
     emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    auto emission_itr = emissions.find(badge_symbol.code().raw());
     check(emission_itr != emissions.end(), "Emission does not exist");
     
     validate_org_badge_symbol(org, emission_itr->badge_symbol, failure_identifier);
-    validate_org_badge_symbol(org, emission_itr->source_account_rep_badge_symbol, failure_identifier);
+    validate_org_badge_symbol(org, emission_itr->giver_rep_badge_symbol, failure_identifier);
     for(auto i = 0 ; i < emission_itr->emit_badge_symbols.size(); i++) {
         validate_org_badge_symbol(org, emission_itr->emit_badge_symbols[i], failure_identifier);
     }
 
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
-        mod.status = name("activate");
+        mod.status = name("active");
     });
 
 }
 
-ACTION giverrep::deactivate(name org, name emission_name) {
+ACTION giverrep::deactivate(name org, symbol badge_symbol) {
     string action_name = "deactivate";
     string failure_identifier = "CONTRACT: giverrep, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
 
     emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    auto emission_itr = emissions.find(badge_symbol.code().raw());
     check(emission_itr != emissions.end(), "Emission does not exist");
     
     validate_org_badge_symbol(org, emission_itr->badge_symbol, failure_identifier);
-    validate_org_badge_symbol(org, emission_itr->source_account_rep_badge_symbol, failure_identifier);
+    validate_org_badge_symbol(org, emission_itr->giver_rep_badge_symbol, failure_identifier);
     for(auto i = 0 ; i < emission_itr->emit_badge_symbols.size(); i++) {
         validate_org_badge_symbol(org, emission_itr->emit_badge_symbols[i], failure_identifier);
     }
 
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
-        mod.status = name("deactivate");
+        mod.status = name("inactive");
     });
 }
 

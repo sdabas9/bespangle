@@ -8,9 +8,9 @@
 using namespace eosio;
 using namespace std;
 
-#define AUTHORITY_CONTRACT "authorityzzz"
-#define ORG_CONTRACT "orgzzzzzzzzz"
-#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
+#define AUTHORITY_CONTRACT "authorityyyy"
+#define ORG_CONTRACT "organizayyyy"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT boundagg : public contract {
@@ -26,7 +26,9 @@ public:
     vector<name> notify_accounts);
 
 
-    ACTION initagg(name org, symbol agg_symbol, string agg_description);
+    ACTION initagg(name org, symbol agg_symbol, vector<symbol> init_badge_symbols, string agg_description);
+    ACTION addinitbadge(name org, symbol agg_symbol, vector<symbol> badge_symbols);
+    ACTION reminitbadge(name org, symbol agg_symbol, vector<symbol> badge_symbols);
     ACTION initseq(name org, symbol agg_symbol, string sequence_description);
     ACTION actseq(name org, symbol agg_symbol, vector<uint64_t> seq_ids);
     ACTION actseqai(name org, symbol agg_symbol);
@@ -38,6 +40,7 @@ public:
     ACTION addbadgefa(name org, symbol agg_symbol, vector<symbol> badge_symbols);
     ACTION addbadgeaa(name org, symbol agg_symbol, vector<symbol> badge_symbols);
     ACTION addbadgefi(name org, symbol agg_symbol, vector<symbol> badge_symbols);
+    ACTION addbadgeli(name org, symbol agg_symbol, vector<symbol> badge_symbols);
     ACTION addbadgeai(name org, symbol agg_symbol, vector<symbol> badge_symbols);
 
     ACTION pauseall(name org, symbol agg_symbol, uint64_t seq_id);
@@ -71,6 +74,7 @@ private:
         vector<uint64_t> init_seq_ids;
         vector<uint64_t> active_seq_ids;
         vector<uint64_t> end_seq_ids;
+        vector<symbol> init_badge_symbols;
         uint64_t primary_key() const { return agg_symbol.code().raw(); }
     };
     typedef eosio::multi_index<"aggdetails"_n, aggdetail> aggdetail_table;
@@ -185,27 +189,6 @@ private:
         return org_code_itr->org; // Return the found organization identifier
     }
 
-      // scoped by contract
-    TABLE auth {
-        name action;
-        vector<name> authorized_contracts;
-        uint64_t primary_key() const { return action.value; }
-    };
-    typedef eosio::multi_index<"auth"_n, auth> auth_table;
-
-    void check_internal_auth (name action, string failure_identifier) {
-        auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
-        auto itr = _auth.find(action.value);
-        check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
-        auto authorized_contracts = itr->authorized_contracts;
-        for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
-            if(has_auth(authorized_contracts[i])) {
-                return;
-            }
-        }
-        check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
-    }
-
     name get_org_from_agg_symbol(const symbol& agg_symbol, string failure_identifier) {
         string agg_symbol_str = agg_symbol.code().to_string(); // Convert symbol to string
         check(agg_symbol_str.size() >= 4, failure_identifier + "Aggregation symbol must have at least 4 characters.");
@@ -226,6 +209,27 @@ private:
         check(org_code_itr->org_code == org_code, failure_identifier + "Organization code not found.");
         // Assuming the org is stored in the same row as the org_code
         return org_code_itr->org; // Return the found organization identifier
+    }
+
+      // scoped by contract
+    TABLE auth {
+        name action;
+        vector<name> authorized_contracts;
+        uint64_t primary_key() const { return action.value; }
+    };
+    typedef eosio::multi_index<"auth"_n, auth> auth_table;
+
+    void check_internal_auth (name action, string failure_identifier) {
+        auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
+        auto itr = _auth.find(action.value);
+        check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
+        auto authorized_contracts = itr->authorized_contracts;
+        for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
+            if(has_auth(authorized_contracts[i])) {
+                return;
+            }
+        }
+        check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
     }
 
 
@@ -359,6 +363,12 @@ private:
         name org;
         symbol agg_symbol;
         vector<uint64_t> seq_ids;
+        vector<symbol> badge_symbols;
+    };
+
+    struct addbadgeli_args {
+        name org;
+        symbol agg_symbol;
         vector<symbol> badge_symbols;
     };
 

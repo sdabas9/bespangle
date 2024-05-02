@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(grval)
+set(ORG_CONTRACT ${ORG_CONTRACT})
+set(GIVER_REP_MANAGER_CONTRACT ${GIVER_REP_MANAGER_CONTRACT})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/grval.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/grval.hpp @ONLY)

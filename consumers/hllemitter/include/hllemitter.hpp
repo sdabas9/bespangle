@@ -5,10 +5,10 @@
 using namespace std;
 using namespace eosio;
 
-#define AUTHORITY_CONTRACT "authorityxxx"
-#define SIMPLEBADGE_CONTRACT "simplebadgex"
-#define ORCHESTRATOR_CONTRACT "orchestrator"
-#define ORG_CONTRACT "orgcontr"
+#define AUTHORITY_CONTRACT "authorityyyy"
+#define SIMPLEBADGE_CONTRACT "simplebadgey"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define ORG_CONTRACT "organizayyyy"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT hllemitter : public contract {
@@ -31,9 +31,9 @@ CONTRACT hllemitter : public contract {
       symbol badge_symbol,
       vector<symbol> sender_uniqueness_badge_symbols);
     
-    ACTION activate(name org, name emission_name);
+    ACTION activate(name org, symbol badge_symbol);
 
-    ACTION deactivate(name org, name emission_name);
+    ACTION deactivate(name org, symbol badge_symbol);
 
   private:
     // scoped by contract

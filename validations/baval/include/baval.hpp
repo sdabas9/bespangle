@@ -1,9 +1,11 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
 using namespace std;
 using namespace eosio;
 
-#define BOUNDED_AGG_MANAGER_CONTRACT "bamanagerzzz"
+#define BOUNDED_AGG_MANAGER_CONTRACT "bamanageryyy"
+#define ORG_CONTRACT "organizayyyy"
 
 #define BOUNDED_AGG_MANAGER_INIT_AGG_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::initagg"
 #define BOUNDED_AGG_MANAGER_INIT_SEQ_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::initseq"
@@ -15,36 +17,83 @@ using namespace eosio;
 #define BOUNDED_AGG_MANAGER_END_FIRST_ACTIVE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::endseqfa"
 #define BOUNDED_AGG_MANAGER_ADD_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::addbadge"
 
+#define BOUNDED_AGG_MANAGER_ADD_INIT_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::addinitbadge"
+#define BOUNDED_AGG_MANAGER_REM_INIT_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::reminitbadge"
+#define BOUNDED_AGG_MANAGER_ADD_STAT_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::addstatbadge"
+#define BOUNDED_AGG_MANAGER_REM_STAT_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::remstatbadge"
+#define BOUNDED_AGG_MANAGER_PAUSE_ALL_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::pauseall"
+#define BOUNDED_AGG_MANAGER_PAUSE_BADGE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::pausebadge"
+#define BOUNDED_AGG_MANAGER_PAUSE_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::pausebadges"
+#define BOUNDED_AGG_MANAGER_PAUSE_ALL_FIRST_ACTIVE_SEQUENCE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::pauseallfa"
+#define BOUNDED_AGG_MANAGER_RESUME_ALL_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::resumeall"
+#define BOUNDED_AGG_MANAGER_RESUME_BADGE_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::resumebadge"
+#define BOUNDED_AGG_MANAGER_RESUME_BADGES_NOTIFICATION BOUNDED_AGG_MANAGER_CONTRACT"::resumebadges"
+
 CONTRACT baval : public contract {
   public:
     using contract::contract;
 
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_INIT_AGG_NOTIFICATION)]]
-    void initagg(name authorized, name org, name agg, string agg_description);
+    void initagg(name authorized, symbol agg_symbol, vector<symbol> badge_symbols, vector<symbol> stats_badge_symbols, string agg_description);
+
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ADD_INIT_BADGES_NOTIFICATION)]]
+    void addinitbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols);
+
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_REM_INIT_BADGES_NOTIFICATION)]]    
+    void reminitbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols);
+
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_ADD_STAT_BADGES_NOTIFICATION)]]    
+    void addstatbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols);
+
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_REM_STAT_BADGES_NOTIFICATION)]]    
+    void remstatbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols);
 
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_INIT_SEQ_NOTIFICATION)]]
-    void initseq(name authorized, name org, name agg, string sequence_description);
-
+    void initseq(name authorized, symbol agg_symbol, string sequence_description);
+    
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_SEQUENCE_NOTIFICATION)]]
-    void actseq(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);
-    
+    void actseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids);
+
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_ALL_INIT_SEQUENCE_NOTIFICATION)]]
-    void actseqai(name authorized, name org, name agg, vector<name> badges);
-    
+    void actseqai(name authorized, symbol agg_symbol);
+
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_ACTIVATE_FIRST_INIT_SEQUENCE_NOTIFICATION)]]
-    void actseqfi(name authorized, name org, name agg, vector<name> badges);
-    
+    void actseqfi(name authorized, symbol agg_symbol);
+
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_SEQUENCE_NOTIFICATION)]]
-    void endseq(name authorized, name org, name agg, vector<uint64_t> seq_ids);
+    void endseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids);
     
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_ALL_ACTIVE_SEQUENCE_NOTIFICATION)]]
-    void endseqaa(name authorized, name org, name agg);
+    void endseqaa(name authorized, symbol agg_symbol);
     
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_END_FIRST_ACTIVE_SEQUENCE_NOTIFICATION)]]
-    void endseqfa(name authorized, name org, name agg);
-    
+    void endseqfa(name authorized, symbol agg_symbol);
+
     [[eosio::on_notify(BOUNDED_AGG_MANAGER_ADD_BADGES_NOTIFICATION)]]
-    void addbadge(name authorized, name org, name agg, vector<uint64_t> seq_ids, vector<name> badges);
+    void addbadge(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids, vector<symbol> badge_symbols);
+
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_PAUSE_ALL_NOTIFICATION)]]
+    void pauseall(name authorized, symbol agg_symbol, uint64_t seq_id);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_PAUSE_BADGE_NOTIFICATION)]]
+    void pausebadge(name authorized, symbol agg_symbol, uint64_t badge_agg_seq_id);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_PAUSE_BADGES_NOTIFICATION)]]
+    void pausebadges(name authorized, symbol agg_symbol, uint64_t seq_id, vector<symbol> badge_symbols);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_PAUSE_ALL_FIRST_ACTIVE_SEQUENCE_NOTIFICATION)]]
+    void pauseallfa(name authorized, symbol agg_symbol);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_RESUME_ALL_NOTIFICATION)]]
+    void resumeall(name authorized, symbol agg_symbol, uint64_t seq_id);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_RESUME_BADGE_NOTIFICATION)]]
+    void resumebadge(name authorized, symbol agg_symbol, uint64_t badge_agg_seq_id);
+    
+    [[eosio::on_notify(BOUNDED_AGG_MANAGER_RESUME_BADGES_NOTIFICATION)]]
+    void resumebadges(name authorized, symbol agg_symbol, uint64_t seq_id, vector<symbol> badge_symbols);
+
+
 
 
     ACTION addaggauth(name org, name action, name agg, name authorized_account);
@@ -109,4 +158,58 @@ CONTRACT baval : public contract {
       }
       return false;
     }
+
+            // Define the structure of the table
+    TABLE orgcode {
+      name org;         // Organization identifier, used as primary key
+      name org_code;    // Converted org_code, ensuring uniqueness and specific format
+
+      // Specify the primary key
+      auto primary_key() const { return org.value; }
+
+      // Specify a secondary index for org_code to ensure its uniqueness
+      uint64_t by_org_code() const { return org_code.value; }
+    };
+
+    // Declare the table
+    typedef eosio::multi_index<"orgcodes"_n, orgcode,
+      eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
+    > orgcode_index;
+
+
+    name get_name_from_agg_symbol(const symbol& agg_symbol, string failure_identifier) {
+        string agg_symbol_str = agg_symbol.code().to_string(); // Convert symbol to string
+        check(agg_symbol_str.size() == 7, failure_identifier + "Aggregation symbol must have at least 4 characters.");
+
+        // Extract the first 4 characters as org_code
+        string agg_str = agg_symbol_str.substr(4, 7);
+
+        for (auto & c: agg_str) {
+            c = tolower(c);
+        }
+        return name(agg_str);
+    }
+
+    name get_org_from_internal_symbol(const symbol& agg_symbol, string failure_identifier) {
+        string agg_symbol_str = agg_symbol.code().to_string(); // Convert symbol to string
+        check(agg_symbol_str.size() >= 4, failure_identifier + "Aggregation symbol must have at least 4 characters.");
+
+        // Extract the first 4 characters as org_code
+        string org_code_str = agg_symbol_str.substr(0, 4);
+
+        for (auto & c: org_code_str) {
+            c = tolower(c);
+        }
+        name org_code = name(org_code_str);
+
+        // Set up the orgcode table and find the org_code
+        orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+        auto org_code_itr = orgcodes.get_index<"orgcodeidx"_n>().find(org_code.value);
+
+        check(org_code_itr != orgcodes.get_index<"orgcodeidx"_n>().end(), failure_identifier + "Organization code not found.");
+        check(org_code_itr->org_code == org_code, failure_identifier + "Organization code not found.");
+        // Assuming the org is stored in the same row as the org_code
+        return org_code_itr->org; // Return the found organization identifier
+    }
+
 };

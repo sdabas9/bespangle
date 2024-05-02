@@ -5,7 +5,7 @@ using namespace std;
 using namespace eosio;
 
 #define BILLING_CONTRACT "billingxxxxx"
-#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT cumulative : public contract {

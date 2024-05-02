@@ -3,29 +3,28 @@
 void andemitter::notifyachiev(name org, asset amount, name from, name to, string memo, vector<name> notify_accounts) {
     string action_name = "notifyachiev";
     string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier); 
-
+    
     activelookup_table active_lookup(get_self(), get_self().value);
     auto lookup_itr = active_lookup.find(amount.symbol.code().raw());
     if(lookup_itr == active_lookup.end()) {
         return;
     }
 
-    emissions_table emissions(get_self(), get_self().value);
+    emissions_table emissions(get_self(), org.value);
     accounts_table accounts(get_self(), to.value);
 
-    for (const auto& emission_name : lookup_itr->active_emissions) {
-        auto emission_itr = emissions.find(emission_name.value);
+    for (const auto& emission_symbol : lookup_itr->active_emissions) {
+        auto emission_itr = emissions.find(emission_symbol.code().raw());
         check(emission_itr != emissions.end(), "Emission does not exist");
 
-        auto account_itr = accounts.find(emission_name.value);
+        auto account_itr = accounts.find(emission_symbol.code().raw());
         uint8_t emission_status = emission_itr->cyclic ? CYCLIC_IN_PROGRESS : NON_CYCLIC_IN_PROGRESS;
 
         if (account_itr != accounts.end() && account_itr->emission_status == NON_CYCLIC_EMITTED) continue;
 
         if (account_itr == accounts.end()) {
             account_itr = accounts.emplace(get_self(), [&](auto& acc) {
-                acc.emission_name = emission_name;
+                acc.emission_symbol = emission_symbol;
                 acc.emission_status = emission_status;
             });
         } else {
@@ -44,23 +43,28 @@ void andemitter::notifyachiev(name org, asset amount, name from, name to, string
     }
 }
 
-ACTION andemitter::newemission(name org, name emission_name, vector<asset> emitter_criteria_vector, vector<contract_asset> emit_assets, bool cyclic) {
+ACTION andemitter::newemission(
+        name org,
+        symbol emission_symbol,
+        vector<asset> emitter_criteria,
+        vector<contract_asset> emit_assets,
+        bool cyclic) {
     string action_name = "newemission";
     string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
-    validate_org_assets(org, emitter_criteria_vector, emit_assets, failure_identifier);
+    //validate_org_assets(org, emitter_criteria_vector, emit_assets, failure_identifier);
 
-    emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    emissions_table emissions(get_self(), org.value);
+    auto emission_itr = emissions.find(emission_symbol.code().raw());
     check(emission_itr == emissions.end(), "Emission already exists");
 
     map<symbol_code, asset> emitter_criteria_map;
-    for (const auto& crit : emitter_criteria_vector) {
+    for (const auto& crit : emitter_criteria) {
         emitter_criteria_map[crit.symbol.code()] = crit;
     }
     
     emissions.emplace(get_self(), [&](auto& em) {
-        em.emission_name = emission_name;
+        em.emission_symbol = emission_symbol;
         em.emitter_criteria = emitter_criteria_map;
         em.emit_assets = emit_assets;
         em.status = name("init");
@@ -75,22 +79,22 @@ ACTION andemitter::chkorgasset(name org, vector<asset> emitter_criteria, vector<
     validate_org_assets(org, emitter_criteria, emit_assets, failure_identifier);
 }
 
-ACTION andemitter::activate(name org, name emission_name) {
+ACTION andemitter::activate(name org, symbol emission_symbol) {
     string action_name = "activate";
     string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
 
-    emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    emissions_table emissions(get_self(), org.value);
+    auto emission_itr = emissions.find(emission_symbol.code().raw());
     check(emission_itr != emissions.end(), "Emission does not exist");
-    vector<asset> asset_vector;
+    /*vector<asset> asset_vector;
 
     // Iterate through the map and push each asset into the vector
     for (const auto& pair : emission_itr->emitter_criteria) {
         asset_vector.push_back(pair.second);
     }
     validate_org_assets(org, asset_vector, emission_itr->emit_assets, failure_identifier);
-
+    */
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
         mod.status = name("activate");
     });
@@ -103,25 +107,25 @@ ACTION andemitter::activate(name org, name emission_name) {
         if (lookup_itr == activelookup.end()) {
             activelookup.emplace(get_self(), [&](auto& new_entry) {
                 new_entry.badge_symbol = badge_symbol;
-                new_entry.active_emissions.push_back(emission_name);
+                new_entry.active_emissions.push_back(emission_symbol);
             });
         } else {
             activelookup.modify(lookup_itr, get_self(), [&](auto& mod_entry) {
-                mod_entry.active_emissions.push_back(emission_name);
+                mod_entry.active_emissions.push_back(emission_symbol);
             });
         }
     }
 }
 
-ACTION andemitter::deactivate(name org, name emission_name) {
+ACTION andemitter::deactivate(name org, symbol emission_symbol) {
     string action_name = "deactivate";
     string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
 
-    emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    emissions_table emissions(get_self(), org.value);
+    auto emission_itr = emissions.find(emission_symbol.code().raw());
     check(emission_itr != emissions.end(), "Emission does not exist");
-    vector<asset> asset_vector;
+    /*vector<asset> asset_vector;
 
     // Iterate through the map and push each asset into the vector
     for (const auto& pair : emission_itr->emitter_criteria) {
@@ -129,7 +133,7 @@ ACTION andemitter::deactivate(name org, name emission_name) {
     }
 
     validate_org_assets(org, asset_vector, emission_itr->emit_assets, failure_identifier);
-
+    */
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
         mod.status = name("deactivate");
     });
@@ -141,7 +145,7 @@ ACTION andemitter::deactivate(name org, name emission_name) {
 
         if (lookup_itr != activelookup.end()) {
             auto& active_emissions = lookup_itr->active_emissions;
-            auto it = std::find(active_emissions.begin(), active_emissions.end(), emission_name);
+            auto it = std::find(active_emissions.begin(), active_emissions.end(), emission_symbol);
 
             if (it != active_emissions.end()) {
                 activelookup.modify(lookup_itr, get_self(), [&](auto& mod) {
@@ -173,7 +177,7 @@ void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint
     for (const auto& rec : emit_assets) {
         int64_t new_amount = rec.emit_asset.amount * emit_factor;
         asset badge_asset = asset(new_amount, rec.emit_asset.symbol);
-        name destination_org = get_org_from_badge_symbol(badge_asset.symbol, failure_identifier);
+        name destination_org = get_org_from_internal_symbol(badge_asset.symbol, failure_identifier);
 
         if (rec.contract == name(SIMPLEBADGE_CONTRACT)) {
             action(

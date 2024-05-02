@@ -15,7 +15,7 @@
       string memo) {
     string action_name = "create";
     string failure_identifier = "CONTRACT: simplebadge, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);   
+    check_internal_auth(name(action_name), failure_identifier);
     
     action {
       permission_level{get_self(), name("active")},

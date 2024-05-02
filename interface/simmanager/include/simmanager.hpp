@@ -4,45 +4,35 @@
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CONTRACT "simplebadgez"
-#define ORG_CONTRACT "orgzzzzzzzzz"
-#define SIMPLE_VALIDATION_CONTRACT "simplevalzzz"
-#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
-#define STATISTICS_CONTRACT "statisticszz"
+#define SIMPLEBADGE_CONTRACT "simplebadgey"
+#define ORG_CONTRACT "organizayyyy"
+#define SIMPLE_VALIDATION_CONTRACT "simplevalyyy"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define STATISTICS_CONTRACT "statisticsyy"
 
-#define CUMULATIVE_CONTRACT "cumulativezz"
-#define STATISTICS_CONTRACT "statisticszz"
-#define ANDEMITTER_CONTRACT "andemitterzz"
-#define BOUNDED_AGG_CONTRACT "baggzzzzzzzz"
-#define BOUNDED_STATS_CONTRACT "bstatszzzzzz"
+#define CUMULATIVE_CONTRACT "cumulativeyy"
+
 
 CONTRACT simmanager : public contract {
   public:
     using contract::contract;
 
     ACTION initsimple (name authorized, 
-      name org, 
-      name badge,
+      symbol badge_symbol,
       string offchain_lookup_data, 
       string onchain_lookup_data,
       bool lifetime_aggregate,
       bool lifetime_stats,
-      bool emit_secondary_token,
-      bool bounded_aggregate,
-      bool bounded_stats,
-      vector<name> other_consumers,
       string memo);
       
     ACTION givesimple (name authorized,
-     name org,
-     name badge,
+     symbol badge_symbol,
      uint64_t amount,
      name to, 
      string memo );
 
     ACTION simplebatch (name authorized,
-      name org, 
-      name badge,
+      symbol badge_symbol,
       uint64_t amount,
       vector<name> to, 
       string memo);
@@ -64,7 +54,6 @@ CONTRACT simmanager : public contract {
     }
     
 
-        // Define the structure of the table
     TABLE orgcode {
       name org;         // Organization identifier, used as primary key
       name org_code;    // Converted org_code, ensuring uniqueness and specific format
@@ -81,27 +70,40 @@ CONTRACT simmanager : public contract {
       eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
     > orgcode_index;
 
-    string get_org_code(name org, string failure_identifier) {
-      orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
-      auto iterator = orgcodes.find(org.value);
-      check(iterator != orgcodes.end(), failure_identifier + "Organization not found");
-      return iterator->org_code.to_string();
+
+    name get_name_from_internal_symbol(const symbol& _symbol, string failure_identifier) {
+        string _symbol_str = _symbol.code().to_string(); // Convert symbol to string
+        check(_symbol_str.size() == 7, failure_identifier + "Symbol must have at least 7 characters.");
+
+        // Extract the first 4 characters as org_code
+        string _str = _symbol_str.substr(4, 7);
+
+        for (auto & c: _str) {
+            c = tolower(c);
+        }
+        return name(_str);
     }
 
-    void validate_badge(name badge, string failure_identifier) {
-      string badge_str = badge.to_string();
-      check(badge_str.length() == 3, failure_identifier + "badge code must be exactly 3 characters long");
-      for (char c : badge_str) {
-        check(std::isalpha(c), failure_identifier + "badge code can only contain alphabets");
+    name get_org_from_internal_symbol(const symbol& _symbol, string failure_identifier) {
+      string _symbol_str = _symbol.code().to_string(); // Convert symbol to string
+      check(_symbol_str.size() >= 4, failure_identifier + "symbol must have at least 4 characters.");
+
+      // Extract the first 4 characters as org_code
+      string org_code_str = _symbol_str.substr(0, 4);
+
+      for (auto & c: org_code_str) {
+          c = tolower(c);
       }
-    }
+      name org_code = name(org_code_str);
 
-    symbol validate_and_get_symbol(name org, name badge, string failure_identifier) {
-      string org_code = get_org_code(org, failure_identifier);
-      validate_badge(badge, failure_identifier);
-      string symbol_string = org_code + badge.to_string();
-      std::transform(symbol_string.begin(), symbol_string.end(), symbol_string.begin(), ::toupper);
-      return symbol(symbol_code(symbol_string), 0);
+      // Set up the orgcode table and find the org_code
+      orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+      auto org_code_itr = orgcodes.get_index<"orgcodeidx"_n>().find(org_code.value);
+
+      check(org_code_itr != orgcodes.get_index<"orgcodeidx"_n>().end(), failure_identifier + "Organization code not found.");
+      check(org_code_itr->org_code == org_code, failure_identifier + "Organization code not found.");
+      // Assuming the org is stored in the same row as the org_code
+      return org_code_itr->org; // Return the found organization identifier
     }
     
     struct addfeature_args {
@@ -126,8 +128,4 @@ CONTRACT simmanager : public contract {
       string memo;
     };
 
-    struct settings_args {
-      symbol badge_symbol;
-      uint64_t max_no_of_ranks;
-    };
 };

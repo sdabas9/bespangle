@@ -3,14 +3,14 @@
 using namespace std;
 using namespace eosio;
 
-#define SIMPLEBADGE_CONTRACT "simplebadgex"
+#define SIMPLEBADGE_CONTRACT "simplebadgez"
 #define GOTCHABADGE_CONTRACT "gotchabadgex"
-#define ORCHESTRATOR_CONTRACT "orchestrator"
+#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
 #define HLL_EMITTER_CONTRACT "hllemitterxx"
-#define CUMULATIVE_CONTRACT "cumulativexx"
+#define CUMULATIVE_CONTRACT "cumulativezz"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
 #define AND_EMITTER_CONTRACT "andemitterxx"
-#define STATISTICS_CONTRACT "statisticsxx"
+#define STATISTICS_CONTRACT "statisticszz"
 #define GIVERREP_CONTRACT "giverrepxxxx"
 #define REPUTATION_MANAGER_VALIDATION_CONTRACT "repvalxxxxxx"
 

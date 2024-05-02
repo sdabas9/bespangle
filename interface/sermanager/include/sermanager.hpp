@@ -4,7 +4,7 @@ using namespace std;
 using namespace eosio;
 
 #define SERIESBADGE_CONTRACT "seriesbadgex"
-#define ORCHESTRATOR_CONTRACT "orchestrator"
+#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
 #define SERIES_VALIDATION_CONTRACT "seriesval111"
 

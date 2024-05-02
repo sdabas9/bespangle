@@ -77,6 +77,7 @@ CONTRACT mrbadge : public contract {
 
 
     struct achievement_args {
+      name org;
       asset badge_asset;
       name from;
       name to;
@@ -84,6 +85,7 @@ CONTRACT mrbadge : public contract {
     };
 
     struct initbadge_args {
+      name org;
       symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data; 

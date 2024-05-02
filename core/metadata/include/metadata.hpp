@@ -5,8 +5,8 @@ using namespace std;
 using namespace eosio;
 
 #define BILLING_CONTRACT "billingxxxxx"
-#define AUTHORITY_CONTRACT "authorityzzz"
-#define ORG_CONTRACT "orgzzzzzzzzz"
+#define AUTHORITY_CONTRACT "authorityyyy"
+#define ORG_CONTRACT "organizayyyy"
 
 CONTRACT metadata : public contract {
 public:

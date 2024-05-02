@@ -5,8 +5,8 @@
 using namespace std;
 using namespace eosio;
 
-#define ORCHESTRATOR_CONTRACT "orchestrator"
-#define AUTHORITY_CONTRACT "authorityxxx"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define AUTHORITY_CONTRACT "authorityyyy"
 
 CONTRACT mrbadge : public contract {
   public:
@@ -77,6 +77,7 @@ CONTRACT mrbadge : public contract {
 
 
     struct achievement_args {
+      name org;
       asset badge_asset;
       name from;
       name to;
@@ -84,6 +85,7 @@ CONTRACT mrbadge : public contract {
     };
 
     struct initbadge_args {
+      name org;
       symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data; 

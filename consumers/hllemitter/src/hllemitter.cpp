@@ -18,7 +18,7 @@ void hllemitter::notifyachiev(
     vector<asset> emit_assets ;
 
     check(existing_emission != emissions.end(), failure_identifier + "Uniqueness badge not defined for a badge with hll consumer");
-    if(existing_emission->status != name("activate")) {
+    if(existing_emission->status != name("active")) {
         return;
     }
     emit_assets = existing_emission->sender_uniqueness_badge_assets;
@@ -123,13 +123,13 @@ ACTION hllemitter::newemission(
     });
 }
 
-ACTION hllemitter::activate(name org, name emission_name) {
+ACTION hllemitter::activate(name org, symbol badge_symbol) {
     string action_name = "activate";
     string failure_identifier = "CONTRACT: hllemitter, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
 
     emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    auto emission_itr = emissions.find(badge_symbol.code().raw());
     check(emission_itr != emissions.end(), failure_identifier + "Emission does not exist");
     
     validate_org_badge_symbol(org, emission_itr->badge_symbol, failure_identifier);
@@ -138,18 +138,18 @@ ACTION hllemitter::activate(name org, name emission_name) {
     }
 
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
-        mod.status = name("activate");
+        mod.status = name("active");
     });
 
 }
 
-ACTION hllemitter::deactivate(name org, name emission_name) {
+ACTION hllemitter::deactivate(name org, symbol badge_symbol) {
     string action_name = "deactivate";
     string failure_identifier = "CONTRACT: hllemitter, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier); 
 
     emissions_table emissions(get_self(), get_self().value);
-    auto emission_itr = emissions.find(emission_name.value);
+    auto emission_itr = emissions.find(badge_symbol.code().raw());
     check(emission_itr != emissions.end(), "Emission does not exist");
     
     validate_org_badge_symbol(org, emission_itr->badge_symbol, failure_identifier);
@@ -158,7 +158,7 @@ ACTION hllemitter::deactivate(name org, name emission_name) {
     }
 
     emissions.modify(emission_itr, get_self(), [&](auto& mod) {
-        mod.status = name("deactivate");
+        mod.status = name("inactive");
     });
 }
 

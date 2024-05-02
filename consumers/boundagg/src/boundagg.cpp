@@ -1,6 +1,6 @@
 #include <boundagg.hpp>
 
-ACTION boundagg::initagg(name org, symbol agg_symbol, string agg_description) {
+ACTION boundagg::initagg(name org, symbol agg_symbol, vector<symbol> init_badge_symbols, string agg_description) {
     string action_name = "initagg";
     string failure_identifier = "CONTRACT: boundagg, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);
@@ -13,10 +13,53 @@ ACTION boundagg::initagg(name org, symbol agg_symbol, string agg_description) {
             row.agg_symbol = agg_symbol;
             row.agg_description = agg_description;
             row.last_init_seq_id = 0;
+            row.init_badge_symbols = init_badge_symbols;
         });
     } else {
         check(false, "Agg already exists");
     }
+
+}
+
+ACTION boundagg::addinitbadge(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "addinitbadge";
+    string failure_identifier = "CONTRACT: boundagg, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+    aggdetail_table aggdetail_t(_self, org.value);
+    auto aggdetail_itr = aggdetail_t.find(agg_symbol.code().raw());
+
+    check(aggdetail_itr != aggdetail_t.end(), failure_identifier + "agg does not exist");
+    vector<symbol> current_init_badge_symbols = aggdetail_itr->init_badge_symbols;
+    for(symbol badge_symbol :  badge_symbols) {
+        if (std::find(current_init_badge_symbols.begin(), current_init_badge_symbols.end(), badge_symbol) == current_init_badge_symbols.end()) {
+            current_init_badge_symbols.push_back(badge_symbol);
+        }
+    }
+    aggdetail_t.modify(aggdetail_itr, _self, [&](auto& row) {
+        row.init_badge_symbols = current_init_badge_symbols;
+    });
+
+}
+
+ACTION boundagg::reminitbadge(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "reminitbadge";
+    string failure_identifier = "CONTRACT: boundagg, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+    aggdetail_table aggdetail_t(_self, org.value);
+    auto aggdetail_itr = aggdetail_t.find(agg_symbol.code().raw());
+
+    check(aggdetail_itr != aggdetail_t.end(), failure_identifier + "agg does not exist");
+    vector<symbol> current_init_badge_symbols = aggdetail_itr->init_badge_symbols;
+
+    std::set<symbol> toRemove(badge_symbols.begin(), badge_symbols.end());
+    current_init_badge_symbols.erase(
+        std::remove_if(current_init_badge_symbols.begin(), current_init_badge_symbols.end(), 
+                       [&](const symbol elem) { return toRemove.count(elem) > 0; }),
+        current_init_badge_symbols.end()
+    );
+    aggdetail_t.modify(aggdetail_itr, _self, [&](auto& row) {
+        row.init_badge_symbols = current_init_badge_symbols;
+    });
 
 }
 
@@ -46,6 +89,19 @@ ACTION boundagg::initseq(name org, symbol agg_symbol, string sequence_descriptio
         row.init_time = time_point_sec(current_time_point());
         // The active_time and end_time are left uninitialized here and will be set later
     });
+    if(aggdetail_itr->init_badge_symbols.size() > 0) {
+        action {
+            permission_level{get_self(), name("active")},
+            name(get_self()),
+            name("addbadgeli"),
+            addbadgeli_args {
+                .org = org,
+                .agg_symbol = agg_symbol,
+                .badge_symbols = aggdetail_itr->init_badge_symbols
+            }
+        }.send(); 
+    }
+
 }
 
 ACTION boundagg::actseq(name org, symbol agg_symbol, vector<uint64_t> seq_ids) {
@@ -282,6 +338,28 @@ ACTION boundagg::addbadgefi(name org, symbol agg_symbol, vector<symbol> badge_sy
     vector<uint64_t> init_seq_ids;
     uint64_t first_seq_id = all_init_seq_ids (org, agg_symbol, failure_identifier).front();
     init_seq_ids.push_back(first_seq_id);
+    action {
+      permission_level{get_self(), name("active")},
+      name(get_self()),
+      name("addbadge"),
+      addbadge_args {
+        .org = org,
+        .agg_symbol = agg_symbol,
+        .seq_ids = init_seq_ids,
+        .badge_symbols = badge_symbols
+      }
+    }.send(); 
+}
+
+ACTION boundagg::addbadgeli(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "addbadgeli";
+    string failure_identifier = "CONTRACT: boundagg, ACTION: " + action_name + ", MESSAGE: ";
+    if(!has_auth(get_self())) {
+        check_internal_auth(name(action_name), failure_identifier);
+    }    
+    vector<uint64_t> init_seq_ids;
+    uint64_t last_seq_id = all_init_seq_ids (org, agg_symbol, failure_identifier).back();
+    init_seq_ids.push_back(last_seq_id);
     action {
       permission_level{get_self(), name("active")},
       name(get_self()),

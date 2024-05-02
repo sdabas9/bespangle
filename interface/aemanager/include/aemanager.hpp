@@ -4,11 +4,11 @@
 using namespace std;
 using namespace eosio;
 
-#define ANDEMITTER_VALIDATION_CONTRACT "emittervalzz"
-#define ANDEMITTER_CONTRACT "andemitterzz"
-#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
-#define ORG_CONTRACT "orgzzzzzzzzz"
-#define SIMPLEBADGE_CONTRACT "simplebadgez"
+#define ANDEMITTER_VALIDATION_CONTRACT "emittervalyy"
+#define ANDEMITTER_CONTRACT "andemitteryy"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define ORG_CONTRACT "organizayyyy"
+#define SIMPLEBADGE_CONTRACT "simplebadgey"
 
 CONTRACT aemanager : public contract {
 public:
@@ -19,13 +19,13 @@ public:
     asset emit_asset;
   };
 
-  ACTION newemission(name authorized, name org, name emission_name, vector<asset> emitter_criteria, vector<asset> emit_badges, bool cyclic);
-  ACTION activate(name authorized, name org, name emission_name);
-  ACTION deactivate(name authorized, name org, name emission_name);
+  ACTION newemission(name authorized, symbol emission_symbol, vector<asset> emitter_criteria, vector<asset> emit_badges, bool cyclic);
+  ACTION activate(name authorized, symbol emission_symbol);
+  ACTION deactivate(name authorized, symbol emission_symbol);
 
   struct init_args {
     name org;
-    name emission_name;
+    symbol emission_symbol;
     vector<asset> emitter_criteria;
     vector<contract_asset> emit_assets;
     bool cyclic;
@@ -33,12 +33,12 @@ public:
 
   struct activate_args {
     name org;
-    name emission_name;
+    symbol emission_symbol;
   };
 
   struct deactivate_args {
     name org;
-    name emission_name;
+    symbol emission_symbol;
   };
 
   struct addfeature_args {
@@ -83,5 +83,27 @@ private:
     auto iterator = orgcodes.find(org.value);
     check(iterator != orgcodes.end(), failure_identifier + "Organization not found");
     return iterator->org_code.to_string();
+  }
+
+  name get_org_from_internal_symbol(const symbol& _symbol, string failure_identifier) {
+    string _symbol_str = _symbol.code().to_string(); // Convert symbol to string
+    check(_symbol_str.size() >= 4, failure_identifier + "symbol must have at least 4 characters.");
+
+    // Extract the first 4 characters as org_code
+    string org_code_str = _symbol_str.substr(0, 4);
+
+    for (auto & c: org_code_str) {
+        c = tolower(c);
+    }
+    name org_code = name(org_code_str);
+
+    // Set up the orgcode table and find the org_code
+    orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+    auto org_code_itr = orgcodes.get_index<"orgcodeidx"_n>().find(org_code.value);
+
+    check(org_code_itr != orgcodes.get_index<"orgcodeidx"_n>().end(), failure_identifier + "Organization code not found.");
+    check(org_code_itr->org_code == org_code, failure_identifier + "Organization code not found.");
+    // Assuming the org is stored in the same row as the org_code
+    return org_code_itr->org; // Return the found organization identifier
   }
 };

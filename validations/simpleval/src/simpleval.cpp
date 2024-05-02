@@ -1,20 +1,18 @@
 #include <simpleval.hpp>
 
 void simpleval::initsimple(name authorized, 
-      name org, 
-      name badge,
-      string offchain_lookup_data, 
-      string onchain_lookup_data,
-      bool lifetime_aggregate,
-      bool lifetime_stats,
-      bool emit_secondary_token,
-      bool bounded_aggregate,
-      bool bounded_stats,
-      vector<name> other_consumers,
-      string memo) {
+        symbol badge_symbol,
+        string offchain_lookup_data, 
+        string onchain_lookup_data,
+        bool lifetime_aggregate,
+        bool lifetime_stats,
+        string memo) {
 
     string action_name = "initsimple";
     string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
+
+    name badge = get_name_from_internal_symbol(badge_symbol, failure_identifier);
+    name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
 
     if (has_action_authority(org, name("initsimple"), authorized)) {
         return;
@@ -27,15 +25,17 @@ void simpleval::initsimple(name authorized,
 }
 
 void simpleval::givesimple (name authorized,
-     name org,
-     name badge,
-     uint64_t amount, 
-     name to, 
-     string memo ) {
+        symbol badge_symbol,
+        uint64_t amount,
+        name to, 
+        string memo) {
 
     string action_name = "givesimple";
     string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
-    
+
+    name badge = get_name_from_internal_symbol(badge_symbol, failure_identifier);
+    name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+        
     if (has_action_authority(org, name("givesimple"), authorized)) {
         return;
     }
@@ -47,15 +47,17 @@ void simpleval::givesimple (name authorized,
 }
 
 void simpleval::simplebatch (name authorized,
-      name org, 
-      name badge,
-      uint64_t amount,
-      vector<name> to, 
-      string memo) {
+        symbol badge_symbol,
+        uint64_t amount,
+        vector<name> to, 
+        string memo) {
 
     string action_name = "simplebatch";
     string failure_identifier = "CONTRACT: simpleval, ACTION: " + action_name + ", MESSAGE: ";
 
+    name badge = get_name_from_internal_symbol(badge_symbol, failure_identifier);
+    name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+    
     if (has_action_authority(org, name("simplebatch"), authorized)) {
         return;
     }

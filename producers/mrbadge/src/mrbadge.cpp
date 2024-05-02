@@ -100,6 +100,7 @@ ACTION mrbadge::create (name org, symbol badge_symbol,
       name(ORCHESTRATOR_CONTRACT),
       name("initbadge"),
       initbadge_args {
+        .org = org,
         .badge_symbol = badge_symbol,
         .offchain_lookup_data = offchain_lookup_data,
         .onchain_lookup_data = onchain_lookup_data,
@@ -112,7 +113,7 @@ ACTION mrbadge::create (name org, symbol badge_symbol,
       name from, 
       name to,
       string memo) {
-    string action_name = "create";
+    string action_name = "issue";
     string failure_identifier = "CONTRACT: mrbadge, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);   
 
@@ -185,8 +186,9 @@ ACTION mrbadge::create (name org, symbol badge_symbol,
       name(ORCHESTRATOR_CONTRACT),
       name("achievement"),
       achievement_args {
+        .org = org,
         .badge_asset = badge_asset,
-        .from = get_self(),
+        .from = from,
         .to = to,
         .memo = memo }
     }.send();

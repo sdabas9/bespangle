@@ -4,9 +4,9 @@
 using namespace std;
 using namespace eosio;
 
-#define ORG_CONTRACT "orgzzzzzzzzz"
-#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
-#define ORCHESTRATOR_VALIDATION_CONTRACT "orchvalzzzzz"
+#define ORG_CONTRACT "organizayyyy"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define ORCHESTRATOR_VALIDATION_CONTRACT "orchvalyyyyy"
 
 CONTRACT orchmanager : public contract {
   public:
