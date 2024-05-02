@@ -6,9 +6,6 @@ using namespace eosio;
 #define ORG_CHECKS_CONTRACT_NAME "interface111"
 #define NOTIFICATION_CONTRACT_NAME "notification"
 #define BOUNDED_AGG_CONTRACT_NAME "boundedaggxx"
-#define ROUND_MANAGER_VALIDATION_CONTRACT "asdfd"
-#define ROUND_DEFERRED_CONTRACT "rounddeferr"
-#define ORCHESTRATOR_CONTRACT "orgrgrr"
 
 CONTRACT roundmanager : public contract {
   public:
@@ -19,22 +16,27 @@ CONTRACT roundmanager : public contract {
       name reward_yielding_badge;
       string offchain_lookup_data;
       string onchain_lookup_data;
+      time_point redeem_start_time;
+      time_point redeem_end_time;
       name type;
       uint64_t rate;
       name reward_pool_contract;
     };
 
+    struct badges {
+      name badge;
+      time_point accumulation_start_time;
+      time_point accumulation_end_time;
+    };
 
 ACTION defineround(name org, 
   name authorized_account, 
-  name round,
+  name round, 
   string round_description, 
-  vector<name> badges, 
+  vector<badges> badges_info, 
   vector<redeemable> redeem_badge_info,
-  time_point round_start_time,
-  time_point round_end_time,
-  time_point_sec claim_start_time,
-  time_point_sec claim_end_time
+  time_point round_start_time, 
+  time_point round_end_time
   );
 
 
@@ -116,10 +118,11 @@ ACTION addfeature(name org, name badge_name, name notify_account, string memo);
 
     struct addfeature_args {
       name org;
-      name badge;
+      name badge_name;
       name notify_account;
       string memo;
     };
+
 
 
   private:
@@ -130,11 +133,28 @@ ACTION addfeature(name org, name badge_name, name notify_account, string memo);
     };
     typedef multi_index<name("checks"), checks> checks_table;
 
+    TABLE systemchecks {
+      name org;
+      vector<name> system_check_contracts;
+      auto primary_key() const {return org.value; }
+    };
+    typedef multi_index<name("systemchecks"), systemchecks> systemchecks_table;
+
     void notify_checks_contract(name org) {
       checks_table _checks( name(ORG_CHECKS_CONTRACT_NAME), get_self().value );
       auto itr = _checks.find(org.value);
       if(itr != _checks.end()) {
         require_recipient(itr->checks_contract);
+      }
+    }
+    
+    void notify_linked_inbuilt_checks_contract(name org) {
+      systemchecks_table systemchecks(name(ORG_CHECKS_CONTRACT_NAME), get_self().value);
+      auto itr = systemchecks.find(org.value);
+      if(itr != systemchecks.end()) {
+        for(auto i = 0 ; i < itr->system_check_contracts.size(); i++) {
+          require_recipient(itr->system_check_contracts[i]);
+        }
       }
     }
 };

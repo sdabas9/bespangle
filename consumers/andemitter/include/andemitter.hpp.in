@@ -1,341 +1,135 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
 using namespace std;
 using namespace eosio;
 
-#cmakedefine SIMPLEBADGE_CONTRACT_NAME "@SIMPLEBADGE_CONTRACT_NAME@"
-#cmakedefine CLAIMASSET_CONTRACT_NAME "@CLAIMASSET_CONTRACT_NAME@"
-#cmakedefine NOTIFICATION_CONTRACT_NAME "@NOTIFICATION_CONTRACT_NAME@"
-#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine SIMPLEBADGE_CONTRACT "@SIMPLEBADGE_CONTRACT@"
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
 #cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
+#cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
 
-#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
+#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT andemitter : public contract {
-  public:
+public:
     using contract::contract;
-    struct asset_contract_name {
-      name issuing_contract;
-      name asset_name;
 
-      bool operator<(const asset_contract_name& ad) const {
-        if (this->issuing_contract == ad.issuing_contract) {
-          return (this->asset_name.to_string() < ad.asset_name.to_string());
-        } else {
-          return (this->issuing_contract.to_string() < ad.issuing_contract.to_string());
-        }
-      }
+    struct contract_asset {
+        name contract;
+        asset emit_asset;
     };
 
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]]  void notifyachiev (
-      name org, 
-      name badge,
-      name account, 
-      name from,
-      uint64_t count,
-      string memo, 
-      vector<name> notify_accounts );
+    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
+        name org,
+        asset amount, 
+        name from, 
+        name to, 
+        string memo, 
+        vector<name> notify_accounts
+    );
 
-    ACTION newemission (name org,
-      name emission_name,
-      std::map<name, uint64_t> emitter_criteria,
-      std::map<asset_contract_name, uint64_t> emit_assets,
-      bool cyclic);
+    ACTION newemission(
+        name org,
+        symbol emission_symbol,
+        vector<asset> emitter_criteria,
+        vector<contract_asset> emit_assets,
+        bool cyclic
+    );
+    
+    ACTION chkorgasset(name org, vector<asset> emitter_criteria, vector<contract_asset> emit_assets);
+    ACTION activate(name org, symbol emission_symbol);
+    ACTION deactivate(name org, symbol emission_symbol);
 
-    ACTION activate (name org, name emission_name);
-
-    ACTION deactivate (name org, name emission_name);
-
-    ACTION addclaimer (name org, name account, name assetname, uint64_t account_cap, string memo);
-
-
-  private:
+private:
+    // scoped by andemitter contract
     TABLE emissions {
-      name emission_name;
-      std::map<name, uint64_t> emitter_criteria;
-      std::map<asset_contract_name, uint64_t> emit_assets;
-      name status; // INIT, ACTIVATE, DEACTIVATE
-      bool cyclic;
-      auto primary_key() const { return emission_name.value; }
+        symbol emission_symbol;
+        map<symbol_code, asset> emitter_criteria;
+        vector<contract_asset> emit_assets;
+        name status; // INIT, ACTIVATE, DEACTIVATE
+        bool cyclic;
+        auto primary_key() const { return emission_symbol.code().raw(); }
     };
     typedef multi_index<name("emissions"), emissions> emissions_table;
 
+    // scoped by andemitter contract
     TABLE activelookup {
-      name badge;
-      vector<name> active_emissions;
-      auto primary_key() const { return badge.value; }
+        symbol badge_symbol;
+        vector<symbol> active_emissions;
+        auto primary_key() const { return badge_symbol.code().raw(); }
     };
     typedef multi_index<name("activelookup"), activelookup> activelookup_table;
 
+    // scoped by account
     TABLE accounts {
-      uint64_t id;
-      name account;
-      name emission_name;
-      uint8_t emission_status;
-      std::map<name, uint64_t> expanded_emitter_status;
-      auto primary_key() const { return id; }
-      uint128_t account_emission_name_key() const {
-        return ((uint128_t) account.value) << 64 | emission_name.value;
-      }
-      uint64_t emission_name_key() const {
-        return emission_name.value;
-      } // TODO are these 2 keys needed?
+        symbol emission_symbol;
+        uint8_t emission_status;
+        map<symbol_code, int64_t> expanded_emitter_status;
+        auto primary_key() const { return emission_symbol.code().raw(); }
     };
-    typedef multi_index<name("accounts"), accounts,
-    indexed_by<name("accntemssn"), const_mem_fun<accounts, uint128_t, &accounts::account_emission_name_key>>,
-    indexed_by<name("emissionkey"), const_mem_fun<accounts, uint64_t, &accounts::emission_name_key>>    
-    > accounts_table;
+    typedef multi_index<"accounts"_n, accounts> accounts_table;
 
-    TABLE badge {
-      name badge;
-      vector<name> notify_accounts;
-      string offchain_lookup_data;
-      string onchain_lookup_data;
-      uint64_t rarity_counts;
-      auto primary_key() const {return badge.value; }
+    // scoped by org contract
+    TABLE orgcode {
+        name org;
+        name org_code;
+        auto primary_key() const { return org.value; }
+        uint64_t by_org_code() const { return org_code.value; }
     };
-    typedef multi_index<name("badge"), badge> badge_table;
+    typedef multi_index<"orgcodes"_n, orgcode, indexed_by<"orgcodeidx"_n, const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>> orgcode_index;
 
-    TABLE auth {
-      uint64_t id;
-      name contract;
-      name action;
-      vector<name> authorized_contracts;
-
-      uint64_t primary_key() const { return id; }
-      uint128_t get_secondary_key() const { return combine_names(contract, action); }
-
-      static uint128_t combine_names(const name& a, const name& b) {
-          return (uint128_t)a.value << 64 | b.value;
-      }
-    };
-
-    // Declare the table
-    typedef eosio::multi_index<"auth"_n, auth,
-        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
-    > auth_table;
-
-    void check_internal_auth (name action) {
-      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
-
-      // Find the authority entry
-      uint128_t secondary_key = (uint128_t)get_self().value << 64 | action.value;
-      auto secondary_index = _auth.get_index<"bycontract"_n>();
-      auto itr = secondary_index.find(secondary_key);
-      if (itr != secondary_index.end() && itr->contract!=get_self() && itr->action!=action) {
-          check(false, "No authority found for contract " + get_self().to_string() + " and action " + action.to_string());
-      }
-      auto authorzied_accounts = itr->authorized_contracts;
-      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
-        if(has_auth(authorzied_accounts[i])) {
-          return;
-        }
-      }
-      check(false, "Account not is authorized list of accounts for action " + action.to_string());
+    void validate_org_assets(name org, const vector<asset>& emitter_criteria, const vector<contract_asset>& emit_assets, string failure_identifier);
+    
+    void validate_org_badge_symbol(name org, symbol badge_symbol, string failure_identifier) {
+        name badge_org = get_org_from_internal_symbol (badge_symbol, failure_identifier);
+        check(org == badge_org, failure_identifier + " org not same as in badge_symbol");
     }
+    
+    name get_org_from_internal_symbol(const symbol& _symbol, string failure_identifier) {
+        string _symbol_str = _symbol.code().to_string(); // Convert symbol to string
+        check(_symbol_str.size() >= 4, failure_identifier + "symbol must have at least 4 characters.");
 
+        // Extract the first 4 characters as org_code
+        string org_code_str = _symbol_str.substr(0, 4);
+
+        for (auto & c: org_code_str) {
+            c = tolower(c);
+        }
+        name org_code = name(org_code_str);
+
+        // Set up the orgcode table and find the org_code
+        orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+        auto org_code_itr = orgcodes.get_index<"orgcodeidx"_n>().find(org_code.value);
+
+        check(org_code_itr != orgcodes.get_index<"orgcodeidx"_n>().end(), failure_identifier + "Organization code not found.");
+        check(org_code_itr->org_code == org_code, failure_identifier + "Organization code not found.");
+        // Assuming the org is stored in the same row as the org_code
+        return org_code_itr->org; // Return the found organization identifier
+    }
+    // scoped by contract
+    TABLE auth {
+        name action;
+        vector<name> authorized_contracts;
+        uint64_t primary_key() const { return action.value; }
+    };
+    typedef multi_index<"auth"_n, auth> auth_table;
+
+    void check_internal_auth(name action, string failure_identifier);
+
+    enum short_emission_status : uint8_t {
+        CYCLIC_IN_PROGRESS = 1,
+        NON_CYCLIC_IN_PROGRESS = 2,
+        NON_CYCLIC_EMITTED = 3
+    };
+
+    void invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor, string failure_identifier);
+    
     struct issue_args {
       name org;
+      asset badge_asset;
       name to;
-      name badge; 
-      uint64_t amount;
       string memo;
     };
-
-    struct addclaimer_args {
-      name org;
-      name account;
-      name assetname; 
-      uint64_t account_cap;
-      string memo;
-    };
-
-    enum short_emission_status: uint8_t {
-      CYCLIC_IN_PROGRESS = 1,
-      NON_CYCLIC_IN_PROGRESS = 2,
-      NON_CYCLIC_EMITTED = 3
-    };
-    void invoke_action ( name org, std::map<asset_contract_name, uint64_t> emit_assets ,name to, uint8_t emit_factor) {
-
-      if(emit_factor == 0) {
-        return;
-      }
-      
-      for (const auto& [key, value] : emit_assets) {
-        if(key.issuing_contract == name(SIMPLEBADGE_CONTRACT_NAME)) {
-          action {
-            permission_level{get_self(), name("active")},
-            name(SIMPLEBADGE_CONTRACT_NAME),
-            name("issue"),
-            issue_args {
-              .org = org,
-              .to = to,
-              .badge = key.asset_name,
-              .amount = value * emit_factor,
-              .memo = "issued from rollup consumer"}
-          }.send(); 
-        } else if (key.issuing_contract == name(CLAIMASSET_CONTRACT_NAME)) {
-          action {
-            permission_level{get_self(), name("active")},
-            name(get_self()),
-            name("addclaimer"),
-            addclaimer_args {
-              .org = org,
-              .account = to,
-              .assetname = key.asset_name,
-              .account_cap = value * emit_factor,
-              .memo = "issued from rollup consumer" }
-          }.send(); 
-        }
-
-      }
-
-    }
-
-    void valid_badge (name org, name assetname) {
-      badge_table _badge(name(ORCHESTRATOR_CONTRACT_NAME), org.value);
-      auto badge_iterator = _badge.find (assetname.value);
-      check(badge_iterator->badge == assetname, "invalid badge");
-    }
-
-    uint8_t emit_factor (std::map<name, uint64_t> emitter_status, std::map<name, uint64_t> emitter_criteria) {
-      uint8_t key_factor = 0;
-      uint8_t max_factor = 0;
-      for (const auto& [key, value] : emitter_criteria) {
-      key_factor = emitter_status[key] / emitter_criteria[key];
-        if(key_factor > max_factor) {
-          max_factor = key_factor;
-        }
-      }
-      return max_factor;
-    }
-
-    uint8_t real_emit_factor (bool cyclic, uint8_t emit_factor) {
-      if(emit_factor > 0 && !cyclic) {
-        return 1;
-      } 
-      return emit_factor;
-    }
-
-  std::map<name, uint64_t> update_expanded_emitter_status (std::map<name, uint64_t> expanded_emitter_status, 
-      std::map<name, uint64_t> emitter_criteria,
-      uint8_t emit_factor 
-      ) {
-      std::map<name, uint64_t> updated_expanded_emitter_status;
-      for (const auto& [key, value] : expanded_emitter_status) { 
-        updated_expanded_emitter_status[key]= expanded_emitter_status[key] - emit_factor * emitter_criteria[key];
-      }
-      return updated_expanded_emitter_status;
-    }
-
-  void emitters (name org, name emission_name, name account, name asset_name, uint8_t count) {
-
-      emissions_table _emissions(_self, org.value);
-      auto emissions_itr = _emissions.require_find(emission_name.value, "Somethings wrong");
-
-      accounts_table _accounts(_self, org.value);
-      auto account_emission_index = _accounts.get_index<name("accntemssn")>();
-      uint128_t account_emission_key = ((uint128_t) account.value) << 64 | emission_name.value;
-      auto account_emission_iterator = account_emission_index.find (account_emission_key);
-
-      bool present_in_accounts = account_emission_iterator != account_emission_index.end() && 
-        account_emission_iterator->account == account && 
-        account_emission_iterator->emission_name == emission_name;
-      
-      if (present_in_accounts && account_emission_iterator->emission_status == NON_CYCLIC_EMITTED) {
-        return;
-      }
-
-      std::map<name, uint64_t> expanded_emitter_status;
-      std::map<name, uint64_t> updated_expanded_emitter_status;
-      bool cyclic = emissions_itr->cyclic;
-      uint8_t emission_factor;
-      if (present_in_accounts) {
-        expanded_emitter_status = account_emission_iterator->expanded_emitter_status;
-        expanded_emitter_status[asset_name] = (expanded_emitter_status.contains(asset_name)) 
-          ? expanded_emitter_status[asset_name] + count 
-          : count;
-
-        uint8_t factor = emit_factor(expanded_emitter_status, emissions_itr->emitter_criteria);
-        emission_factor = real_emit_factor (cyclic, factor);
-       
-        updated_expanded_emitter_status = update_expanded_emitter_status (expanded_emitter_status, emissions_itr->emitter_criteria, emission_factor);
-        if (emission_factor > 0 && !cyclic) {
-            account_emission_index.modify(account_emission_iterator, get_self(), [&](auto& row){
-              row.emission_status = NON_CYCLIC_EMITTED;
-              row.expanded_emitter_status = updated_expanded_emitter_status;
-            });
-        }
-        if (emission_factor == 0 && !cyclic) {
-            account_emission_index.modify(account_emission_iterator, get_self(), [&](auto& row){
-              row.emission_status = NON_CYCLIC_IN_PROGRESS;
-              row.expanded_emitter_status = updated_expanded_emitter_status;
-            });
-        }
-        if (emission_factor > 0 && cyclic) {
-            account_emission_index.modify(account_emission_iterator, get_self(), [&](auto& row){
-              row.emission_status = CYCLIC_IN_PROGRESS;
-              row.expanded_emitter_status = updated_expanded_emitter_status;
-            });
-        }
-        if(emission_factor == 0 && cyclic) {
-            account_emission_index.modify(account_emission_iterator, get_self(), [&](auto& row){
-              row.emission_status = CYCLIC_IN_PROGRESS;
-              row.expanded_emitter_status = updated_expanded_emitter_status;
-            });
-        }
-
-      } else {
-        expanded_emitter_status[asset_name] = count;
-        uint8_t factor = emit_factor(expanded_emitter_status, emissions_itr->emitter_criteria);
-        emission_factor = real_emit_factor (cyclic, factor);
-        updated_expanded_emitter_status = update_expanded_emitter_status (expanded_emitter_status, emissions_itr->emitter_criteria, emission_factor);
-
-        if (emission_factor > 0 && !cyclic) {
-          _accounts.emplace(get_self(), [&](auto& row){
-            row.emission_status = NON_CYCLIC_EMITTED;
-            row.id = _accounts.available_primary_key();
-            row.emission_name = emission_name;
-            row.account = account;
-            row.expanded_emitter_status = updated_expanded_emitter_status;
-          });
-
-        }
-        if (emission_factor == 0 && !cyclic) {
-          _accounts.emplace(get_self(), [&](auto& row){
-            row.emission_status = NON_CYCLIC_IN_PROGRESS;
-            row.id = _accounts.available_primary_key();
-            row.emission_name = emission_name;
-            row.account = account;
-            row.expanded_emitter_status = updated_expanded_emitter_status;
-          });
-
-        }
-        if (emission_factor > 0 && cyclic) {
-          _accounts.emplace(get_self(), [&](auto& row){
-            row.emission_status = CYCLIC_IN_PROGRESS;
-            row.id = _accounts.available_primary_key();
-            row.emission_name = emission_name;
-            row.account = account;
-            row.expanded_emitter_status = updated_expanded_emitter_status;
-          });
-
-        }
-        if(emission_factor == 0 && cyclic) {
-          _accounts.emplace(get_self(), [&](auto& row){
-            row.emission_status = CYCLIC_IN_PROGRESS;
-            row.id = _accounts.available_primary_key();
-            row.emission_name = emission_name;
-            row.account = account;
-            row.expanded_emitter_status = updated_expanded_emitter_status;
-          });
-
-        }
-        
-      }
-      
-      invoke_action(org,  emissions_itr->emit_assets, account, emission_factor);
-
-      
-    }
+    void update_expanded_emitter_status(name account, map<symbol_code, int64_t>& expanded_emitter_status, const asset& new_asset, emissions emission, uint8_t& emission_status, string failure_identifier);
 };

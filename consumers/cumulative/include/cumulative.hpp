@@ -1,60 +1,53 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
 using namespace std;
 using namespace eosio;
 
 #define BILLING_CONTRACT "billingxxxxx"
-#define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT_NAME"::notifyachiev"
+#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT cumulative : public contract {
-  public:
-    using contract::contract;
-    
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev (
-      name org, 
-      name badge,
-      name account, 
-      name from,
-      uint64_t count,
-      string memo, 
-      vector<name> notify_accounts );
+public:
+  using contract::contract;
+  
+  [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]] void notifyachiev(
+    name org,
+    asset badge_asset, 
+    name from, 
+    name to, 
+    string memo, 
+    vector<name> notify_accounts);
 
-    ACTION dummy();
+  ACTION dummy();
 
-  private:
+private:
+  struct ramcredits_arg {
+    name org;
+    name contract;
+    uint64_t bytes;
+    string memo;
+  };
 
-    struct ramcredits_arg {
-      name org;
-      name contract;
-      uint64_t bytes;
-      string memo;
-    };
-    
-    TABLE achievements {
-      uint64_t id;
-      name account;
-      name badge;
-      uint64_t count;
-      auto primary_key() const {return id; }
-      uint128_t acc_badge_key() const {
-        return ((uint128_t) account.value) << 64 | badge.value;
+  TABLE account {
+    asset    balance;
+    uint64_t primary_key() const { return balance.symbol.code().raw(); }
+  };
+  typedef eosio::multi_index<"accounts"_n, account> accounts;
+
+  void deduct_credit(name org, uint32_t bytes, string memo) {
+    action{
+      permission_level{get_self(), "active"_n},
+      name(BILLING_CONTRACT),
+      "ramcredits"_n,
+      ramcredits_arg{
+        .org = org,
+        .contract = get_self(),
+        .bytes = bytes,
+        .memo = memo
       }
-    };
-    typedef multi_index<name("achievements"), achievements,
-    indexed_by<name("accountbadge"), const_mem_fun<achievements, uint128_t, &achievements::acc_badge_key>>
-    > achievements_table;
-
-    void deduct_credit (name org, uint32_t bytes, string memo) {
-      action {
-        permission_level{get_self(), name("active")},
-        name(BILLING_CONTRACT),
-        name("ramcredits"),
-        ramcredits_arg {
-          .org = org,
-          .contract = get_self(),
-          .bytes = bytes,
-          .memo = memo}
-      }.send();
-    }
+    }.send();
+  }
 };
+

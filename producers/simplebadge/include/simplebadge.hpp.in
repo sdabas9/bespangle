@@ -1,125 +1,62 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
 using namespace std;
 using namespace eosio;
 
-#cmakedefine ORCHESTRATOR_CONTRACT_NAME "@ORCHESTRATOR_CONTRACT_NAME@"
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
 #cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
-#cmakedefine BILLING_CONTRACT "@BILLING_CONTRACT@"
 
 CONTRACT simplebadge : public contract {
   public:
     using contract::contract;
 
-    ACTION create (name org, 
-      name badge, 
-      vector<name> parent_badges, 
+    ACTION create (
+      name org,
+      symbol badge_symbol,
       string offchain_lookup_data, 
       string onchain_lookup_data, 
       string memo);
 
-    ACTION issue (name org, name to, name badge, uint64_t amount, string memo );
+    ACTION issue (name org, asset badge_asset, name to, string memo );
 
 
   private:
-
+    // scoped by contract
     TABLE auth {
-      uint64_t id;
-      name contract;
       name action;
       vector<name> authorized_contracts;
-
-      uint64_t primary_key() const { return id; }
-      uint128_t get_secondary_key() const { return combine_names(contract, action); }
-
-      static uint128_t combine_names(const name& a, const name& b) {
-          return (uint128_t)a.value << 64 | b.value;
-      }
+      uint64_t primary_key() const { return action.value; }
     };
+    typedef eosio::multi_index<"auth"_n, auth> auth_table;
 
-    // Declare the table
-    typedef eosio::multi_index<"auth"_n, auth,
-        indexed_by<"bycontract"_n, const_mem_fun<auth, uint128_t, &auth::get_secondary_key>>
-    > auth_table;
-
-    void check_internal_auth (name action) {
-      auth_table _auth(name(AUTHORITY_CONTRACT), name(AUTHORITY_CONTRACT).value);
-
-      // Find the authority entry
-      uint128_t secondary_key = (uint128_t)get_self().value << 64 | action.value;
-      auto secondary_index = _auth.get_index<"bycontract"_n>();
-      auto itr = secondary_index.find(secondary_key);
-      if (itr != secondary_index.end() && itr->contract!=get_self() && itr->action!=action) {
-          check(false, "No authority found for contract " + get_self().to_string() + " and action " + action.to_string());
-      }
-      auto authorzied_accounts = itr->authorized_contracts;
-      for(auto i = 0 ; i < authorzied_accounts.size(); i++ ) {
-        if(has_auth(authorzied_accounts[i])) {
+    void check_internal_auth (name action, string failure_identifier) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
+      auto itr = _auth.find(action.value);
+      check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
+      auto authorized_contracts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
+        if(has_auth(authorized_contracts[i])) {
           return;
         }
       }
-      check(false, "Account not is authorized list of accounts for action " + action.to_string());
+      check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
     }
-
-    TABLE badge {
-      name badge;
-      vector<name> parent_badges;
-      auto primary_key() const {return badge.value; }
-    };
-    typedef multi_index<name("badge"), badge> badge_table;
-
-    struct create_args {
-      name org;
-      name badge;
-      vector<name> parent_badges; 
-      string offchain_lookup_data; 
-      string onchain_lookup_data;
-      string memo;
-    };
-
-    struct issue_args {
-      name org;
-      name to;
-      name badge; 
-      uint64_t amount;
-      string memo;
-    };
 
     struct achievement_args {
       name org;
-      name badge_name;
-      name account;
+      asset badge_asset;
       name from;
-      uint64_t count;
+      name to;
       string memo;
     };
 
     struct initbadge_args {
       name org;
-      name badge_name;
+      symbol badge_symbol;
       string offchain_lookup_data; 
       string onchain_lookup_data; 
       string memo;
     };
-
-    struct ramcredits_arg {
-      name org;
-      name contract;
-      uint64_t bytes;
-      string memo;
-    };
-    
-    void deduct_credit (name org, uint32_t bytes, string memo) {
-      action {
-        permission_level{get_self(), name("active")},
-        name(BILLING_CONTRACT),
-        name("ramcredits"),
-        ramcredits_arg {
-          .org = org,
-          .contract = get_self(),
-          .bytes = bytes,
-          .memo = memo}
-      }.send();
-    } 
 
 };

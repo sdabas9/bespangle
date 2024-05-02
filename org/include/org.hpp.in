@@ -1,17 +1,4 @@
 #include <eosio/eosio.hpp>
-#include <eosio/system.hpp>
-
-#cmakedefine SIMPLEBADGE_CONTRACT "@SIMPLEBADGE_CONTRACT@"
-#cmakedefine GOTCHABADGE_CONTRACT "@GOTCHABADGE_CONTRACT@"
-#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
-#cmakedefine AABADGE_CONTRACT "@AABADGE_CONTRACT@"
-#cmakedefine CUMULATIVE_CONTRACT "@CUMULATIVE_CONTRACT@"
-#cmakedefine ROUNDS_CONTRACT "@ROUNDS_CONTRACT@"
-#cmakedefine ACCOUNT_PREFERENCES_CONTRACT "@ACCOUNT_PREFERENCES_CONTRACT@"
-#cmakedefine SERIESBADGE_CONTRACT "@SERIESBADGE_CONTRACT@"
-#cmakedefine ASYNC_CONTRACT "@ASYNC_CONTRACT@"
-#cmakedefine CLAIMASSET_CONTRACT "@CLAIMASSET_CONTRACT@"
-#cmakedefine NOTIFICATION_CONTRACT "@NOTIFICATION_CONTRACT@"
 
 using namespace std;
 using namespace eosio;
@@ -22,102 +9,7 @@ CONTRACT org : public contract {
 
     ACTION chkscontract (name org, name checks_contract);
 
-    ACTION addsyscheck (name system_check_contract);
-    ACTION remsyscheck (name system_check_contract);
-    ACTION linksyschk (name org, name system_check_contract);
-    ACTION unlinksyschk (name org, name system_check_contract);
-
-    ACTION processasync (name org, name action, name authorizer);
-
-    ACTION processsync (name org, name action, name authorizer);
-
-    /*
-		* 
-    * Defines - a badge of type simple badge contract 
-		*
-		* This action creates a simple badge and consumers that the badge has subscribed to. All inputs can be
-    * validated in checks_contract ( which is setup in initsystem action )
-    * 
-		*
-		* @param creator	Authorized person to execute this action. 
-		* @param badge  Name of the badge. 
-		* @param ipfs_image ipfs image associated with the badge.
-    * @param display_name Text for display purpose.
-    * @param consumers Vector of consumers that a badge has subscribed. Available feature set includes
-    *           1) Write to Atomic Asset as Non Transferrable Token. This is recommended to be used
-    *               when org wants the badges to be stored granularly. For this to work, org must setup 
-    *               a collection using initsystem action OR via initcoll in AA_BADGE_CONTRACT (handy when 
-    *               collection is not setup while initialize the system for the org).
-    *            2) Cumulative . This enables cumulative maintainence of badge balance for an account.
-    *            3) Rounds.  This enables putting a score to the badge. 
-		* @return no return value.
-		*/
-
-
-    ACTION initcasset(name org, 
-      name creator,
-      name assetname,
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      vector<name> consumers,
-      string memo);
-
-    ACTION addclaimer(name org, 
-      name authorizer, 
-      name account, 
-      name assetname, 
-      uint64_t account_cap, 
-      string memo);
-
-    ACTION claimasset(name org, 
-      name to, 
-      name assetname, 
-      string memo );
-
-    ACTION ninitcasse(name org, 
-      name assetname,
-      string offchain_lookup_data, 
-      string onchain_lookup_data, 
-      string memo);
-
-    ACTION naddclaime(name org, 
-      name account, 
-      name assetname, 
-      uint64_t account_cap, 
-      string memo);
-
-    ACTION nclaimasse(name org, 
-      name to, 
-      name assetname, 
-      string memo );
-
-
-
-    /*
-    * Gives a simple badge from authorizer to member
-    *
-    * @param badge	badge name 
-		* @param authorizer  account issuing the badge. authority must be validated in checks_contract 
-    * @param to Beneficiary of badge  
-    * @param memo Reason for giving the badge
-    */  
-
-
-    
-    /*
-    * Gives a gotcha badge from member to member. Inputs must be validated in checks_contract
-    *
-    * @param badge	badge name 
-    * @param from	account issuing the badge 
-		* @param to Beneficiary of badge  
-    * @param amount 
-    * @param memo Reason for giving the badge
-    */  
-
-    ACTION naddfeatur (name org, 
-      name badge_name, 
-      name notify_account, 
-      string memo);
+    ACTION initorgcode(name org, string org_code);
 
 
   private:
@@ -129,101 +21,22 @@ CONTRACT org : public contract {
     };
     typedef multi_index<name("checks"), checks> checks_table;
 
-    TABLE systemchecks {
-      name org;
-      vector<name> system_check_contracts;
-      auto primary_key() const {return org.value; }
-    };
-    typedef multi_index<name("systemchecks"), systemchecks> systemchecks_table;
+    // Define the structure of the table
+    TABLE orgcode {
+      name org;         // Organization identifier, used as primary key
+      name org_code;    // Converted org_code, ensuring uniqueness and specific format
 
-    TABLE availablechk {
-      name system_check_contract;
-      auto primary_key() const {return system_check_contract.value; }
-    };
-    typedef multi_index<name("availablechk"), availablechk> availablechk_table;
+      // Specify the primary key
+      auto primary_key() const { return org.value; }
 
-
-    TABLE processmode {
-      name action;
-      bool async;
-      auto primary_key() const { return action.value; }
-    };
-    typedef multi_index<name("processmode"), processmode> processmode_table;
-
-    name checkscontract(name org) {
-      checks_table _checks( get_self(), get_self().value );
-      auto itr = _checks.require_find(org.value, "checks contract missing");
-      return itr->checks_contract;
-    }
-    
-    bool is_async(name org, name action) {
-      processmode_table _processmode( get_self(), org.value );
-      auto itr = _processmode.find(action.value);
-      if(itr == _processmode.end()) {
-        return false;
-      }
-      return itr->async;
-    }
-
-    void linked_inbuilt_checks_contract(name org) {
-      systemchecks_table systemchecks(get_self(), get_self().value);
-      auto itr = systemchecks.find(org.value);
-      if(itr != systemchecks.end()) {
-        for(auto i = 0 ; i < itr->system_check_contracts.size(); i++) {
-          require_recipient(itr->system_check_contracts[i]);
-        }
-      }
-    }
-
-    struct orchestrator_recognize_args {
-      name org;
-      name trusted_badge_contract;
+      // Specify a secondary index for org_code to ensure its uniqueness
+      uint64_t by_org_code() const { return org_code.value; }
     };
 
-    struct orchestrator_addfeature_args {
-      name org;
-      name badge_name;
-      name notify_account;
-      string memo;
-    };
-
-
-    struct aa_initcoll_args {
-      name org;
-      name collection_name;
-    };
-
-    struct chkscontract_args {
-      name checks_contract;
-    };
- 
-
-
-
-
-    struct create_claim_asset_args {
-      name org;
-      name assetname;
-      string offchain_lookup_data;
-      string onchain_lookup_data;
-      string memo;
-    };
-
-    struct add_claimer_args {
-      name org;
-      name account;
-      name assetname;
-      uint64_t account_cap;
-      string memo;
-    };
-
-    struct claim_asset_args {
-      name org;
-      name to;
-      name assetname;
-      string memo;
-    };
-
+    // Declare the table
+    typedef eosio::multi_index<"orgcodes"_n, orgcode,
+      eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
+    > orgcode_index;
 
 };
 

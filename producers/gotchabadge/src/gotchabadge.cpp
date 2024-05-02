@@ -55,7 +55,13 @@ ACTION gotchabadge::cyclesupply(name org, name badge, uint8_t new_supply_per_cyc
     });
 }
 
-ACTION gotchabadge::create(name org, name badge, time_point_sec starttime, uint64_t cycle_length, uint8_t supply_per_cycle, string offchain_lookup_data, string onchain_lookup_data, string memo) {
+ACTION create (symbol badge_symbol, 
+      time_point_sec starttime, 
+      uint64_t cycle_length, 
+      uint8_t supply_per_cycle, 
+      string offchain_lookup_data,
+      string onchain_lookup_data,
+      string memo) {
     check_internal_auth(name("create"));
     time_point_sec current_time = time_point_sec(current_time_point());
     check(starttime >= current_time, "Gotchabadge contract - start time can not be in past");

@@ -4,8 +4,8 @@ using namespace std;
 using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-#define AUTHORITY_CONTRACT "authorityxxx"
-#define BILLING_CONTRACT "billing.rep"
+#define AUTHORITY_CONTRACT "authorityzzz"
+#define BILLING_CONTRACT "billingxxxxx"
 
 
 CONTRACT seriesbadge : public contract {

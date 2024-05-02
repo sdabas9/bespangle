@@ -139,7 +139,7 @@ ACTION serval::addactionauth (name org, name action, name authorized_account) {
 
 ACTION serval::delactionauth (name org, name action, name authorized_account) {
   require_auth (org);
-  actionauths_table _actionauths(get_self(), get_self().value);
+  actionauths_table _actionauths(get_self(), org.value);
   auto itr = _actionauths.find(action.value);
   if (itr != _actionauths.end()) {
       _actionauths.modify(itr, get_self(), [&](auto& row) {

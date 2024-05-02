@@ -1,97 +1,53 @@
 #include <boundedstats.hpp>
 
-void boundedstats::notifyachiev (name org,
-    name badge,
-    name account, 
-    name from,
-    uint64_t count,
-    string memo,
-    vector<name> notify_accounts) 
-   {
-      badgeround_table badgeround(_self, org.value);
-      auto badge_index = badgeround.get_index<"badge"_n>();
-      auto badge_itr = badge_index.find(badge.value);
 
-      // Iterate over all badgerounds with the specified badge
-      while (badge_itr != badge_index.end() && badge_itr->badge == badge) {
-         keystats_table keystats(_self, org.value);
-         uint64_t badgeround_id = badge_itr->badgeround_id;
-         auto keystats_itr = keystats.find(badgeround_id);
-
-         if (keystats_itr == keystats.end()) {
-            // If there is no entry in keystats table, insert record
-            keystats.emplace(org, [&](auto& row) {
-               row.badgeround_id = badgeround_id;
-               row.round = badge_itr->round;
-               row.badge = badge_itr->badge;
-               row.max = count;
-               row.account_count = 1;
-               row.total = count;
-            });
-         } else {
-            achievements_table _achievements( name(BOUNDED_AGG_CONTRACT_NAME), org.value );
-            auto account_badge_index = _achievements.get_index<name("accbadge")>();
-            uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badgeround_id;
-            auto account_badge_iterator = account_badge_index.find (account_badge_key);
-
-            check(account_badge_iterator !=  account_badge_index.end() 
-              && account_badge_iterator->account != account
-              && account_badge_iterator->badgeround_id != badgeround_id, "unexpected error while calculating boundedstats");
-
-            uint64_t balance = account_badge_iterator->count;
-            uint64_t  max;
-            uint64_t account_count;
-            uint64_t total; 
-
-            if(balance > keystats_itr->max) {
-              max = balance;
-            } else {
-              max = keystats_itr->max;
-            }
-            if(balance == count) {
-              account_count = keystats_itr->account_count + 1;
-            } else {
-              account_count = keystats_itr->account_count;
-            }
-            total = keystats_itr->total + count;
-            keystats.modify(keystats_itr, get_self(), [&](auto& row) {
-              row.max = max;
-              row.account_count = account_count;
-              row.total = total;
-            });
-
-         }
-         ++badge_itr;
-      }
-   }
-
-
-    ACTION boundedstats::bootstrap(name org, name round, name badge, uint64_t max, uint64_t account_count, uint64_t total) {
-        require_auth(get_self());
-
-        // Fetch badgeround_id from badgeround table
-        badgeround_table _badgeround(_self, org.value);
-        auto br_index = _badgeround.get_index<"byroundbadge"_n>();
-        auto br_itr = br_index.find(((uint128_t)round.value) << 64 | badge.value);
-        check(br_itr != br_index.end() || br_itr->round != round || br_itr->badge != badge, "BadgeRound record not found");
-        keystats_table _keystats(_self, org.value);
-        auto ks_itr = _keystats.find(br_itr->badgeround_id);
-        if(ks_itr == _keystats.end()) {
-          _keystats.emplace(get_self(), [&](auto& row) {
-              row.badgeround_id = br_itr->badgeround_id;
-              row.round = round;
-              row.badge = badge;
-              row.max = max;
-              row.account_count = account_count;
-              row.total = total;
-          });
-        } else {
-          _keystats.modify(ks_itr, get_self(), [&](auto& row) {
-            row.max = max;
-            row.account_count = account_count;
-            row.total = total;
-          });
+void boundedstats::notifyachiev(name org, asset badge_asset, name from, name to, string memo, vector<name> notify_accounts) {
+    string action_name = "settings";
+    string failure_identifier = "CONTRACT: boundedstats, ACTION: " + action_name + ", MESSAGE: ";
+    badgestatus_table badgestatus(name(BOUNDED_AGG_CONTRACT), org.value); // Adjust scope as necessary
+    auto badge_status_index = badgestatus.get_index<"bybadgestat"_n>(); // Correct index name
+    auto hashed_active_status = hash_active_status(badge_asset.symbol, "active"_n, "active"_n);
+    auto itr = badge_status_index.find(hashed_active_status);
+    while(itr != badge_status_index.end() && itr->badge_symbol == badge_asset.symbol && itr->badge_status == "active"_n && itr->seq_status == "active"_n) {
+        statssetting_table _statssetting(get_self(), itr->agg_symbol.code().raw());
+        auto statssetting_itr = _statssetting.find(itr->badge_symbol.code().raw());
+        if(statssetting_itr != _statssetting.end()) {
+            uint64_t new_balance = get_new_balance(to, itr->badge_agg_seq_id);
+            uint64_t old_balance = new_balance - badge_asset.amount;
+            update_rank(org, to, itr->badge_agg_seq_id, old_balance, new_balance);
+            update_count(org, to, itr->badge_agg_seq_id, old_balance, new_balance);
         }
 
-
+        itr++;
     }
+}
+
+ACTION boundedstats::activate(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "activate";
+    string failure_identifier = "CONTRACT: boundedstats, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+
+    statssetting_table _statssetting(get_self(), agg_symbol.code().raw());
+    for(auto i = 0 ; i < badge_symbols.size(); i++) {
+        auto itr = _statssetting.find(badge_symbols[i].code().raw());
+        check(itr == _statssetting.end(), failure_identifier + badge_symbols[i].code().to_string() +" record already present in statssetting table");
+
+        _statssetting.emplace(get_self(), [&](auto& entry) {
+            entry.badge_symbol = badge_symbols[i];
+        }); 
+    }
+}
+
+ACTION boundedstats::deactivate(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
+    string action_name = "deactivate";
+    string failure_identifier = "CONTRACT: boundedstats, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+
+    statssetting_table _statssetting(get_self(), agg_symbol.code().raw());
+    for(auto i = 0 ; i < badge_symbols.size(); i++) {
+        auto itr = _statssetting.find(badge_symbols[i].code().raw());
+        check(itr != _statssetting.end(), failure_identifier + badge_symbols[i].code().to_string() +" record not present");
+
+        _statssetting.erase(itr);
+    }
+}

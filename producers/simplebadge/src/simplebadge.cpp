@@ -7,82 +7,45 @@
     // 4) add action to update image json.
     // 5) add action to update details json.
 
-  ACTION simplebadge::create (name org, name badge, vector<name> parent_badges, string offchain_lookup_data, string onchain_lookup_data, string memo) {
-    check_internal_auth(name("create"));   
-    badge_table _badge (_self, org.value);
-    auto badge_itr = _badge.find(badge.value);
+  ACTION simplebadge::create (
+      name org,
+      symbol badge_symbol, 
+      string offchain_lookup_data, 
+      string onchain_lookup_data, 
+      string memo) {
+    string action_name = "create";
+    string failure_identifier = "CONTRACT: simplebadge, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
     
-
-    check(badge_itr == _badge.end(), "<contractname><actionname> : <badge> already exists");
-    for(auto i = 0; i < parent_badges.size(); i++) { 
-      auto parentbadge_itr = _badge.require_find(parent_badges[i].value, "<parent badge> not found");
-    }
-    _badge.emplace(get_self(), [&](auto& row) {
-      row.badge = badge;
-      row.parent_badges = parent_badges;
-    });
-    uint32_t bytes = 100;
-    
-    deduct_credit (org, bytes, memo);
-
     action {
       permission_level{get_self(), name("active")},
-      name(ORCHESTRATOR_CONTRACT_NAME),
+      name(ORCHESTRATOR_CONTRACT),
       name("initbadge"),
       initbadge_args {
         .org = org,
-        .badge_name = badge,
+        .badge_symbol = badge_symbol,
         .offchain_lookup_data = offchain_lookup_data,
         .onchain_lookup_data = onchain_lookup_data,
         .memo = memo }
     }.send();
   }
 
-  ACTION simplebadge::issue (name org, 
-    name to, 
-    name badge,
-    uint64_t amount, 
-    string memo ) {
-    check_internal_auth(name("issue"));
-    require_recipient(to);
+  ACTION simplebadge::issue (name org, asset badge_asset, name to, string memo) {
+    string action_name = "issue";
+    string failure_identifier = "CONTRACT: simplebadge, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);   
     
-    badge_table _badge (_self, org.value);
-    auto badge_itr = _badge.require_find(badge.value, "no simplebadge named <badge> is created");
-    vector<name> all_badges;
-    queue<name> _helper_queue;
-
-    all_badges.push_back(badge);
-    for(auto i = 0; i < badge_itr->parent_badges.size(); i++) {
-      _helper_queue.push(badge_itr->parent_badges[i]);
-    }
-
-    while(!_helper_queue.empty()) {
-      auto parent_itr = _badge.require_find(_helper_queue.front().value, "no simplebadge named <parentbadge> is created");
-      all_badges.push_back(_helper_queue.front()); 
-      _helper_queue.pop();
-      for(auto i = 0; i < parent_itr->parent_badges.size(); i++) {
-          _helper_queue.push(parent_itr->parent_badges[i]);
-      }
-    }
-
-    for (auto i = 0 ; i < all_badges.size() ; i++ ) {
-    
-      action {
-        permission_level{get_self(), name("active")},
-        name(ORCHESTRATOR_CONTRACT_NAME),
-        name("achievement"),
-        achievement_args {
-          .org = org,
-          .badge_name = all_badges[i],
-          .account = to,
-          .from = org,
-          .count = amount,
-          .memo = memo }
-      }.send();
-    }
-
-
-    
+    action {
+      permission_level{get_self(), name("active")},
+      name(ORCHESTRATOR_CONTRACT),
+      name("achievement"),
+      achievement_args {
+        .org = org,
+        .badge_asset = badge_asset,
+        .from = get_self(),
+        .to = to,
+        .memo = memo }
+    }.send();
   }
 
     

@@ -1,87 +1,123 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
 using namespace std;
 using namespace eosio;
 
-#define ANTIBADGE_CONTRACT "antibadgexxx"
-#define ORG_CHECKS_CONTRACT_NAME "interface111"
-#define ORCHESTRATOR_CONTRACT "orchestrator"
-#define ANTIBADGE_VALIDATION_CONTRACT "antibadgeval"
+#define ANTIBADGE_CONTRACT "antibadgezzz"
+#define ORG_CONTRACT "orgzzzzzzzzz"
+#define ORCHESTRATOR_CONTRACT "orchzzzzzzzz"
+#define ANTIBADGE_VALIDATION_CONTRACT "abvalzzzzzzz"
 
 CONTRACT abmanager : public contract {
-  public:
-    using contract::contract;
+public:
+  using contract::contract;
 
-    ACTION create(name org, name authorized,
-                  name antibadge,
-                  name badge,
-                  name type,
-                  string offchain_lookup_data,
-                  string onchain_lookup_data,
-                  vector<name> consumers,
-                  string memo);
+  ACTION create(name authorized, 
+                name org, 
+                name anti_badge,
+                name badge,
+                name type,
+                string offchain_lookup_data,
+                string onchain_lookup_data,
+                vector<name> consumers,
+                string memo);
 
-    ACTION createinv(name org, name authorized,
-                     name antibadge,
-                     name badge,
-                     string offchain_lookup_data,
-                     string onchain_lookup_data,
-                     string memo);
+  ACTION createinv(name authorized, 
+                   name org, 
+                   name anti_badge,
+                   name badge,
+                   string offchain_lookup_data,
+                   string onchain_lookup_data,
+                   vector<name> consumers,
+                   string memo);
 
-    ACTION issue(name org, name authorized,
-                 name to,
-                 name antibadge,
-                 uint64_t amount,
-                 string memo);
+  ACTION issue(name authorized, 
+               name org,
+               name anti_badge, 
+               uint64_t amount,
+               name to, 
+               string memo);
 
-  private:
+private:
 
-    TABLE checks {
-      name org;
-      name checks_contract;
-      auto primary_key() const { return org.value; }
-    };
-    typedef multi_index<name("checks"), checks> checks_table;
+  TABLE checks {
+    name org;
+    name checks_contract;
+    uint64_t primary_key() const { return org.value; }
+  };
+  typedef multi_index<"checks"_n, checks> checks_table;
 
-    void notify_checks_contract(name org) {
-      checks_table _checks( name(ORG_CHECKS_CONTRACT_NAME), get_self().value );
-      auto itr = _checks.find(org.value);
-      if(itr != _checks.end()) {
-        require_recipient(itr->checks_contract);
-      }
+  void notify_checks_contract(name org) {
+    checks_table _checks(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+    auto itr = _checks.find(org.value);
+    if(itr != _checks.end()) {
+      require_recipient(itr->checks_contract);
     }
-    
-    struct create_args {
-        name org;
-        name antibadge;
-        name badge;
-        name type;
-        string offchain_lookup_data;
-        string onchain_lookup_data;
-        string memo;
-    };
+  }
+  
+  // Define the structure of the orgcode table
+  TABLE orgcode {
+    name org;         // Organization identifier, used as primary key
+    name org_code;    // Converted org_code, ensuring uniqueness and specific format
 
-    struct createinv_args {
-        name org;
-        name antibadge;
-        name badge;
-        string offchain_lookup_data;
-        string onchain_lookup_data;
-        string memo;
-    };
+    uint64_t primary_key() const { return org.value; }
+    uint64_t by_org_code() const { return org_code.value; }
+  };
 
-    struct issue_args {
-        name org;
-        name to;
-        name antibadge;
-        uint64_t amount;
-        string memo;
-    };
+  typedef eosio::multi_index<"orgcodes"_n, orgcode,
+    indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
+  > orgcode_index;
 
-    struct addfeature_args {
-      name org;
-      name badge_name;
-      name notify_account;
-      string memo;
-    };
+  string get_org_code(name org, string failure_identifier) {
+    orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+    auto iterator = orgcodes.find(org.value);
+    check(iterator != orgcodes.end(), failure_identifier + "Organization not found.");
+    return iterator->org_code.to_string();
+  }
+
+  void validate_badge(name badge, string failure_identifier) {
+    string badge_str = badge.to_string();
+    check(badge_str.length() == 3, failure_identifier + "Badge code must be exactly 3 characters long.");
+    for (char c : badge_str) {
+      check(isalpha(c), failure_identifier + "Badge code can only contain alphabets.");
+    }
+  }
+
+  symbol validate_and_get_symbol(name org, name badge, string failure_identifier) {
+    string org_code = get_org_code(org, failure_identifier);
+    validate_badge(badge, failure_identifier);
+    string symbol_string = org_code + badge.to_string();
+    transform(symbol_string.begin(), symbol_string.end(), symbol_string.begin(), ::toupper);
+    return symbol(symbol_code(symbol_string), 0);
+  }
+
+  struct addfeature_args {
+    symbol badge_symbol;
+    name notify_account;
+    string memo;
+  };
+
+  struct create_args {
+    symbol anti_badge_symbol;
+    symbol badge_symbol;
+    name type;
+    string offchain_lookup_data;
+    string onchain_lookup_data;
+    string memo;
+  };
+
+  struct createinv_args {
+    symbol anti_badge_symbol;
+    symbol badge_symbol;
+    string offchain_lookup_data;
+    string onchain_lookup_data;
+    string memo;
+  };
+
+  struct issue_args {
+    asset anti_badge_asset;
+    name to;
+    string memo;
+  };
 };

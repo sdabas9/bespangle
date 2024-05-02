@@ -5,7 +5,7 @@ using namespace std;
 using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT_NAME "orchestrator"
-#define AUTHORITY_CONTRACT "authorityxxx"
+#define AUTHORITY_CONTRACT "authorityzzz"
 
 CONTRACT gotchabadge : public contract {
   public:

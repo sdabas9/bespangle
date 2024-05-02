@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(mrbadge)
+set(ORCHESTRATOR_CONTRACT ${ORCHESTRATOR_CONTRACT})
+set(AUTHORITY_CONTRACT ${AUTHORITY_CONTRACT})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/mrbadge.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/mrbadge.hpp @ONLY)

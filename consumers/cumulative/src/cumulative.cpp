@@ -1,36 +1,25 @@
 #include <cumulative.hpp>
 
-void cumulative::notifyachiev (name org,
-    name badge,
-    name account, 
-    name from,
-    uint64_t count,
-    string memo,
-    vector<name> notify_accounts) {
+void cumulative::notifyachiev(name org, asset badge_asset, name from, name to, std::string memo, std::vector<name> notify_accounts) {
+    // Access the accounts table scoped by "to"
+    accounts to_accounts(get_self(), to.value);
 
-    achievements_table _achievements( _self, org.value );
-    auto account_badge_index = _achievements.get_index<name("accountbadge")>();
-    uint128_t account_badge_key = ((uint128_t) account.value) << 64 | badge.value;
-    auto account_badge_iterator = account_badge_index.find (account_badge_key);
+    // Find the account using the amount's symbol code
+    auto existing_account = to_accounts.find(badge_asset.symbol.code().raw());
 
-    if(account_badge_iterator == account_badge_index.end()) {
-      _achievements.emplace(get_self(), [&](auto& row){
-        row.id = _achievements.available_primary_key();
-        row.account = account;
-        row.badge = badge;
-        row.count = count;
-      });
-    //  deduct_credit (org, 284, "cumulative_achievement: <org> ,<account>, <badge_id>, <count>");
+    if (existing_account == to_accounts.end()) {
+        // If the account does not exist, create a new one with the specified badge_asset
+        to_accounts.emplace(get_self(), [&](auto& acc) {
+            acc.balance = badge_asset;
+        });
     } else {
-      account_badge_index.modify(account_badge_iterator, get_self(), [&](auto& row){
-        row.count = row.count + count;
-      });
+        // If the account exists, modify its balance
+        to_accounts.modify(existing_account, get_self(), [&](auto& acc) {
+            acc.balance += badge_asset; // Assuming you want to add the badge_asset to the existing balance
+        });
     }
 }
 
 ACTION cumulative::dummy() {
-  // created as a workaround for empty abi.
+    // created as a workaround for empty abi.
 }
-
-
-

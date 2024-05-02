@@ -1,0 +1,203 @@
+CMake Warning at /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/Platform/Darwin-Initialize.cmake:303 (message):
+  Ignoring CMAKE_OSX_SYSROOT value:
+
+   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk
+
+  because the directory does not exist.
+Call Stack (most recent call first):
+  /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake:21 (include)
+  CMakeLists.txt:2 (project)
+
+
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:5:18: warning: abigen warning (Action <initbadge> does not have a ricardian contract)
+ACTION metadata::initbadge(symbol badge_symbol, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:28:18: warning: abigen warning (Action <addfeature> does not have a ricardian contract)
+ACTION metadata::addfeature(symbol badge_symbol, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:67:18: warning: abigen warning (Action <addnotify> does not have a ricardian contract)
+ACTION metadata::addnotify(symbol badge_symbol, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:78:18: warning: abigen warning (Action <delfeature> does not have a ricardian contract)
+ACTION metadata::delfeature(symbol badge_symbol, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:115:18: warning: abigen warning (Action <delnotify> does not have a ricardian contract)
+ACTION metadata::delnotify(symbol badge_symbol, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:126:18: warning: abigen warning (Action <achievement> does not have a ricardian contract)
+ACTION metadata::achievement(asset badge_asset, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:157:18: warning: abigen warning (Action <mergeinfo> does not have a ricardian contract)
+ACTION metadata::mergeinfo(symbol badge_symbol, 
+                 ^
+/Users/sachitdabas/EOS Studio/bespangle/core/metadata/src/metadata.cpp:196:18: warning: abigen warning (Action <notifyachiev> does not have a ricardian contract)
+ACTION metadata::notifyachiev(asset badge_asset, 
+                 ^
+8 warnings generated.
+CMake Warning at /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/Platform/Darwin-Initialize.cmake:303 (message):
+  Ignoring CMAKE_OSX_SYSROOT value:
+
+   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk
+
+  because the directory does not exist.
+Call Stack (most recent call first):
+  /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake:21 (include)
+  CMakeLists.txt:2 (project)
+
+
+/Users/sachitdabas/EOS Studio/bespangle/producers/simplebadge/src/simplebadge.cpp:10:23: warning: abigen warning (Action <create> does not have a ricardian contract)
+  ACTION simplebadge::create (symbol badge_symbol, 
+                      ^
+/Users/sachitdabas/EOS Studio/bespangle/producers/simplebadge/src/simplebadge.cpp:30:23: warning: abigen warning (Action <issue> does not have a ricardian contract)
+  ACTION simplebadge::issue (asset badge_asset, name to, string memo) {
+                      ^
+2 warnings generated.
+CMake Warning at /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/Platform/Darwin-Initialize.cmake:303 (message):
+  Ignoring CMAKE_OSX_SYSROOT value:
+
+   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk
+
+  because the directory does not exist.
+Call Stack (most recent call first):
+  /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake:21 (include)
+  CMakeLists.txt:2 (project)
+
+
+/Users/sachitdabas/EOS Studio/bespangle/org/src/org.cpp:3:13: warning: abigen warning (Action <chkscontract> does not have a ricardian contract)
+ACTION org::chkscontract(name org, name checks_contract) {
+            ^
+/Users/sachitdabas/EOS Studio/bespangle/org/src/org.cpp:19:13: warning: abigen warning (Action <initorgcode> does not have a ricardian contract)
+ACTION org::initorgcode(name org, string org_code) {
+            ^
+2 warnings generated.
+/Users/sachitdabas/EOS Studio/bespangle/validations/simpleval/src/simpleval.cpp:62:19: warning: abigen warning (Action <addbadgeauth> does not have a ricardian contract)
+ACTION simpleval::addbadgeauth(name org, name action, name badge, name authorized_account) {
+                  ^
+/Users/sachitdabas/EOS Studio/bespangle/validations/simpleval/src/simpleval.cpp:77:19: warning: abigen warning (Action <delbadgeauth> does not have a ricardian contract)
+ACTION simpleval::delbadgeauth(name org, name action, name badge, name authorized_account) {
+                  ^
+/Users/sachitdabas/EOS Studio/bespangle/validations/simpleval/src/simpleval.cpp:99:19: warning: abigen warning (Action <addactionauth> does not have a ricardian contract)
+ACTION simpleval::addactionauth (name org, name action, name authorized_account) {
+                  ^
+/Users/sachitdabas/EOS Studio/bespangle/validations/simpleval/src/simpleval.cpp:115:19: warning: abigen warning (Action <delactionauth> does not have a ricardian contract)
+ACTION simpleval::delactionauth (name org, name action, name authorized_account) {
+                  ^
+4 warnings generated.
+In file included from /Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:1:
+./include/simmanager.hpp:74:5: error: unknown type name 'symbol'
+    symbol validate_and_get_symbol(name org, name badge, string failure_identifier) {
+    ^
+./include/simmanager.hpp:83:7: error: unknown type name 'symbol'
+      symbol badge_symbol;
+      ^
+./include/simmanager.hpp:89:7: error: unknown type name 'symbol'
+      symbol badge_symbol;
+      ^
+./include/simmanager.hpp:96:7: error: unknown type name 'asset'
+      asset badge_asset;
+      ^
+./include/simmanager.hpp:79:21: error: use of undeclared identifier 'symbol_code'
+      return symbol(symbol_code(symbol_string), 0);
+                    ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:18:5: error: use of undeclared identifier 'symbol'; did you mean 'std::money_base::symbol'?
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+    ^~~~~~
+    std::money_base::symbol
+/usr/local/Cellar/eosio.cdt/1.8.1/opt/eosio.cdt/bin/../include/libcxx/locale:2607:29: note: 'std::money_base::symbol' declared here
+    enum part {none, space, symbol, sign, value};
+                            ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:18:11: error: expected ';' after expression
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+          ^
+          ;
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:18:12: error: use of undeclared identifier 'badge_symbol'
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+           ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:25:23: error: use of undeclared identifier 'badge_symbol'
+      .badge_symbol = badge_symbol,
+                      ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:37:25: error: use of undeclared identifier 'badge_symbol'
+        .badge_symbol = badge_symbol,
+                        ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:52:5: error: use of undeclared identifier 'symbol'; did you mean 'std::money_base::symbol'?
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+    ^~~~~~
+    std::money_base::symbol
+/usr/local/Cellar/eosio.cdt/1.8.1/opt/eosio.cdt/bin/../include/libcxx/locale:2607:29: note: 'std::money_base::symbol' declared here
+    enum part {none, space, symbol, sign, value};
+                            ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:52:11: error: expected ';' after expression
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+          ^
+          ;
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:52:12: error: use of undeclared identifier 'badge_symbol'
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+           ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:53:5: error: unknown type name 'asset'
+    asset badge_asset(1, badge_symbol);
+    ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:53:26: error: use of undeclared identifier 'badge_symbol'
+    asset badge_asset(1, badge_symbol);
+                         ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:78:5: error: use of undeclared identifier 'symbol'; did you mean 'std::money_base::symbol'?
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+    ^~~~~~
+    std::money_base::symbol
+/usr/local/Cellar/eosio.cdt/1.8.1/opt/eosio.cdt/bin/../include/libcxx/locale:2607:29: note: 'std::money_base::symbol' declared here
+    enum part {none, space, symbol, sign, value};
+                            ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:78:11: error: expected ';' after expression
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+          ^
+          ;
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:78:12: error: use of undeclared identifier 'badge_symbol'
+    symbol badge_symbol = validate_and_get_symbol(org, badge, failure_identifier);
+           ^
+/Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp:79:5: error: unknown type name 'asset'
+    asset badge_asset(1, badge_symbol);
+    ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+20 errors generated.
+Error while processing /Users/sachitdabas/EOS Studio/bespangle/interface/simmanager/src/simmanager.cpp.
+abigen error
+Error building simmanager
+CMake Warning at /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/Platform/Darwin-Initialize.cmake:303 (message):
+  Ignoring CMAKE_OSX_SYSROOT value:
+
+   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk
+
+  because the directory does not exist.
+Call Stack (most recent call first):
+  /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake:21 (include)
+  CMakeLists.txt:2 (project)
+
+
+/Users/sachitdabas/EOS Studio/bespangle/consumers/cumulative/src/cumulative.cpp:23:20: warning: abigen warning (Action <dummy> does not have a ricardian contract)
+ACTION cumulative::dummy() {
+                   ^
+1 warning generated.
+CMake Warning at /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/Platform/Darwin-Initialize.cmake:303 (message):
+  Ignoring CMAKE_OSX_SYSROOT value:
+
+   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk
+
+  because the directory does not exist.
+Call Stack (most recent call first):
+  /usr/local/Cellar/cmake/3.21.3_1/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake:21 (include)
+  CMakeLists.txt:2 (project)
+
+
+/Users/sachitdabas/EOS Studio/bespangle/consumers/statistics/src/statistics.cpp:55:20: warning: abigen warning (Action <bootstrap> does not have a ricardian contract)
+ACTION statistics::bootstrap(symbol badge_symbol, 
+                   ^
+1 warning generated.
+/Users/sachitdabas/EOS Studio/bespangle/core/authority/src/authority.cpp:3:19: warning: abigen warning (Action <addauth> does not have a ricardian contract)
+ACTION authority::addauth(name contract, name action, name authorized_contract) {
+                  ^
+/Users/sachitdabas/EOS Studio/bespangle/core/authority/src/authority.cpp:31:19: warning: abigen warning (Action <removeauth> does not have a ricardian contract)
+ACTION authority::removeauth(name contract, name action, name authorized_contract) {
+                  ^
+/Users/sachitdabas/EOS Studio/bespangle/core/authority/src/authority.cpp:54:19: warning: abigen warning (Action <hasauth> does not have a ricardian contract)
+ACTION authority::hasauth(name contract, name action, name account) {
+                  ^
+3 warnings generated.

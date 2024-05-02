@@ -1,75 +1,70 @@
 #include <authority.hpp>
 
 ACTION authority::addauth(name contract, name action, name authorized_contract) {
-        require_auth(get_self());
+    require_auth(get_self()); // Ensure this action is authorized by the contract itself
 
-        auth_table _auth(get_self(), get_self().value);
+    auth_table auths(get_self(), contract.value); // Access the auth table scoped by the contract
 
-        // Find or create the authority entry
-        auto secondary_key = (uint128_t)contract.value << 64 | action.value;
-        auto secondary_index = _auth.get_index<"bycontract"_n>();
-        auto itr = secondary_index.find(secondary_key);
-
-        if (itr == secondary_index.end() || itr->contract!=contract || itr->action!=action) {
-            // Create a new authority entry if it doesn't exist
-            _auth.emplace(get_self(), [&](auto& new_auth) {
-                new_auth.id = _auth.available_primary_key();
-                new_auth.contract = contract;
-                new_auth.action = action;
-                new_auth.authorized_contracts.push_back(authorized_contract);
-            });
+    auto itr = auths.find(action.value); // Find the record for the specified action
+    if (itr != auths.end()) {
+        // Check if authorized_contract is already in the list
+        auto& auth_contracts = itr->authorized_contracts;
+        if (std::find(auth_contracts.begin(), auth_contracts.end(), authorized_contract) != auth_contracts.end()) {
+            eosio::print("Contract already authorized");
         } else {
-            // Add to the existing authority's authorized contracts
-            secondary_index.modify(itr, get_self(), [&](auto& mod_auth) {
-                check(std::find(mod_auth.authorized_contracts.begin(), mod_auth.authorized_contracts.end(), authorized_contract) == mod_auth.authorized_contracts.end(), "Contract is already authorized");
-                mod_auth.authorized_contracts.push_back(authorized_contract);
+            // Modify the record to add the new authorized_contract
+            auths.modify(itr, get_self(), [&](auto& auth) {
+                auth.authorized_contracts.push_back(authorized_contract);
             });
         }
+    } else {
+        // Create a new record if it doesn't exist
+        auths.emplace(get_self(), [&](auto& auth) {
+            auth.action = action;
+            auth.authorized_contracts.push_back(authorized_contract);
+        });
     }
+}
 
-    // Remove a single authorized contract based on contract and action
+
+// Remove a single authorized contract based on contract and action
 ACTION authority::removeauth(name contract, name action, name authorized_contract) {
-        require_auth(get_self());
+    require_auth(get_self()); // Ensure this action is authorized by the contract itself
 
-        auth_table _auth(get_self(), get_self().value);
+    auth_table auths(get_self(), contract.value); // Access the auth table scoped by the contract
 
-        // Find the authority entry
-        auto secondary_key = (uint128_t)contract.value << 64 | action.value;
-        auto secondary_index = _auth.get_index<"bycontract"_n>();
-        auto itr = secondary_index.find(secondary_key);
-
-        check(itr != secondary_index.end() && itr->contract==contract && itr->action==action, "Authority with this contract and action does not exist");
-
-        bool erase_row = false;
-        // Remove the specified authorized contract
-        secondary_index.modify(itr, get_self(), [&](auto& mod_auth) {
-            auto& contracts = mod_auth.authorized_contracts;
-            auto contract_itr = std::find(contracts.begin(), contracts.end(), authorized_contract);
-            check(contract_itr != contracts.end(), "Contract is not authorized");
-            contracts.erase(contract_itr);
-            if(contracts.size() == 0) {
-               erase_row = true; 
+    auto itr = auths.find(action.value); // Find the record for the specified action
+    if (itr != auths.end()) {
+        // Modify the record to remove the specified authorized_contract
+        auths.modify(itr, get_self(), [&](auto& auth) {
+            auto& auth_contracts = auth.authorized_contracts;
+            auto it = std::find(auth_contracts.begin(), auth_contracts.end(), authorized_contract);
+            if (it != auth_contracts.end()) {
+                auth_contracts.erase(it);
+            } else {
+                eosio::print("Contract not found in authorization list");
             }
         });
-
-        if(erase_row) {
-            secondary_index.erase(itr);
-        }
+    } else {
+        eosio::print("Action not found");
     }
+}
+
 
 ACTION authority::hasauth(name contract, name action, name account) {
-        auth_table _auth(get_self(), get_self().value);
+    require_auth(get_self()); // Ensure this action is authorized by the contract itself
 
-        // Find the authority entry
-        auto secondary_key = (uint128_t)contract.value << 64 | action.value;
-        auto secondary_index = _auth.get_index<"bycontract"_n>();
-        auto itr = secondary_index.find(secondary_key);
+    auth_table auths(get_self(), contract.value); // Access the auth table scoped by the contract
 
-        if (itr == secondary_index.end()) {
-            check(false, "Authority contract : no authority found"); // No authority found for the specified contract and action
+    auto itr = auths.find(action.value); // Find the record for the specified action
+    if (itr != auths.end()) {
+        // Check if the account is in the authorized_contracts list
+        if (std::find(itr->authorized_contracts.begin(), itr->authorized_contracts.end(), account) != itr->authorized_contracts.end()) {
+            eosio::print("Account is authorized");
+        } else {
+            check(false, "Account is not authorized");
         }
-
-        // Check if the account is in the authorized_contracts vector
-        const auto& auth = *itr;
-        check(std::find(auth.authorized_contracts.begin(), auth.authorized_contracts.end(), account) != auth.authorized_contracts.end(), "Account not is authorized list");
+    } else {
+        check(false, "Action not found");
+    }
 }
