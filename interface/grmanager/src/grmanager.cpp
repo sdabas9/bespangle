@@ -8,9 +8,11 @@ ACTION grmanager::newemission(name authorized,
   require_auth(authorized);
   string action_name = "newemission";
   string failure_identifier = "CONTRACT: grmanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(GIVER_REP_VALIDATION_CONTRACT));
 
   name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(GIVER_REP_VALIDATION_CONTRACT));
+  }
   check(org == get_org_from_internal_symbol(giver_rep_badge_symbol, failure_identifier), "badge_symbol and giver_rep_badge_symbol org not same");
 
   for(symbol s : emit_badge_symbols) {
@@ -48,8 +50,10 @@ ACTION grmanager::activate(name authorized, symbol badge_symbol) {
   require_auth(authorized);
   string action_name = "activate";
   string failure_identifier = "CONTRACT: grmanager, ACTION: " + action_name + ", MESSAGE: ";  
-  require_recipient(name(GIVER_REP_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(GIVER_REP_VALIDATION_CONTRACT));
+  }
   notify_checks_contract(org);
 
   action{
@@ -67,8 +71,10 @@ ACTION grmanager::deactivate(name authorized, symbol badge_symbol) {
   require_auth(authorized);
   string action_name = "deactivate";
   string failure_identifier = "CONTRACT: grmanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(GIVER_REP_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(GIVER_REP_VALIDATION_CONTRACT));
+  }
   notify_checks_contract(org);
   action{
     permission_level{get_self(), name("active")},

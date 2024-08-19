@@ -7,8 +7,9 @@ ACTION bamanager::initagg(name authorized, symbol agg_symbol, vector<symbol> bad
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
 
     notify_checks_contract(org);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
-
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
     for(auto i = 0 ; i < badge_symbols.size(); i++) {
       check(org == get_org_from_badge_symbol(badge_symbols[i], failure_identifier), failure_identifier + "Org mismatch for badge " + badge_symbols[i].code().to_string());
       action {
@@ -72,7 +73,10 @@ ACTION bamanager::addinitbadge(name authorized, symbol agg_symbol, vector<symbol
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
 
     notify_checks_contract(org);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     for(auto i = 0 ; i < badge_symbols.size(); i++) {
       check(org == get_org_from_badge_symbol(badge_symbols[i], failure_identifier), failure_identifier + "Org mismatch for badge " + badge_symbols[i].code().to_string());
@@ -108,7 +112,10 @@ ACTION bamanager::reminitbadge(name authorized, symbol agg_symbol, vector<symbol
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
 
     notify_checks_contract(org);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     for(auto i = 0 ; i < badge_symbols.size(); i++) {
       check(org == get_org_from_badge_symbol(badge_symbols[i], failure_identifier), failure_identifier + "Org mismatch for badge " + badge_symbols[i].code().to_string());
@@ -143,7 +150,10 @@ ACTION bamanager::addstatbadge(name authorized, symbol agg_symbol, vector<symbol
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
 
     notify_checks_contract(org);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     for(auto i = 0 ; i < badge_symbols.size(); i++) {
       check(org == get_org_from_badge_symbol(badge_symbols[i], failure_identifier), failure_identifier + "Org mismatch for badge " + badge_symbols[i].code().to_string());
@@ -191,7 +201,11 @@ ACTION bamanager::remstatbadge(name authorized, symbol agg_symbol, vector<symbol
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
 
     notify_checks_contract(org);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
+
     for(auto i = 0 ; i < badge_symbols.size(); i++) {
       check(org == get_org_from_badge_symbol(badge_symbols[i], failure_identifier), failure_identifier + "Org mismatch for badge " + badge_symbols[i].code().to_string());
     }
@@ -215,7 +229,10 @@ ACTION bamanager::initseq(name authorized, symbol agg_symbol, string sequence_de
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
 
     notify_checks_contract(org);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
     
     action {
       permission_level{get_self(), name("active")},
@@ -231,13 +248,16 @@ ACTION bamanager::initseq(name authorized, symbol agg_symbol, string sequence_de
 
 ACTION bamanager::actseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
-
+    
     string action_name = "actseq";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
     notify_checks_contract(org);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     action {
       permission_level{get_self(), name("active")},
@@ -254,12 +274,15 @@ ACTION bamanager::actseq(name authorized, symbol agg_symbol, vector<uint64_t> se
 
 ACTION bamanager::actseqai(name authorized, symbol agg_symbol) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "actseqai";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
         
@@ -277,12 +300,15 @@ ACTION bamanager::actseqai(name authorized, symbol agg_symbol) {
 
 ACTION bamanager::actseqfi(name authorized, symbol agg_symbol) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "actseqfi";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -300,12 +326,15 @@ ACTION bamanager::actseqfi(name authorized, symbol agg_symbol) {
 
 ACTION bamanager::endseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "endseq";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
     action {
@@ -322,12 +351,15 @@ ACTION bamanager::endseq(name authorized, symbol agg_symbol, vector<uint64_t> se
 
 ACTION bamanager::endseqaa(name authorized, symbol agg_symbol) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "endseqaa";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
     
@@ -344,12 +376,15 @@ ACTION bamanager::endseqaa(name authorized, symbol agg_symbol) {
 
 ACTION bamanager::endseqfa(name authorized, symbol agg_symbol) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "endseqfa";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
     
@@ -366,12 +401,15 @@ ACTION bamanager::endseqfa(name authorized, symbol agg_symbol) {
 
 ACTION bamanager::addbadge(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids, vector<symbol> badge_symbols) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "addbadge";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -405,12 +443,15 @@ ACTION bamanager::addbadge(name authorized, symbol agg_symbol, vector<uint64_t> 
 
 ACTION bamanager::pauseall(name authorized, symbol agg_symbol, uint64_t seq_id) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "pauseall";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -428,12 +469,15 @@ ACTION bamanager::pauseall(name authorized, symbol agg_symbol, uint64_t seq_id) 
 }
 ACTION bamanager::pausebadge(name authorized, symbol agg_symbol, uint64_t badge_agg_seq_id) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "pausebadge";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -450,12 +494,15 @@ ACTION bamanager::pausebadge(name authorized, symbol agg_symbol, uint64_t badge_
 }
 ACTION bamanager::pausebadges(name authorized, symbol agg_symbol, uint64_t seq_id, vector<symbol> badge_symbols) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "pausebadges";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -477,12 +524,15 @@ ACTION bamanager::pausebadges(name authorized, symbol agg_symbol, uint64_t seq_i
 }
 ACTION bamanager::pauseallfa(name authorized, symbol agg_symbol) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "pauseallfa";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -498,12 +548,14 @@ ACTION bamanager::pauseallfa(name authorized, symbol agg_symbol) {
 }
 ACTION bamanager::resumeall(name authorized, symbol agg_symbol, uint64_t seq_id) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "resumeall";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
 
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -520,12 +572,14 @@ ACTION bamanager::resumeall(name authorized, symbol agg_symbol, uint64_t seq_id)
 }
 ACTION bamanager::resumebadge(name authorized, symbol agg_symbol, uint64_t badge_agg_seq_id) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "resumebadge";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 
@@ -542,12 +596,14 @@ ACTION bamanager::resumebadge(name authorized, symbol agg_symbol, uint64_t badge
 }
 ACTION bamanager::resumebadges(name authorized, symbol agg_symbol, uint64_t seq_id, vector<symbol> badge_symbols) {
     require_auth(authorized);
-    require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
 
     string action_name = "resumebadges";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_agg_symbol(agg_symbol, failure_identifier);
+    if(org != authorized) {
+      require_recipient(name(BOUNDED_AGG_VALIDATION_CONTRACT));
+    }
 
     notify_checks_contract(org);
 

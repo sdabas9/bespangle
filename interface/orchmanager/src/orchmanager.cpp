@@ -8,7 +8,10 @@ ACTION orchmanager::delfeature (name org,
 
     require_auth(authorized);
     notify_checks_contract(org);
-    require_recipient(name(ORCHESTRATOR_VALIDATION_CONTRACT));
+
+    if(org!=authorized) {
+      require_recipient(name(ORCHESTRATOR_VALIDATION_CONTRACT));    
+    }
 
     string action_name = "delfeature";
     string failure_identifier = "CONTRACT: orchmanager, ACTION: " + action_name + ", MESSAGE: ";

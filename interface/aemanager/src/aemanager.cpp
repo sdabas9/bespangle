@@ -8,11 +8,13 @@ ACTION aemanager::newemission(name authorized,
   require_auth(authorized);
   string action_name = "newemission";
   string failure_identifier = "CONTRACT: aemanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
+  name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
+
+  if(org!=authorized) {
+    require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
+  }
 
   vector<contract_asset> emit_assets;
-
-  name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
 
   for(asset a : emitter_criteria) {
     check(org == get_org_from_internal_symbol(emission_symbol, failure_identifier), "org not same for all assets in emitter_criteria");
@@ -60,8 +62,10 @@ ACTION aemanager::activate(name authorized, symbol emission_symbol) {
   require_auth(authorized);
   string action_name = "activate";
   string failure_identifier = "CONTRACT: aemanager, ACTION: " + action_name + ", MESSAGE: ";  
-  require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
+  if(org!=authorized) {
+    require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
+  }
   notify_checks_contract(org);
 
   action{
@@ -79,8 +83,10 @@ ACTION aemanager::deactivate(name authorized, symbol emission_symbol) {
   require_auth(authorized);
   string action_name = "deactivate";
   string failure_identifier = "CONTRACT: aemanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
+  if(org!=authorized) {
+    require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
+  }
   notify_checks_contract(org);
   action{
     permission_level{get_self(), name("active")},
