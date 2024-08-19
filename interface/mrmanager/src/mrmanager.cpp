@@ -13,12 +13,16 @@ ACTION mrmanager::init(
     string memo
 ) {
     require_auth(authorized);
-    require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
-
+    
     string action_name = "init";
     string failure_identifier = "CONTRACT: mrmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+    
+    if(org != authorized) {
+        require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
+    }
+
     notify_checks_contract(org);
     
     action(
@@ -76,6 +80,7 @@ ACTION mrmanager::issue(
     string failure_identifier = "CONTRACT: mrmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+
     notify_checks_contract(org);
 
     action(
@@ -98,12 +103,17 @@ ACTION mrmanager::starttime(
     time_point_sec new_starttime
 ) {
     require_auth(authorized);
-    require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
 
     string action_name = "starttime";
     string failure_identifier = "CONTRACT: mrmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+
+    if(org != authorized) {
+        require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
+    }
+
+
     notify_checks_contract(org);
 
     action(
@@ -124,12 +134,16 @@ ACTION mrmanager::cyclelength(
     uint64_t new_cycle_length
 ) {
     require_auth(authorized);
-    require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
 
     string action_name = "cyclelength";
     string failure_identifier = "CONTRACT: mrmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+
+    if(org != authorized) {
+        require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
+    }
+
     notify_checks_contract(org);
 
     action(
@@ -150,12 +164,16 @@ ACTION mrmanager::cyclesupply(
     uint8_t new_supply_per_cycle
 ) {
     require_auth(authorized);
-    require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
 
     string action_name = "cyclesupply";
     string failure_identifier = "CONTRACT: mrmanager, ACTION: " + action_name + ", MESSAGE: ";
     
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+
+    if(org != authorized) {
+        require_recipient(name(MUTUAL_RECOGNITION_VALIDATION_CONTRACT));
+    }
+
     notify_checks_contract(org);
 
     action(

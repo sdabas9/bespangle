@@ -8,9 +8,11 @@ ACTION hllmanager::newemission(
   require_auth(authorized);
   string action_name = "newemission";
   string failure_identifier = "CONTRACT: hllmanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(HLL_EMITTER_VALIDATION_CONTRACT));
 
   name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(HLL_EMITTER_VALIDATION_CONTRACT));
+  }
   
   for(symbol s : sender_uniqueness_badge_symbols) {
     check(org == get_org_from_internal_symbol(s, failure_identifier), "org not same for all assets in sender_uniqueness_badge_symbols");
@@ -46,8 +48,11 @@ ACTION hllmanager::activate(name authorized, symbol badge_symbol) {
   require_auth(authorized);
   string action_name = "activate";
   string failure_identifier = "CONTRACT: hllmanager, ACTION: " + action_name + ", MESSAGE: ";  
-  require_recipient(name(HLL_EMITTER_VALIDATION_CONTRACT));
+
   name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(HLL_EMITTER_VALIDATION_CONTRACT));
+  }
   notify_checks_contract(org);
 
   action{
@@ -65,8 +70,10 @@ ACTION hllmanager::deactivate(name authorized, symbol badge_symbol) {
   require_auth(authorized);
   string action_name = "deactivate";
   string failure_identifier = "CONTRACT: hllmanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(HLL_EMITTER_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(HLL_EMITTER_VALIDATION_CONTRACT));
+  }
   notify_checks_contract(org);
   action{
     permission_level{get_self(), name("active")},

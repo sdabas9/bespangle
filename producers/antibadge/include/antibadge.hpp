@@ -25,7 +25,7 @@ public:
         string onchain_lookup_data,
         string memo);
 
-    ACTION createinv(symbol anti_badge_symbol,
+    ACTION createredeem(symbol anti_badge_symbol,
         symbol badge_symbol,
         string offchain_lookup_data,
         string onchain_lookup_data,

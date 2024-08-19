@@ -1,6 +1,23 @@
 #include <redeem.hpp>
 #include <sstream>
 
+
+ACTION redeem::fixedlifetime() {
+ // only fixed reward
+}
+
+ACTION redeem::fixedfa() {
+    // first active season
+}
+
+ACTION redeem::dynamiclifetime() {
+    // 
+}
+
+ACTION redeem::dynamicfa() {
+    //
+}
+
 ACTION redeem::initfixed(name org, name round, name badge, uint64_t rate, name notification_contract) {
     require_auth(get_self()); // Only contract account can run this action
     

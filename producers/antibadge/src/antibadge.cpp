@@ -46,15 +46,17 @@ ACTION antibadge::create(symbol anti_badge_symbol,
             .memo = memo
         }
     }.send();
+
+    // check there is no emission from this badge.
 }
 
-ACTION antibadge::createinv (symbol anti_badge_symbol,
+ACTION antibadge::createredeem (symbol anti_badge_symbol,
     symbol badge_symbol,
     string offchain_lookup_data,
     string onchain_lookup_data,
     string memo) {
     
-    string action_name = "createinv";
+    string action_name = "createredeem";
     string failure_identifier = "CONTRACT: antibadge, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(name(action_name), failure_identifier);  
 
@@ -65,7 +67,32 @@ ACTION antibadge::createinv (symbol anti_badge_symbol,
         create_args{
             .anti_badge_symbol = anti_badge_symbol,
             .badge_symbol = badge_symbol,
-            .type = name("invalidate"),
+            .type = name("redeem"),
+            .offchain_lookup_data = offchain_lookup_data,
+            .onchain_lookup_data = onchain_lookup_data,
+            .memo = memo
+        }
+    }.send();
+}
+
+ACTION antibadge::createexpire (symbol anti_badge_symbol,
+    symbol badge_symbol,
+    string offchain_lookup_data,
+    string onchain_lookup_data,
+    string memo) {
+    
+    string action_name = "createexpire";
+    string failure_identifier = "CONTRACT: antibadge, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);  
+
+    action{
+        permission_level{get_self(), name("active")},
+        name(get_self()),
+        name("create"),
+        create_args{
+            .anti_badge_symbol = anti_badge_symbol,
+            .badge_symbol = badge_symbol,
+            .type = name("expire"),
             .offchain_lookup_data = offchain_lookup_data,
             .onchain_lookup_data = onchain_lookup_data,
             .memo = memo

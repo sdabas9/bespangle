@@ -10,12 +10,14 @@
 
     require_auth(authorized);
     
-    require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
-
     string action_name = "initsimple";
     string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
-    
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(SIMPLE_VALIDATION_CONTRACT));    
+    }    
+
     notify_checks_contract(org);
     
     action {
@@ -60,12 +62,15 @@
       vector<name> to, 
       string memo) {
     require_auth(authorized);
-    require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
-
+    
     string action_name = "simplebatch";
     string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
-    
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+    
+    if(org != authorized) {
+      require_recipient(name(SIMPLE_VALIDATION_CONTRACT));    
+    }    
+
     notify_checks_contract(org);
     asset badge_asset(amount, badge_symbol);
     
@@ -90,12 +95,14 @@
       name to, 
       string memo ) {
     require_auth(authorized);
-    require_recipient(name(SIMPLE_VALIDATION_CONTRACT));
-
     string action_name = "givesimple";
     string failure_identifier = "CONTRACT: simmanager, ACTION: " + action_name + ", MESSAGE: ";
-    
     name org = get_org_from_internal_symbol(badge_symbol, failure_identifier);
+
+    if(org != authorized) {
+      require_recipient(name(SIMPLE_VALIDATION_CONTRACT));    
+    }    
+
     notify_checks_contract(org);
     asset badge_asset(amount, badge_symbol);
 

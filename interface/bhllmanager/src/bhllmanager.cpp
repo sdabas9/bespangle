@@ -8,9 +8,11 @@ ACTION bhllmanager::newemission(name authorized,
   require_auth(authorized);
   string action_name = "newemission";
   string failure_identifier = "CONTRACT: bhllmanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(BOUNDED_HLL_VALIDATION_CONTRACT));
 
   name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(BOUNDED_HLL_VALIDATION_CONTRACT));
+  }
   check(org == get_org_from_internal_symbol(badge_symbol, failure_identifier), "badge_symbol and agg_symbol org not same");
 
   for(symbol s : sender_uniqueness_badge_symbols) {
@@ -48,8 +50,10 @@ ACTION bhllmanager::activate(name authorized, symbol agg_symbol, symbol badge_sy
   require_auth(authorized);
   string action_name = "activate";
   string failure_identifier = "CONTRACT: bhllmanager, ACTION: " + action_name + ", MESSAGE: ";  
-  require_recipient(name(BOUNDED_HLL_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(BOUNDED_HLL_VALIDATION_CONTRACT));
+  }
   check(org == get_org_from_internal_symbol(agg_symbol, failure_identifier), "org not same for agg_symbol and badge_symbol");
   notify_checks_contract(org);
 
@@ -69,8 +73,10 @@ ACTION bhllmanager::deactivate(name authorized, symbol agg_symbol, symbol badge_
   require_auth(authorized);
   string action_name = "deactivate";
   string failure_identifier = "CONTRACT: bhllmanager, ACTION: " + action_name + ", MESSAGE: ";
-  require_recipient(name(BOUNDED_HLL_VALIDATION_CONTRACT));
   name org = get_org_from_internal_symbol(agg_symbol, failure_identifier);
+  if(org != authorized) {
+    require_recipient(name(BOUNDED_HLL_VALIDATION_CONTRACT));
+  }
   check(org == get_org_from_internal_symbol(agg_symbol, failure_identifier), "org not same for agg_symbol and badge_symbol");
   notify_checks_contract(org);
   action{
