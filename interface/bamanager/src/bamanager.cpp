@@ -222,7 +222,7 @@ ACTION bamanager::remstatbadge(name authorized, symbol agg_symbol, vector<symbol
     }.send();
 }
 
-ACTION bamanager::initseq(name authorized, symbol agg_symbol, string sequence_description) {
+ACTION bamanager::initseq(name authorized, symbol agg_symbol, vector<symbol> badge_symbols, string sequence_description) {
     require_auth(authorized);
     string action_name = "initseq";
     string failure_identifier = "CONTRACT: bamanager, ACTION: " + action_name + ", MESSAGE: ";
@@ -242,6 +242,17 @@ ACTION bamanager::initseq(name authorized, symbol agg_symbol, string sequence_de
         .org = org,
         .agg_symbol = agg_symbol,
         .sequence_description = sequence_description
+      }
+    }.send();
+
+    action {
+      permission_level{get_self(), name("active")},
+      name(BOUNDED_AGG_CONTRACT),
+      name("addbadgeli"),
+      addbadgeli_args {
+        .org = org,
+        .agg_symbol = agg_symbol,
+        .badge_symbols = badge_symbols
       }
     }.send();
 }

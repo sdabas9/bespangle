@@ -21,7 +21,7 @@ CONTRACT bamanager : public contract {
     ACTION remstatbadge(name authorized, symbol agg_symbol, vector<symbol> badge_symbols);
 
 
-    ACTION initseq(name authorized, symbol agg_symbol, string sequence_description);
+    ACTION initseq(name authorized, symbol agg_symbol, vector<symbol> badge_symbols, string sequence_description);
     ACTION actseq(name authorized, symbol agg_symbol, vector<uint64_t> seq_ids);
 
 
@@ -256,6 +256,12 @@ CONTRACT bamanager : public contract {
     };  
 
     struct addbadgeai_args {
+      name org;
+      symbol agg_symbol;
+      vector<symbol> badge_symbols;
+    };
+
+    struct addbadgeli_args {
       name org;
       symbol agg_symbol;
       vector<symbol> badge_symbols;
