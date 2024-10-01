@@ -70,85 +70,6 @@ CONTRACT subscription : public contract {
 
   private:
 
-// Singleton table definition for sequences
-TABLE sequences {
-   uint64_t last_package_seq_id;
-
-   // Singleton pattern does not require primary key, but EOSIO expects one.
-   uint64_t primary_key() const { return 0; }
-};
-typedef eosio::singleton<"sequences"_n, sequences> sequences_singleton;
-
-// Table definition for newpackage
-TABLE newpackage {
-   name package_name;
-
-   uint64_t primary_key() const { return package_name.value; }
-};
-typedef eosio::multi_index<"newpackage"_n, newpackage> newpackage_table;
-
-// Table definition for currpackage
-TABLE currpackage {
-   uint64_t seq_id;
-   uint64_t total_bought;
-   uint64_t total_used;
-   time_point_sec expiry_time;
-
-   uint64_t primary_key() const { return seq_id; }
-};
-typedef eosio::multi_index<"currpackage"_n, currpackage> currpackage_table;
-
-// Table definition for usedpackages
-TABLE usedpackages {
-   uint64_t seq_id;
-   uint64_t total_bought;
-   uint64_t total_used;
-   time_point_sec expiry_time;
-
-   uint64_t primary_key() const { return seq_id; }
-};
-typedef eosio::multi_index<"usedpackages"_n, usedpackages> usedpackages_table;
-
-// Table definition for members
-TABLE members {
-   name org;
-   vector<uint8_t> member_count_hll;
-   uint64_t member_count;
-   time_point_sec first_subscription_time;
-   time_point_sec billed_amount_calculation_time;
-   asset billed_amount_calculated_value;
-   time_point_sec billed_amount_paid_time;
-   asset billed_amount_paid_value;
-   asset balance;
-
-   uint64_t primary_key() const { return org.value; }
-};
-typedef eosio::multi_index<"members"_n, members> members_table;
-
-// Singleton table definition for admincost
-TABLE admincost {
-   asset first_member_usd_cost;
-
-   uint64_t primary_key() const { return 0; }
-};
-typedef eosio::singleton<"admincost"_n, admincost> admincost_singleton;
-
-// Singleton table definition for mduetime
-TABLE mduetime {
-   uint64_t due_grace_seconds;
-
-   uint64_t primary_key() const { return 0; }
-};
-typedef eosio::singleton<"mduetime"_n, mduetime> mduetime_singleton;
-
-// Singleton table definition for adminbill
-TABLE adminbill {
-   uint64_t billing_calc_window; // Should be greater than due_grace_seconds.
-
-   uint64_t primary_key() const { return 0; }
-};
-typedef eosio::singleton<"adminbill"_n, adminbill> adminbill_singleton;
-
 // Table definition for packages
 TABLE packages {
    name package;
@@ -179,6 +100,89 @@ TABLE raminusd {
    uint64_t primary_key() const { return 0; }
 };
 typedef eosio::singleton<"raminusd"_n, raminusd> raminusd_singleton;
+
+
+// Table definition for newpackage
+TABLE newpackage {
+   name package_name;
+
+   uint64_t primary_key() const { return package_name.value; }
+};
+typedef eosio::multi_index<"newpackage"_n, newpackage> newpackage_table;
+
+// Singleton table definition for sequences
+TABLE sequences {
+   uint64_t last_package_seq_id;
+
+   // Singleton pattern does not require primary key, but EOSIO expects one.
+   uint64_t primary_key() const { return 0; }
+};
+typedef eosio::singleton<"sequences"_n, sequences> sequences_singleton;
+
+// Table definition for currpackage
+TABLE currpackage {
+   uint64_t seq_id;
+   uint64_t total_bought;
+   uint64_t total_used;
+   time_point_sec expiry_time;
+
+   uint64_t primary_key() const { return seq_id; }
+};
+typedef eosio::multi_index<"currpackage"_n, currpackage> currpackage_table;
+
+// Table definition for usedpackages
+TABLE usedpackages {
+   uint64_t seq_id;
+   uint64_t total_bought;
+   uint64_t total_used;
+   time_point_sec expiry_time;
+
+   uint64_t primary_key() const { return seq_id; }
+};
+typedef eosio::multi_index<"usedpackages"_n, usedpackages> usedpackages_table;
+
+
+// Singleton table definition for admincost
+TABLE admincost {
+   asset first_member_usd_cost;
+
+   uint64_t primary_key() const { return 0; }
+};
+typedef eosio::singleton<"admincost"_n, admincost> admincost_singleton;
+
+// Singleton table definition for mduetime
+TABLE mduetime {
+   uint64_t due_grace_seconds;
+
+   uint64_t primary_key() const { return 0; }
+};
+typedef eosio::singleton<"mduetime"_n, mduetime> mduetime_singleton;
+
+// Singleton table definition for adminbill
+TABLE adminbill {
+   uint64_t billing_calc_window; // Should be less than due_grace_seconds.
+
+   uint64_t primary_key() const { return 0; }
+};
+typedef eosio::singleton<"adminbill"_n, adminbill> adminbill_singleton;
+
+// Table definition for members
+TABLE members {
+   name org;
+   vector<uint8_t> member_count_hll;
+   uint64_t member_count;
+   time_point_sec first_subscription_time;
+   time_point_sec last_billed_amount_calculation_time;
+   asset last_billed_amount_calculated_value;
+   time_point_sec last_billed_amount_paid_time;
+   asset last_billed_amount_paid_value;
+   asset current_balance;
+
+   uint64_t primary_key() const { return org.value; }
+};
+typedef eosio::multi_index<"members"_n, members> members_table;
+
+
 
 
 
