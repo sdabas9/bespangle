@@ -9,8 +9,8 @@
 using namespace eosio;
 using namespace std;
 
-#define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
-#define BOUNDED_AGG_CONTRACT "baggyyyyyyyy"
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#cmakedefine BOUNDED_AGG_CONTRACT "@BOUNDED_AGG_CONTRACT@"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 #define SERIES_START_NOTIFICATION BOUNDED_AGG_CONTRACT"::actseq"
@@ -270,18 +270,6 @@ CONTRACT subscription : public contract {
     };
     typedef eosio::multi_index<"sequences"_n, sequences> sequences_table;
 
-    TABLE packages {
-        name package;
-        string descriptive_name;
-        uint64_t action_size;
-        uint64_t expiry_duration_in_secs;
-        uint64_t max_active_series;
-        asset cost;
-        bool active;
-
-        uint64_t primary_key const {return package.value ;}
-    };
-    typedef eosio::multi_index<"packages"_n, packages> packages_table;    
     // Table definition for packages.
     TABLE packages {
         name package;
@@ -611,8 +599,9 @@ CONTRACT subscription : public contract {
         --vol_itr;
 
         double volatility_percent = vol_itr->value / 10000.0;
-        asset final_cost_in_ram = base_cost + base_cost * volatility_percent;
-
+        int64_t final_amount_in_ram = static_cast<int64_t>(base_cost.amount + base_cost.amount * volatility_percent);
+        
+        asset final_cost_in_ram = asset(final_amount_in_ram, base_cost.symbol);
         ramcost_table ramcost(get_self(), get_self().value);
         auto ramrate_itr = ramcost.end();
         check(ramrate_itr != ramcost.begin(), "No RAM rate data found");

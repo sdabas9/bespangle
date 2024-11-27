@@ -42,3 +42,5 @@ BOUNDED_STATS_CONTRACT="bstatsyyyyyy"
 HLL_EMITTER_CONTRACT="hllemitteryy"
 GIVER_REP_CONTRACT="giverrepyyyy"
 BOUNDED_HLL_CONTRACT="boundedhllyy"
+
+SUBSCRIPTION_CONTRACT="subscribeyyy"

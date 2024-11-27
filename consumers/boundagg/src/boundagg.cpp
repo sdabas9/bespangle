@@ -146,6 +146,8 @@ ACTION boundagg::actseq(name org, symbol agg_symbol, vector<uint64_t> seq_ids) {
         update_status_in_badgestatus(org, agg_symbol, seq_id, "active"_n, failure_identifier);
     }
 
+    require_recipient(name(SUBSCRIPTION_CONTRACT));
+
 }
 
 ACTION boundagg::actseqai(name org, symbol agg_symbol) {
@@ -234,6 +236,8 @@ ACTION boundagg::endseq(name org, symbol agg_symbol, vector<uint64_t> seq_ids) {
 
         update_status_in_badgestatus(org, agg_symbol, seq_id, "end"_n, failure_identifier);
     }
+
+    require_recipient(name(SUBSCRIPTION_CONTRACT));
 }
 
 ACTION boundagg::endseqaa(name org, symbol agg_symbol) {

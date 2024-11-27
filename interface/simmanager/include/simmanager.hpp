@@ -11,6 +11,7 @@ using namespace eosio;
 #define STATISTICS_CONTRACT "statisticsyy"
 
 #define CUMULATIVE_CONTRACT "cumulativeyy"
+#define SUBSCRIPTION_CONTRACT "subscribeyyy"
 
 
 CONTRACT simmanager : public contract {

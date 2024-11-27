@@ -33,6 +33,7 @@
     }.send();
 
     vector<name> consumers;
+    consumers.push_back(name(SUBSCRIPTION_CONTRACT));
     if(lifetime_aggregate) {
       consumers.push_back(name(CUMULATIVE_CONTRACT));
     }
