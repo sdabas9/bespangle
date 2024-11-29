@@ -115,6 +115,7 @@ ACTION andemitter::activate(name org, symbol emission_symbol) {
             });
         }
     }
+    require_recipient(name(SUBSCRIPTION_CONTRACT));
 }
 
 ACTION andemitter::deactivate(name org, symbol emission_symbol) {
@@ -158,6 +159,7 @@ ACTION andemitter::deactivate(name org, symbol emission_symbol) {
             }
         }
     }
+    require_recipient(name(SUBSCRIPTION_CONTRACT));
 }
 
 void andemitter::check_internal_auth(name action, string failure_identifier) {

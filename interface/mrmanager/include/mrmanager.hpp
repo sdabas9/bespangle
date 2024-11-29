@@ -10,7 +10,7 @@ using namespace eosio;
 #define MUTUAL_RECOGNITION_VALIDATION_CONTRACT "mrvalyyyyyyy"
 #define CUMULATIVE_CONTRACT "cumulativeyy"
 #define STATISTICS_CONTRACT "statisticsyy"
-#define SUBSCRIPTION_CONTRACT "subscribeyyy"
+#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
 
 CONTRACT mrmanager : public contract {
 public:
