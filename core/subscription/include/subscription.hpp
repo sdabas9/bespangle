@@ -56,7 +56,8 @@ public:
         uint16_t max_active_emissions,
         uint64_t expiry_duration_in_secs,
         extended_asset cost,
-        bool active
+        bool active,
+        bool display
     );
 
     ACTION disablepack(name package);
@@ -66,6 +67,10 @@ public:
     ACTION setsercost(extended_asset additional_series_cost);
 
     ACTION setemitcost(extended_asset additional_emission_cost);
+
+    ACTION haspackage(name org);
+
+    ACTION uidisplay(name package, bool display);
 
 private:
     // Table definitions
@@ -86,6 +91,7 @@ private:
         uint64_t expiry_duration_in_secs;
         extended_asset cost;
         bool active;
+        bool display;
 
         uint64_t primary_key() const { return package.value; }
     };

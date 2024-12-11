@@ -42,4 +42,13 @@ ACTION org::initorgcode(name org, string org_code) {
     row.org = org;
     row.org_code = converted_org_code;
   });
+
+  action {
+    permission_level{get_self(), name("active")},
+    name(SUBSCRIPTION_CONTRACT),
+    name("haspackage"),
+    haspackage_args {
+      .org = org
+    }
+  }.send();
 }

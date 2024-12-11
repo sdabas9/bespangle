@@ -234,7 +234,8 @@ ACTION subscription::newpack(
     uint16_t max_active_emissions,
     uint64_t expiry_duration_in_secs,
     extended_asset cost,
-    bool active) {
+    bool active,
+    bool display) {
     require_auth(get_self()); // Ensure action is authorized by the contract account
 
     // Validate inputs
@@ -261,6 +262,7 @@ ACTION subscription::newpack(
         row.expiry_duration_in_secs = expiry_duration_in_secs;
         row.cost = cost;
         row.active = active;
+        row.display = display;
     });
 }
 
@@ -293,6 +295,22 @@ ACTION subscription::enablepack(name package) {
     // Modify the record to set active to true
     packages.modify(package_itr, get_self(), [&](auto& row) {
         row.active = true;
+    });
+}
+
+ACTION subscription::uidisplay(name package, bool display) {
+    require_auth(get_self()); // Ensure only the contract owner can enable a package
+
+    // Open the packages table
+    packages_table packages(get_self(), get_self().value);
+
+    // Find the package by its primary key
+    auto package_itr = packages.find(package.value);
+    check(package_itr != packages.end(), "Package not found.");
+
+    // Modify the record to set active to true
+    packages.modify(package_itr, get_self(), [&](auto& row) {
+        row.display = display;
     });
 }
 
@@ -348,5 +366,16 @@ ACTION subscription::setemitcost(extended_asset additional_emission_cost) {
             row.additional_emission_cost = additional_emission_cost;
         });
     }
+}
+
+ACTION subscription::haspackage(name org) {
+
+    // Define the orgpackage table scoped by the given org
+    orgpackage_table packages(get_self(), org.value);
+
+    // Check if there is at least one record in the table
+    auto itr = packages.begin();
+    check(itr != packages.end(), "No package record found for the organization.");
+
 }
 
