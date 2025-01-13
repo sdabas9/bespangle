@@ -133,4 +133,10 @@ private:
       string memo;
     };
     void update_expanded_emitter_status(name account, map<symbol_code, int64_t>& expanded_emitter_status, const asset& new_asset, emissions emission, uint8_t& emission_status, string failure_identifier);
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
+    };
+
 };

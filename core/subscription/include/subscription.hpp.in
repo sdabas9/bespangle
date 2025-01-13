@@ -7,66 +7,31 @@
 using namespace eosio;
 using namespace std;
 
-#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
-#cmakedefine BOUNDED_AGG_CONTRACT "@BOUNDED_AGG_CONTRACT@"
-#cmakedefine ANDEMITTER_CONTRACT "@ANDEMITTER_CONTRACT@"
-
-#define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
-#define SERIES_START_NOTIFICATION BOUNDED_AGG_CONTRACT"::actseq"
-#define SERIES_END_NOTIFICATION BOUNDED_AGG_CONTRACT"::endseq"
-#define START_EMISSION_NOTIFICATION ANDEMITTER_CONTRACT "::activate"
-#define END_EMISSION_NOTIFICATION ANDEMITTER_CONTRACT "::deactivate"
+#cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
 
 CONTRACT subscription : public contract {
 public:
     using contract::contract;
 
     // Notification handlers
-    [[eosio::on_notify(SERIES_START_NOTIFICATION)]]
-    void startseries(name org, symbol agg_symbol, vector<uint64_t> seq_ids);
-
-    [[eosio::on_notify(SERIES_END_NOTIFICATION)]]
-    void endseries(name org, symbol agg_symbol, vector<uint64_t> seq_ids);
-
-    [[eosio::on_notify(START_EMISSION_NOTIFICATION)]]
-    void newemission(name org, symbol emission_symbol);
-
-    [[eosio::on_notify(END_EMISSION_NOTIFICATION)]]
-    void endemission(name org, symbol emission_symbol);
 
     [[eosio::on_notify("*::transfer")]]
     void buypack(name from, name to, asset amount, string memo);
 
-    [[eosio::on_notify(NEW_BADGE_ISSUANCE_NOTIFICATION)]]
-    void notifyachiev(
-        name org,
-        asset badge_asset,
-        name from,
-        name to,
-        string memo,
-        vector<name> notify_accounts
-    );
+    ACTION billing(name org, uint8_t actions_used);
 
-    // Actions
     ACTION newpack(
         name package,
         string descriptive_name,
         uint64_t action_size,
-        uint16_t max_active_series,
-        uint16_t max_active_emissions,
         uint64_t expiry_duration_in_secs,
         extended_asset cost,
         bool active,
-        bool display
-    );
+        bool display);
 
     ACTION disablepack(name package);
 
     ACTION enablepack(name package);
-
-    ACTION setsercost(extended_asset additional_series_cost);
-
-    ACTION setemitcost(extended_asset additional_emission_cost);
 
     ACTION haspackage(name org);
 
@@ -86,8 +51,6 @@ private:
         name package;
         string descriptive_name;
         uint64_t action_size;
-        uint16_t max_active_series;
-        uint16_t max_active_emissions;
         uint64_t expiry_duration_in_secs;
         extended_asset cost;
         bool active;
@@ -103,10 +66,6 @@ private:
         name status; // NEW, CURRENT, EXPIRED
         uint64_t total_actions_bought;
         uint64_t actions_used;
-        uint16_t max_active_series_available;
-        uint16_t current_active_series;
-        uint16_t max_active_emissions;
-        uint16_t current_active_emissions;
         uint64_t expiry_duration_in_secs;
         time_point_sec expiry_time;
 
@@ -118,26 +77,29 @@ private:
         indexed_by<"bystatus"_n, const_mem_fun<orgpackage, uint64_t, &orgpackage::by_status>>
     > orgpackage_table;
 
-    TABLE seriescost {
-        extended_asset additional_series_cost;
-
-        uint64_t primary_key() const {
-            return additional_series_cost.quantity.symbol.code().raw();
-        }
+    // scoped by contract
+    TABLE auth {
+      name action;
+      vector<name> authorized_contracts;
+      uint64_t primary_key() const { return action.value; }
     };
-    typedef eosio::multi_index<"seriescost"_n, seriescost> seriescost_table;
+    typedef eosio::multi_index<"auth"_n, auth> auth_table;
 
-    TABLE emissioncost {
-        extended_asset additional_emission_cost;
-
-        uint64_t primary_key() const {
-            return additional_emission_cost.quantity.symbol.code().raw();
+    void check_internal_auth (name action, string failure_identifier) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
+      auto itr = _auth.find(action.value);
+      check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
+      auto authorized_contracts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
+        if(has_auth(authorized_contracts[i])) {
+          return;
         }
-    };
-    typedef eosio::multi_index<"emissioncost"_n, emissioncost> emissioncost_table;
+      }
+      check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
+    }
 
     // Utility functions
-    std::tuple<name, std::string, std::string> parse_memo(const std::string& memo) {
+    std::tuple<name, name> parse_memo(const std::string& memo) {
         // Split the memo into parts based on the colon delimiter
         std::vector<std::string> parts;
         size_t start = 0;
@@ -150,37 +112,13 @@ private:
         parts.push_back(memo.substr(start)); // Add the last part
 
         // Validate the number of fields
-        check(parts.size() == 3 || parts.size() == 4, "Invalid memo format: must have 3 or 4 fields");
+        check(parts.size() == 2 , "Invalid memo format: must have only 2 fields");
 
         // Extract fields
         auto org = name(parts[0]);
-        std::string type;
-        std::string data;
+        auto package_name = name(parts[1]);
 
-        if (parts.size() == 3) {
-            // For 3-field memo (e.g., <org>:pack:<packagename>)
-            type = parts[1];
-            data = parts[2];
-        } else {
-            // For 4-field memo (e.g., <org>:emission:new:<count>)
-            type = parts[1] + ":" + parts[2]; // Combine second and third fields for type
-            data = parts[3];
-        }
-
-        // Validate the type
-        check(
-            type == "pack" || 
-            type == "emission:new" || 
-            type == "emission:current" || 
-            type == "series:new" || 
-            type == "series:current",
-            "Invalid memo type"
-        );
-
-        // Ensure the data field is non-empty
-        check(!data.empty(), "Data field cannot be empty");
-
-        return {org, type, data};
+        return {org, package_name};
     }
 
 
@@ -193,9 +131,9 @@ private:
         ).send();
     }
 
-    void handle_pack_purchase(orgpackage_table& orgpackages, const std::string& data, asset amount, name from, name first_receiver) {
-        auto package_name = name(data);
-
+    void handle_pack_purchase(name org, name package_name, asset amount, name from, name first_receiver) {
+        
+        orgpackage_table orgpackages(get_self(), org.value);
         // Ensure only one NEW status record exists
         auto status_index = orgpackages.get_index<"bystatus"_n>();
         auto existing_new = status_index.find(name("new").value);
@@ -224,57 +162,7 @@ private:
             row.status = "new"_n;
             row.total_actions_bought = package_itr->action_size;
             row.actions_used = 0;
-            row.max_active_series_available = package_itr->max_active_series;
-            row.current_active_series = 0;
-            row.max_active_emissions = package_itr->max_active_emissions;
-            row.current_active_emissions = 0;
             row.expiry_duration_in_secs = package_itr->expiry_duration_in_secs;
-        });
-    }
-
-    void handle_series_update(orgpackage_table& orgpackages, std::string count_str, const std::string& status, asset amount, name from, name first_receiver) {
-        int count = std::stoi(count_str);
-        auto status_index = orgpackages.get_index<"bystatus"_n>();
-        auto itr = status_index.find(name(status).value);
-        check(itr != status_index.end(), "No record with status " + status + " exists");
-
-        seriescost_table seriescosts(get_self(), get_self().value);
-        auto cost_itr = seriescosts.find(amount.symbol.code().raw());
-        check(cost_itr != seriescosts.end(), "Series cost not found");
-        check(cost_itr->additional_series_cost.contract == first_receiver, "Payment contract does not match series cost contract");
-
-        auto required_cost = cost_itr->additional_series_cost.quantity * count;
-        check(amount >= required_cost, "Insufficient funds");
-
-        if (amount > required_cost) {
-            refund_surplus(from, amount - required_cost, first_receiver);
-        }
-
-        status_index.modify(itr, get_self(), [&](auto& row) {
-            row.max_active_series_available += count;
-        });
-    }
-
-    void handle_emission_update(orgpackage_table& orgpackages, std::string count_str, const std::string& status, asset amount, name from, name first_receiver) {
-        int count = std::stoi(count_str);
-        auto status_index = orgpackages.get_index<"bystatus"_n>();
-        auto itr = status_index.find(name(status).value);
-        check(itr != status_index.end(), "No record with status " + status + " exists");
-
-        emissioncost_table emissioncosts(get_self(), get_self().value);
-        auto cost_itr = emissioncosts.find(amount.symbol.code().raw());
-        check(cost_itr != emissioncosts.end(), "Emission cost not found");
-        check(cost_itr->additional_emission_cost.contract == first_receiver, "Payment contract does not match emission cost contract");
-
-        auto required_cost = cost_itr->additional_emission_cost.quantity * count;
-        check(amount >= required_cost, "Insufficient funds");
-
-        if (amount > required_cost) {
-            refund_surplus(from, amount - required_cost, first_receiver);
-        }
-
-        status_index.modify(itr, get_self(), [&](auto& row) {
-            row.max_active_emissions += count;
         });
     }
 

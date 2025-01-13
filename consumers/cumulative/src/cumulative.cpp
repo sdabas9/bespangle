@@ -18,6 +18,15 @@ void cumulative::notifyachiev(name org, asset badge_asset, name from, name to, s
             acc.balance += badge_asset; // Assuming you want to add the badge_asset to the existing balance
         });
     }
+    
+    action {
+        permission_level{get_self(), name("active")},
+        name(SUBSCRIPTION_CONTRACT),
+        name("billing"),
+        billing_args {
+            .org = org,
+            .actions_used = 1}
+    }.send();
 }
 
 ACTION cumulative::dummy() {

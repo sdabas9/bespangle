@@ -13,6 +13,7 @@ void andemitter::notifyachiev(name org, asset amount, name from, name to, string
     emissions_table emissions(get_self(), org.value);
     accounts_table accounts(get_self(), to.value);
 
+    uint8_t actions_used = 0;
     for (const auto& emission_symbol : lookup_itr->active_emissions) {
         auto emission_itr = emissions.find(emission_symbol.code().raw());
         check(emission_itr != emissions.end(), "Emission does not exist");
@@ -40,7 +41,20 @@ void andemitter::notifyachiev(name org, asset amount, name from, name to, string
             acc.expanded_emitter_status = expanded_emitter_status_map;
             acc.emission_status = emission_status;
         });
+        actions_used++;
     }
+
+    if (actions_used > 0) {
+        action {
+            permission_level{get_self(), name("active")},
+            name(SUBSCRIPTION_CONTRACT),
+            name("billing"),
+            billing_args {
+                .org = org,
+                .actions_used = actions_used}
+        }.send();
+    }
+
 }
 
 ACTION andemitter::newemission(
@@ -70,6 +84,15 @@ ACTION andemitter::newemission(
         em.status = name("init");
         em.cyclic = cyclic;
     });
+
+    action {
+        permission_level{get_self(), name("active")},
+        name(SUBSCRIPTION_CONTRACT),
+        name("billing"),
+        billing_args {
+            .org = org,
+            .actions_used = 1}
+    }.send();
 }
 
 ACTION andemitter::chkorgasset(name org, vector<asset> emitter_criteria, vector<contract_asset> emit_assets) {
@@ -115,7 +138,7 @@ ACTION andemitter::activate(name org, symbol emission_symbol) {
             });
         }
     }
-    require_recipient(name(SUBSCRIPTION_CONTRACT));
+
 }
 
 ACTION andemitter::deactivate(name org, symbol emission_symbol) {
@@ -159,7 +182,6 @@ ACTION andemitter::deactivate(name org, symbol emission_symbol) {
             }
         }
     }
-    require_recipient(name(SUBSCRIPTION_CONTRACT));
 }
 
 void andemitter::check_internal_auth(name action, string failure_identifier) {

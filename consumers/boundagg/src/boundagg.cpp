@@ -19,6 +19,15 @@ ACTION boundagg::initagg(name org, symbol agg_symbol, vector<symbol> init_badge_
         check(false, "Agg already exists");
     }
 
+    action {
+        permission_level{get_self(), name("active")},
+        name(SUBSCRIPTION_CONTRACT),
+        name("billing"),
+        billing_args {
+            .org = org,
+            .actions_used = 1}
+    }.send();
+
 }
 
 ACTION boundagg::addinitbadge(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
@@ -146,7 +155,6 @@ ACTION boundagg::actseq(name org, symbol agg_symbol, vector<uint64_t> seq_ids) {
         update_status_in_badgestatus(org, agg_symbol, seq_id, "active"_n, failure_identifier);
     }
 
-    require_recipient(name(SUBSCRIPTION_CONTRACT));
 
 }
 
@@ -237,7 +245,6 @@ ACTION boundagg::endseq(name org, symbol agg_symbol, vector<uint64_t> seq_ids) {
         update_status_in_badgestatus(org, agg_symbol, seq_id, "end"_n, failure_identifier);
     }
 
-    require_recipient(name(SUBSCRIPTION_CONTRACT));
 }
 
 ACTION boundagg::endseqaa(name org, symbol agg_symbol) {
@@ -287,14 +294,27 @@ ACTION boundagg::addbadge(name org, symbol agg_symbol, vector<uint64_t> seq_ids,
         check_internal_auth(name(action_name), failure_identifier);
     }
 
+    uint8_t actions_used = 0;
     sequence_table sequence_t(get_self(), agg_symbol.code().raw());
     for (const auto& seq_id : seq_ids) {
         auto itr = sequence_t.find(seq_id);
         check(itr != sequence_t.end(), failure_identifier + "Sequence ID does not exist.");
         for (const auto& badge_symbol : badge_symbols) {
+            actions_used++;
             insert_record_in_badgestatus(org, agg_symbol, seq_id, badge_symbol, itr->seq_status, failure_identifier);
         }
     }
+    if(actions_used > 0) {
+        action {
+            permission_level{get_self(), name("active")},
+            name(SUBSCRIPTION_CONTRACT),
+            name("billing"),
+            billing_args {
+                .org = org,
+                .actions_used = actions_used}
+        }.send();    
+    }
+
 }
 
 ACTION boundagg::addbadgefa(name org, symbol agg_symbol, vector<symbol> badge_symbols) {
@@ -407,6 +427,7 @@ void boundagg::notifyachiev(name org, asset badge_asset, name from, name to, str
     achievements_table achievements(get_self(), to.value);
 
     auto itr = by_status_index.find(hashed_active_status);
+    uint8_t actions_used = 0;
     while(itr != by_status_index.end() && itr->badge_symbol == badge_asset.symbol && itr->badge_status == "active"_n && itr->seq_status == "active"_n) {
         
         auto ach_itr = achievements.find(itr->badge_agg_seq_id);
@@ -422,8 +443,20 @@ void boundagg::notifyachiev(name org, asset badge_asset, name from, name to, str
         }
         
         // Move to the next record
+        actions_used ++;
         ++itr;
     }
+    if(actions_used > 0) {
+        action {
+            permission_level{get_self(), name("active")},
+            name(SUBSCRIPTION_CONTRACT),
+            name("billing"),
+            billing_args {
+                .org = org,
+                .actions_used = actions_used}
+        }.send();
+    }
+
 }
 
 

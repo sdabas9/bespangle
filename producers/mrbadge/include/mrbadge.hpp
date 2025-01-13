@@ -7,6 +7,7 @@ using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define AUTHORITY_CONTRACT "authorityyyy"
+#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
 
 CONTRACT mrbadge : public contract {
   public:
@@ -101,6 +102,11 @@ CONTRACT mrbadge : public contract {
       string offchain_lookup_data;
       string onchain_lookup_data; 
       string memo; 
+    };
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
     };
 
 

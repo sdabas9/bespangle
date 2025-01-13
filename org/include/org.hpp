@@ -13,7 +13,6 @@ CONTRACT org : public contract {
 
     ACTION initorgcode(name org, string org_code);
 
-
   private:
 
     TABLE checks {
@@ -39,6 +38,7 @@ CONTRACT org : public contract {
     typedef eosio::multi_index<"orgcodes"_n, orgcode,
       eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
     > orgcode_index;
+
 
     struct haspackage_args {
       name org;

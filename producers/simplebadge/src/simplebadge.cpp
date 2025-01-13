@@ -28,6 +28,15 @@
         .onchain_lookup_data = onchain_lookup_data,
         .memo = memo }
     }.send();
+
+    action {
+      permission_level{get_self(), name("active")},
+      name(SUBSCRIPTION_CONTRACT),
+      name("billing"),
+      billing_args {
+        .org = org,
+        .actions_used = 1}
+    }.send();
   }
 
   ACTION simplebadge::issue (name org, asset badge_asset, name to, string memo) {
@@ -46,6 +55,7 @@
         .to = to,
         .memo = memo }
     }.send();
+
   }
 
     

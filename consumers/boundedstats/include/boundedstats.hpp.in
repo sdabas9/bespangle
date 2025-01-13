@@ -9,6 +9,8 @@ using namespace eosio;
 #cmakedefine BOUNDED_AGG_CONTRACT "@BOUNDED_AGG_CONTRACT@"
 #cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
 #cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
+#cmakedefine SUBSCRIPTION_CONTRACT "@SUBSCRIPTION_CONTRACT@"
+
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT boundedstats : public contract {
@@ -208,5 +210,11 @@ CONTRACT boundedstats : public contract {
         }
     }
     
+
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
+    };
 
 };

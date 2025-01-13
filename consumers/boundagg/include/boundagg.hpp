@@ -379,4 +379,10 @@ private:
         uint64_t seq_id;
     };
 
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
+    };
+
 };
