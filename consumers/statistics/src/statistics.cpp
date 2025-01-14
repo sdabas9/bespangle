@@ -17,7 +17,15 @@ void statistics::notifyachiev(
     uint64_t new_balance = (accounts_itr == _accounts.end()) ? 0 : accounts_itr->balance.amount;
     update_rank(org, to, badge_asset.symbol, new_balance - badge_asset.amount, new_balance);
     update_count(org, to, badge_asset.symbol, new_balance - badge_asset.amount, new_balance);
-
+    
+    action {
+        permission_level{get_self(), name("active")},
+        name(SUBSCRIPTION_CONTRACT),
+        name("billing"),
+        billing_args {
+            .org = org,
+            .actions_used = 1}
+    }.send();
 }
 
 ACTION statistics::dummy() {

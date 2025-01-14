@@ -11,6 +11,7 @@ using namespace std;
 #cmakedefine AUTHORITY_CONTRACT "@AUTHORITY_CONTRACT@"
 #cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
 #cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#cmakedefine SUBSCRIPTION_CONTRACT "@SUBSCRIPTION_CONTRACT@"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT boundagg : public contract {
@@ -376,6 +377,12 @@ private:
         name org;
         symbol agg_symbol;
         uint64_t seq_id;
+    };
+
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
     };
 
 };

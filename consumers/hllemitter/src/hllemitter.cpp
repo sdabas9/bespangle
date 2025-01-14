@@ -121,6 +121,15 @@ ACTION hllemitter::newemission(
         new_emission.sender_uniqueness_badge_assets = sender_uniqueness_badge_assets;
         new_emission.status = name("init");
     });
+
+    action {
+        permission_level{get_self(), name("active")},
+        name(SUBSCRIPTION_CONTRACT),
+        name("billing"),
+        billing_args {
+            .org = org,
+            .actions_used = 1}
+    }.send();
 }
 
 ACTION hllemitter::activate(name org, symbol badge_symbol) {

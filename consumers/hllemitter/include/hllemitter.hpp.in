@@ -9,6 +9,8 @@ using namespace eosio;
 #cmakedefine SIMPLEBADGE_CONTRACT "@SIMPLEBADGE_CONTRACT@"
 #cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
 #cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
+#cmakedefine SUBSCRIPTION_CONTRACT "@SUBSCRIPTION_CONTRACT@"
+
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT hllemitter : public contract {
@@ -130,6 +132,12 @@ CONTRACT hllemitter : public contract {
       asset badge_asset;
       name to;
       string memo;
+    };
+
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
     };
 
 };

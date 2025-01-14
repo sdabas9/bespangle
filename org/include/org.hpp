@@ -3,6 +3,8 @@
 using namespace std;
 using namespace eosio;
 
+#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
+
 CONTRACT org : public contract {
   public:
     using contract::contract;
@@ -10,7 +12,6 @@ CONTRACT org : public contract {
     ACTION chkscontract (name org, name checks_contract);
 
     ACTION initorgcode(name org, string org_code);
-
 
   private:
 
@@ -37,6 +38,11 @@ CONTRACT org : public contract {
     typedef eosio::multi_index<"orgcodes"_n, orgcode,
       eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
     > orgcode_index;
+
+
+    struct haspackage_args {
+      name org;
+    };
 
 };
 

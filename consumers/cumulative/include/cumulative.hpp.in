@@ -6,7 +6,11 @@ using namespace eosio;
 
 #cmakedefine BILLING_CONTRACT "@BILLING_CONTRACT@"
 #cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+#cmakedefine SUBSCRIPTION_CONTRACT "@SUBSCRIPTION_CONTRACT@"
+
+
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
+
 
 CONTRACT cumulative : public contract {
 public:
@@ -49,5 +53,11 @@ private:
       }
     }.send();
   }
+
+  struct billing_args {
+    name org;
+    uint8_t actions_used;
+  };
+
 };
 

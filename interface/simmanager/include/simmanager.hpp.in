@@ -11,6 +11,7 @@ using namespace eosio;
 #cmakedefine STATISTICS_CONTRACT "@STATISTICS_CONTRACT@"
 
 #cmakedefine CUMULATIVE_CONTRACT "@CUMULATIVE_CONTRACT@"
+#cmakedefine SUBSCRIPTION_CONTRACT "@SUBSCRIPTION_CONTRACT@"
 
 
 CONTRACT simmanager : public contract {

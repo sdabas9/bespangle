@@ -11,6 +11,7 @@ using namespace std;
 #define AUTHORITY_CONTRACT "authorityyyy"
 #define ORG_CONTRACT "organizayyyy"
 #define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
+#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT boundagg : public contract {
@@ -376,6 +377,12 @@ private:
         name org;
         symbol agg_symbol;
         uint64_t seq_id;
+    };
+
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
     };
 
 };

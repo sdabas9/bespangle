@@ -34,7 +34,7 @@ powerup_accounts() {
         if [ -n "$account_name" ]; then
             echo "Powering up account: $account_name"
             #cleos -u $cleos_url system powerup $payer $account_name $days $net_frac $cpu_frac $max_payment
-	    cleos -u $cleos_url push action eosio powerup "[$payer, $account_name, 1, 100000000000, 100000000000, \"1.0000 EOS\"]" -p $payer
+	    cleos -u $cleos_url push action eosio powerup "[$payer, $account_name, 1, 20000000000, 20000000000, \"1.0000 EOS\"]" -p $payer
             if [ $? -eq 0 ]; then
                 echo "Successfully powered up '$account_name'."
             else

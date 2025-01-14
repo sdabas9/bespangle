@@ -9,6 +9,8 @@ using namespace eosio;
 #define SIMPLEBADGE_CONTRACT "simplebadgey"
 #define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define ORG_CONTRACT "organizayyyy"
+#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
+
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT hllemitter : public contract {
@@ -130,6 +132,12 @@ CONTRACT hllemitter : public contract {
       asset badge_asset;
       name to;
       string memo;
+    };
+
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
     };
 
 };
