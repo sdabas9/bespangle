@@ -197,7 +197,7 @@ void andemitter::check_internal_auth(name action, string failure_identifier) {
     check(false, failure_identifier + " - Calling contract not in authorized list of accounts for action " + action.to_string());
 }
 
-void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor, string failure_identifier) {
+void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor, string emission_name, string failure_identifier) {
     for (const auto& rec : emit_assets) {
         int64_t new_amount = rec.emit_asset.amount * emit_factor;
         asset badge_asset = asset(new_amount, rec.emit_asset.symbol);
@@ -212,9 +212,13 @@ void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint
                     .org = destination_org,
                     .badge_asset = badge_asset,
                     .to = to,
-                    .memo = "issued from andemitter" }
+                    .memo = emission_name }
             ).send();
+        } else {
+        
         }
+
+
         // Extend with more conditions if other contracts are to be called
     }
 }
@@ -251,7 +255,7 @@ void andemitter::update_expanded_emitter_status(name account, map<symbol_code, i
                 amount -= emission.emitter_criteria[symbol].amount * min_multiplier;
                 if (amount < 0) amount = 0; // Prevent negative values
             }
-            invoke_action(account, emission.emit_assets, min_multiplier, failure_identifier); // Take action based on the new status
+            invoke_action(account, emission.emit_assets, min_multiplier, emission.emission_symbol.code().to_string(), failure_identifier); // Take action based on the new status
         }
     }
 }

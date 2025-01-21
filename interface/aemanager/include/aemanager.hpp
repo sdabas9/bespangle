@@ -20,6 +20,7 @@ public:
   };
 
   ACTION newemission(name authorized, symbol emission_symbol, vector<asset> emitter_criteria, vector<asset> emit_badges, bool cyclic);
+  ACTION newemissiona(name authorized, symbol emission_symbol, vector<asset> emitter_criteria, vector<asset> emit_badges, extended_asset fungible_asset, bool cyclic);
   ACTION activate(name authorized, symbol emission_symbol);
   ACTION deactivate(name authorized, symbol emission_symbol);
 

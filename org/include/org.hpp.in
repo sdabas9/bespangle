@@ -13,6 +13,14 @@ CONTRACT org : public contract {
 
     ACTION initorgcode(name org, string org_code);
 
+    ACTION initautocode(name org);
+
+    ACTION nextbadge(name org);
+
+    ACTION nextemission(name org);
+
+    ACTION nextbounty(name org);
+
 
   private:
 
@@ -44,5 +52,69 @@ CONTRACT org : public contract {
       name org;
     };
 
+    // Table to store the next badge code
+    TABLE badgecode {
+        name org;             // Organization
+        symbol last_badge_symbol; // Next badge code
+
+        uint64_t primary_key() const { return org.value; }
+    };
+
+    // Table to store the next badge code
+    TABLE emissioncode {
+        name org;             // Organization
+        symbol last_emission_symbol; // Next emission code
+
+        uint64_t primary_key() const { return org.value; }
+    };
+
+    TABLE bountycode {
+        name org;             // Organization
+        symbol last_bounty_symbol; // Next bounty code
+
+        uint64_t primary_key() const { return org.value; }
+    };
+
+    typedef multi_index<"badgecode"_n, badgecode> badgecode_table;
+    typedef multi_index<"emissioncode"_n, emissioncode> emissioncode_table;
+    typedef multi_index<"bountycode"_n, bountycode> bountycode_table;
+
+    // Function to increment a badge code (e.g., aba -> abb)
+    string increment_code(const string& code) {
+        string new_code = code;
+        for (int i = new_code.size() - 1; i >= 0; --i) {
+            if (new_code[i] < 'z') {
+                new_code[i] += 1;
+                break;
+            } else {
+                new_code[i] = 'a';
+            }
+        }
+        if (new_code == code) {
+            new_code = "a" + new_code; // Add a new character if needed
+        }
+        return new_code;
+    }
+    
+    // scoped by contract
+    TABLE auth {
+      name action;
+      vector<name> authorized_contracts;
+      uint64_t primary_key() const { return action.value; }
+    };
+    typedef eosio::multi_index<"auth"_n, auth> auth_table;
+
+    void check_internal_auth (name action, string failure_identifier) {
+      auth_table _auth(name(AUTHORITY_CONTRACT), _self.value);
+      auto itr = _auth.find(action.value);
+      check(itr != _auth.end(), failure_identifier + "no entry in authority table for this action and contract");
+      auto authorized_contracts = itr->authorized_contracts;
+      for(auto i = 0 ; i < authorized_contracts.size(); i++ ) {
+        if(has_auth(authorized_contracts[i])) {
+          return;
+        }
+      }
+      check(false, failure_identifier + "Calling contract not in authorized list of accounts for action " + action.to_string());
+    }
 };
 

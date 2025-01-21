@@ -13,6 +13,15 @@ CONTRACT org : public contract {
 
     ACTION initorgcode(name org, string org_code);
 
+    ACTION initautocode(name org);
+
+    ACTION nextbadge(name org);
+
+    ACTION nextemission(name org);
+
+    
+
+
   private:
 
     TABLE checks {
@@ -39,6 +48,41 @@ CONTRACT org : public contract {
       eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
     > orgcode_index;
 
+    // Table to store the next badge code
+    TABLE badgecode {
+        name org;             // Organization
+        symbol next_badge_symbol; // Next badge code
+
+        uint64_t primary_key() const { return org.value; }
+    };
+
+    // Table to store the next badge code
+    TABLE emissioncode {
+        name org;             // Organization
+        string next_emission_symbol; // Next badge code
+
+        uint64_t primary_key() const { return org.value; }
+    };
+
+    typedef multi_index<"badgecode"_n, badgecode> badgecode_table;
+    typedef multi_index<"emissioncode"_n, emissioncode> emissioncode_table;
+
+    // Function to increment a badge code (e.g., aba -> abb)
+    string increment_code(const string& code) {
+        string new_code = code;
+        for (int i = new_code.size() - 1; i >= 0; --i) {
+            if (new_code[i] < 'z') {
+                new_code[i] += 1;
+                break;
+            } else {
+                new_code[i] = 'a';
+            }
+        }
+        if (new_code == code) {
+            new_code = "a" + new_code; // Add a new character if needed
+        }
+        return new_code;
+    }
 
     struct haspackage_args {
       name org;
