@@ -35,7 +35,9 @@ public:
 
     ACTION haspackage(name org);
 
-    ACTION uidisplay(name package, bool display);
+    ACTION enableui(name package);
+
+    ACTION disableui(name package);
 
 private:
     // Table definitions

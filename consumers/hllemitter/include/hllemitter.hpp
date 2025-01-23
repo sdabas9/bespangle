@@ -9,7 +9,7 @@ using namespace eosio;
 #define SIMPLEBADGE_CONTRACT "simplebadgey"
 #define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define ORG_CONTRACT "organizayyyy"
-#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
+#define SUBSCRIPTION_CONTRACT "subyyyyyyyyy"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 

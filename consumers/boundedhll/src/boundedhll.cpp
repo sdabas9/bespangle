@@ -99,6 +99,15 @@ ACTION boundedhll::newemission (
         row.status = name("init");
         row.sender_uniqueness_badge_symbols = sender_uniqueness_badge_symbols;
     });
+
+    action {
+        permission_level{get_self(), name("active")},
+        name(SUBSCRIPTION_CONTRACT),
+        name("billing"),
+        billing_args {
+            .org = org,
+            .actions_used = 1}
+    }.send();
 }
 
 ACTION boundedhll::activate(name org, symbol agg_symbol, symbol badge_symbol) {
