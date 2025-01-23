@@ -10,6 +10,8 @@ using namespace eosio;
 #define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define AUTHORITY_CONTRACT "authorityyyy"
 #define BOUNDED_AGG_CONTRACT "baggyyyyyyyy"
+#define SUBSCRIPTION_CONTRACT "subyyyyyyyyy"
+
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
 CONTRACT boundedhll : public contract {
@@ -119,5 +121,10 @@ private:
         asset badge_asset;
         name to;
         string memo;
+    };
+
+    struct billing_args {
+      name org;
+      uint8_t actions_used;
     };
 };

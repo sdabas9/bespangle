@@ -7,7 +7,7 @@ using namespace eosio;
 
 #define ORCHESTRATOR_CONTRACT "orchyyyyyyyy"
 #define AUTHORITY_CONTRACT "authorityyyy"
-#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
+#define SUBSCRIPTION_CONTRACT "subyyyyyyyyy"
 
 CONTRACT mrbadge : public contract {
   public:
