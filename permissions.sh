@@ -767,3 +767,205 @@ cleos -u http://jungle4.cryptolions.io push transaction '{
     }
   ]
 }'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "simplebadgey"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "cumulativeyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "andemitteryy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "statisticsyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "baggyyyyyyyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "bstatsyyyyyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "hllemitteryy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "boundedhllyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "subyyyyyyyyy",
+        "action": "billing",
+        "authorized_contract": "mrbadgeyyyyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
+
+

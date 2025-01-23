@@ -125,7 +125,7 @@ ACTION subscription::enablepack(name package) {
     });
 }
 
-ACTION subscription::uidisplay(name package, bool display) {
+ACTION subscription::enableui(name package) {
     require_auth(get_self()); // Ensure only the contract owner can enable a package
 
     // Open the packages table
@@ -137,10 +137,25 @@ ACTION subscription::uidisplay(name package, bool display) {
 
     // Modify the record to set active to true
     packages.modify(package_itr, get_self(), [&](auto& row) {
-        row.display = display;
+        row.display = true;
     });
 }
 
+ACTION subscription::disableui(name package) {
+    require_auth(get_self()); // Ensure only the contract owner can enable a package
+
+    // Open the packages table
+    packages_table packages(get_self(), get_self().value);
+
+    // Find the package by its primary key
+    auto package_itr = packages.find(package.value);
+    check(package_itr != packages.end(), "Package not found.");
+
+    // Modify the record to set active to true
+    packages.modify(package_itr, get_self(), [&](auto& row) {
+        row.display = false;
+    });
+}
 
 ACTION subscription::haspackage(name org) {
 

@@ -9,7 +9,7 @@ using namespace eosio;
 #define BOUNDED_AGG_CONTRACT "baggyyyyyyyy"
 #define AUTHORITY_CONTRACT "authorityyyy"
 #define ORG_CONTRACT "organizayyyy"
-#define SUBSCRIPTION_CONTRACT "subsyyyyyyyy"
+#define SUBSCRIPTION_CONTRACT "subyyyyyyyyy"
 
 #define NEW_BADGE_ISSUANCE_NOTIFICATION ORCHESTRATOR_CONTRACT"::notifyachiev"
 
