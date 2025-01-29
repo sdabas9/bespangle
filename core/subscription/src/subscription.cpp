@@ -52,8 +52,6 @@ void subscription::buypack(name from, name to, asset amount, std::string memo) {
 
     auto [org, package_name] = parse_memo(memo);
 
-    check(false, "memo" + org.to_string() + " pack : " + package_name.to_string()); 
-
     handle_pack_purchase(org, package_name, amount, from, get_first_receiver());
 }
 
