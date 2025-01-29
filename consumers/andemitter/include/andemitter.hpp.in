@@ -33,6 +33,7 @@ public:
     ACTION newemission(
         name org,
         symbol emission_symbol,
+        string description,
         vector<asset> emitter_criteria,
         vector<contract_asset> emit_assets,
         bool cyclic
@@ -42,10 +43,13 @@ public:
     ACTION activate(name org, symbol emission_symbol);
     ACTION deactivate(name org, symbol emission_symbol);
 
+    ACTION nextemission(name org);
+
 private:
     // scoped by andemitter contract
     TABLE emissions {
         symbol emission_symbol;
+        string description;
         map<symbol_code, asset> emitter_criteria;
         vector<contract_asset> emit_assets;
         name status; // INIT, ACTIVATE, DEACTIVATE
@@ -79,6 +83,36 @@ private:
         uint64_t by_org_code() const { return org_code.value; }
     };
     typedef multi_index<"orgcodes"_n, orgcode, indexed_by<"orgcodeidx"_n, const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>> orgcode_index;
+
+    // Table to store the next badge code
+    TABLE autocode {
+        name org;             // Organization
+        symbol last_auto_symbol; // Next badge code
+
+        uint64_t primary_key() const { return org.value; }
+    };
+    typedef multi_index<"autocode"_n, autocode> autocode_table;
+
+    // Helper function to increment auto codes
+    string increment_auto_code(const string& code) {
+        string next_code = code;
+        for (int i = code.size() - 1; i >= 0; --i) {
+            if (next_code[i] == 'z') {
+                next_code[i] = 'a';
+            } else {
+                next_code[i]++;
+                break;
+            }
+        }
+        return next_code;
+    }
+
+    // Helper function to check if an auto code exists
+    bool autocode_exists(const string& emission_symbol) {
+        emissions_table emissions(get_self(), get_self().value);
+        return emissions.find(symbol_code(emission_symbol).raw()) != emissions.end();
+    }
+
 
     void validate_org_assets(name org, const vector<asset>& emitter_criteria, const vector<contract_asset>& emit_assets, string failure_identifier);
     
@@ -124,7 +158,7 @@ private:
         NON_CYCLIC_EMITTED = 3
     };
 
-    void invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor, string failure_identifier);
+    void invoke_action(name to, vector<contract_asset> emit_assets, uint8_t emit_factor, string emission_name, string failure_identifier);
     
     struct issue_args {
       name org;

@@ -32,13 +32,33 @@ CONTRACT bounties : public contract {
 
   private:
 
+    void on_transfer(name from, name to, asset amount, string memo );
 
     TABLE bounty {
-      name bounty;
-      name emission;
+      symbol bounty_symbol;
+      symbol badge_symbol;
+      symbol emission_symbol;
       name status;
+      vector<name> reviewers;
+      vector<name> defined_participants;
+      asset total_assets_deposited;
+      asset total_assets_distributed;
+      asset per_winner_amount;
+      string json_details;
       time_point_sec participation_start_time;
       time_point_sec participation_end_time;
+      uint64_t max_entries_per_participants;
+      uint64_t max_number_of_participants;
+    };
+    struct status_timestamp {
+      name status;
+      time_point_sec status_change_time;
+    };
+    TABLE participants {
+      uint64_t participation_id;
+      name participant;
+      name status;
+      time_point_sec status_change_time;
     };
 
         // Table to store the next badge code

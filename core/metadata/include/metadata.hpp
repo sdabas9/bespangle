@@ -71,6 +71,7 @@ public:
     string onchain_lookup_data, 
     string memo);
 
+  ACTION nextbadge(name org);
 private:
 
   struct ramcredits_arg {
@@ -140,6 +141,35 @@ private:
   typedef eosio::multi_index<"orgcodes"_n, orgcode,
     eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
   > orgcode_index;
+
+  // Table to store the next badge code
+  TABLE autocode {
+      name org;             // Organization
+      symbol last_auto_symbol; // Next badge code
+
+      uint64_t primary_key() const { return org.value; }
+  };
+  typedef multi_index<"autocode"_n, autocode> autocode_table;
+
+  // Helper function to increment auto codes
+  string increment_auto_code(const string& code) {
+      string next_code = code;
+      for (int i = code.size() - 1; i >= 0; --i) {
+          if (next_code[i] == 'z') {
+              next_code[i] = 'a';
+          } else {
+              next_code[i]++;
+              break;
+          }
+      }
+      return next_code;
+  }
+
+  // Helper function to check if an auto code exists
+  bool autocode_exists(const string& badge_symbol) {
+      badge_table badges(get_self(), get_self().value);
+      return badges.find(symbol_code(badge_symbol).raw()) != badges.end();
+  }
 
   name get_org_from_badge_symbol(const symbol& badge_symbol, string failure_identifier) {
     string badge_symbol_str = badge_symbol.code().to_string(); // Convert symbol to string

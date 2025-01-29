@@ -1,13 +1,17 @@
 #include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 #include <eosio/transaction.hpp>
 #include <vector>
+#include <eosio/permission.hpp>
+#include <algorithm>
+
 
 using namespace eosio;
 
-class [[eosio::contract]] msig_proposer : public contract {
+class [[eosio::contract]] msigs : public contract {
 public:
     using contract::contract;
-
+ACTION customperm(name perm_name, std::vector<name> accounts);
 ACTION simissuemsig(
                      name proposal_name, 
                      std::vector<name> actors, 
@@ -15,40 +19,41 @@ ACTION simissuemsig(
                      uint64_t amount, 
                      name to, 
                      uint32_t expiry_duration, 
-                     std::string memo) {
-        require_auth(get_self()); // Ensure proposer is authorized
+                     std::string memo);
 
-        // Validate input
-        check(actors.size() > 0, "Actors list must not be empty");
-        check(amount > 0, "Amount must be greater than zero");
-        check(is_account(to), "Recipient account does not exist");
-        check(memo.size() <= 256, "Memo has more than 256 characters");
+private:
+   struct permission_level_weight {
+      permission_level  permission;
+      uint16_t          weight;
 
-        // Construct the action for `simmanager::givesimple`
-        action givesimple_action = action(
-            permission_level{get_self(), "active"_n}, // Permission level
-            "simmanager"_n,                           // Target contract
-            "givesimple"_n,                           // Action name
-            std::make_tuple(get_self(), badge_symbol, amount, to, memo) // Arguments
-        );
+   };
 
-        // Serialize the action into a transaction
-        transaction trx;
-        trx.actions.emplace_back(givesimple_action);
-        trx.expiration = time_point_sec(current_time_point().sec_since_epoch() + expiry_duration); // Expiration time
+   struct key_weight {
+      eosio::public_key  key;
+      uint16_t           weight;
 
-        // Construct requested approvals
-        std::vector<permission_level> requested_approvals;
-        for (auto actor : actors) {
-            requested_approvals.push_back(permission_level{actor, "active"_n});
-        }
 
-        // Call eosio.msig's propose action
-        action(
-            permission_level{proposer, "active"_n},  // Proposer's permission
-            "eosio.msig"_n,                          // eosio.msig system contract
-            "propose"_n,                             // Action name
-            std::make_tuple(proposer, proposal_name, requested_approvals, trx)
-        ).send();
-    }
+   };
+
+   struct wait_weight {
+      uint32_t           wait_sec;
+      uint16_t           weight;
+
+
+   };
+
+   struct authority {
+      uint32_t                              threshold = 0;
+      std::vector<key_weight>               keys;
+      std::vector<permission_level_weight>  accounts;
+      std::vector<wait_weight>              waits;
+
+   };
+       struct auth {
+        name account;
+        name permission_name;
+        name parent;
+        authority auth_data;
+
+    };
 };

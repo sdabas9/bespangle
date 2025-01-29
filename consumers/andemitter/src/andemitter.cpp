@@ -60,6 +60,7 @@ void andemitter::notifyachiev(name org, asset amount, name from, name to, string
 ACTION andemitter::newemission(
         name org,
         symbol emission_symbol,
+        string description,
         vector<asset> emitter_criteria,
         vector<contract_asset> emit_assets,
         bool cyclic) {
@@ -79,6 +80,7 @@ ACTION andemitter::newemission(
     
     emissions.emplace(get_self(), [&](auto& em) {
         em.emission_symbol = emission_symbol;
+        em.description = description;
         em.emitter_criteria = emitter_criteria_map;
         em.emit_assets = emit_assets;
         em.status = name("init");
@@ -272,4 +274,49 @@ void andemitter::validate_org_assets(name org, const vector<asset>& emitter_crit
         validate_org_badge_symbol(org, contract_asset.emit_asset.symbol, failure_identifier);
     }
 
+}
+
+// Action: Generate the next emission symbol
+ACTION andemitter::nextemission(name org) {
+    string action_name = "nextemission";
+    string failure_identifier = "CONTRACT: andemitter, ACTION: " + action_name + ", MESSAGE: ";
+    check_internal_auth(name(action_name), failure_identifier);
+
+    // Access orgcode table to fetch the org_code
+    orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
+    auto org_itr = orgcodes.find(org.value);
+    check(org_itr != orgcodes.end(), "Organization not found in orgcode table");
+
+    string org_code = org_itr->org_code.to_string();
+
+    // Access autocode table to fetch or create an entry for the organization
+    autocode_table autocodes(get_self(), get_self().value);
+    auto autocode_itr = autocodes.find(org.value);
+
+    string next_code = "aaa";
+    if (autocode_itr == autocodes.end()) {
+        // Ensure "aaa" doesn't exist in base table
+        while (autocode_exists(org_code + next_code)) {
+            next_code = increment_auto_code(next_code);
+        }
+        // Create the first entry with "aaa" or the next valid code
+        autocodes.emplace(get_self(), [&](auto& row) {
+            row.org = org;
+            row.last_auto_symbol = symbol(org_code + next_code, 0);
+        });
+        return;
+    }
+
+    string last_code = autocode_itr->last_auto_symbol.code().to_string().substr(org_code.size());
+
+    // Generate the next code
+    do {
+        next_code = increment_auto_code(last_code);
+        last_code = next_code;
+    } while (autocode_exists(org_code + next_code));
+
+    // Update autocode table entry
+    autocodes.modify(autocode_itr, get_self(), [&](auto& row) {
+        row.last_auto_symbol = symbol(org_code + next_code, 0);
+    });
 }

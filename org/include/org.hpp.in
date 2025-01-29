@@ -13,14 +13,7 @@ CONTRACT org : public contract {
 
     ACTION initorgcode(name org, string org_code);
 
-    ACTION initautocode(name org);
-
-    ACTION nextbadge(name org);
-
-    ACTION nextemission(name org);
-
-    ACTION nextbounty(name org);
-
+    ACTION updateimage(name org, string org_ipfs_image);
 
   private:
 
@@ -35,7 +28,6 @@ CONTRACT org : public contract {
     TABLE orgcode {
       name org;         // Organization identifier, used as primary key
       name org_code;    // Converted org_code, ensuring uniqueness and specific format
-
       // Specify the primary key
       auto primary_key() const { return org.value; }
 
@@ -48,53 +40,17 @@ CONTRACT org : public contract {
       eosio::indexed_by<"orgcodeidx"_n, eosio::const_mem_fun<orgcode, uint64_t, &orgcode::by_org_code>>
     > orgcode_index;
 
+    TABLE orginfo {
+        name org;
+        string org_ipfs_image;
+
+        uint64_t primary_key() const { return org.value; }
+    };
+    typedef multi_index<"orginfo"_n, orginfo> orginfo_table;
+
     struct haspackage_args {
       name org;
     };
-
-    // Table to store the next badge code
-    TABLE badgecode {
-        name org;             // Organization
-        symbol last_badge_symbol; // Next badge code
-
-        uint64_t primary_key() const { return org.value; }
-    };
-
-    // Table to store the next badge code
-    TABLE emissioncode {
-        name org;             // Organization
-        symbol last_emission_symbol; // Next emission code
-
-        uint64_t primary_key() const { return org.value; }
-    };
-
-    TABLE bountycode {
-        name org;             // Organization
-        symbol last_bounty_symbol; // Next bounty code
-
-        uint64_t primary_key() const { return org.value; }
-    };
-
-    typedef multi_index<"badgecode"_n, badgecode> badgecode_table;
-    typedef multi_index<"emissioncode"_n, emissioncode> emissioncode_table;
-    typedef multi_index<"bountycode"_n, bountycode> bountycode_table;
-
-    // Function to increment a badge code (e.g., aba -> abb)
-    string increment_code(const string& code) {
-        string new_code = code;
-        for (int i = new_code.size() - 1; i >= 0; --i) {
-            if (new_code[i] < 'z') {
-                new_code[i] += 1;
-                break;
-            } else {
-                new_code[i] = 'a';
-            }
-        }
-        if (new_code == code) {
-            new_code = "a" + new_code; // Add a new character if needed
-        }
-        return new_code;
-    }
     
     // scoped by contract
     TABLE auth {

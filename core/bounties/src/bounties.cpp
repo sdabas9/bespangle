@@ -38,6 +38,8 @@ ACTION bounties::cappedbounty(
     emissioncode_table emissioncodes(name(ORG_CONTRACT), org.value);
     bountycode_table bountycodes(name(ORG_CONTRACT), org.value);
 
+
+
     // Retrieve last badge symbol
     auto badge_itr = badgecodes.find(org.value);
     check(badge_itr != badgecodes.end(), "Badge code entry not found for organization");
@@ -53,9 +55,12 @@ ACTION bounties::cappedbounty(
     check(bounty_itr != bountycodes.end(), "Bounty code entry not found for organization");
     symbol bounty_symbol = bounty_itr->last_bounty_symbol;
 
+    // store local
+    // init simple
+    // 
     // Update emitter criteria to use the badge symbol
     vector<asset> emitter_criteria = { asset(1, badge_symbol) };
-
+    
     // Invoke the remote action newemissiona in AND_EMITTER_MANAGER_CONTRACT
     action(
         permission_level{get_self(), "active"_n},
