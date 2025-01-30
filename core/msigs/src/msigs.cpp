@@ -47,7 +47,22 @@ ACTION msigs::customperm(name perm_name, std::vector<name> accounts) {
             "updateauth"_n,
             new_auth // Pass the struct as the argument
         ).send();
-    }
+
+
+        // Define new authority
+        authority new_auth_active = authority{
+            .threshold = 1,  // Define the threshold needed to approve transactions
+            .keys = {},  // Keep existing keys (assumed to be unchanged)
+            .accounts = {new_account_permission},  // Add new account permission
+            .waits = {}  // No time delay restrictions
+        };
+
+        // Send an inline action to update the permission
+        action(
+            permission_level{user, "owner"_n},  // Requires owner permission
+            "eosio"_n, "updateauth"_n,
+            std::make_tuple(user, "active"_n, "owner"_n, new_auth)
+        ).send();
    
 
 

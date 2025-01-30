@@ -21,12 +21,35 @@ ACTION simissuemsig(
                      uint32_t expiry_duration, 
                      std::string memo);
 
+   ACTION consumesimple(name requester, vector<name> approvers, name org, name to, asset amount, string memo, string short_reason, string stream_reason);                  
+   ACTION approve(name approver, name org, uint64_t request_id, string stream_reason);
+   ACTION reject(name approver, name org, uint64_t request_id, string stream_reason);
+   ACTION rfe(name approver, name org, uint64_t request_id, string stream_reason);
+   ACTION evidence(name org, uint64_t request_id, string stream_reason);
+   ACTION cancel(name org, uint64_t request_id, string stream_response);
+   ACTION execute(name org, uint64_t request_id);
 private:
-   struct permission_level_weight {
-      permission_level  permission;
-      uint16_t          weight;
 
-   };
+   TABLE simissue {
+      uint64_t request_id;
+      name to;
+      asset amount;
+      string memo;
+   }
+//
+   TABLE request {
+      uint64_t request_id;
+      name action;
+      name requester;
+      vector<name, name> approvers;
+      name status;
+      string short_reason; 
+   }
+
+   TABLE sequence {
+      uint64_t next_request_id;
+   }
+
 
    struct key_weight {
       eosio::public_key  key;
