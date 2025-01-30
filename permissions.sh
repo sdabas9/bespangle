@@ -1035,3 +1035,25 @@ cleos -u http://jungle4.cryptolions.io push transaction '{
   ]
 }'
 
+
+cleos -u http://jungle4.cryptolions.io push transaction '{
+  "delay_sec": 0,
+  "max_cpu_usage_ms": 0,
+  "actions": [
+    {
+      "account": "authorityyyy",
+      "name": "addauth",
+      "data": {
+        "contract": "baggyyyyyyyy",
+        "action": "addbadge",
+        "authorized_contract": "bamanageryyy"
+      },
+      "authorization": [
+        {
+          "actor": "authorityyyy",
+          "permission": "active"
+        }
+      ]
+    }
+  ]
+}'
