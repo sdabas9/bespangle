@@ -1,4 +1,4 @@
-
+POWERUP_CONTRACT="bespangle123"
 SIMPLE_MANAGER_CONTRACT="simmanageryy"
 SIMPLE_VALIDATION_CONTRACT="simplevalyyy"
 
@@ -29,7 +29,7 @@ AUTHORITY_CONTRACT="authorityyyy"
 SIMPLEBADGE_CONTRACT="simplebadgey"
 MUTUAL_RECOGNITION_CONTRACT="mrbadgeyyyyy"
 
-ORCHESTRATOR_CONTRACT="orchyyyyyyyy"
+BADGEDATA_CONTRACT="orchyyyyyyyy"
 
 CUMULATIVE_CONTRACT="cumulativeyy"
 STATISTICS_CONTRACT="statisticsyy"
@@ -44,3 +44,6 @@ GIVER_REP_CONTRACT="giverrepyyyy"
 BOUNDED_HLL_CONTRACT="boundedhllyy"
 
 SUBSCRIPTION_CONTRACT="subyyyyyyyyy"
+
+REQUESTS_CONTRACT="requestsyyyy"
+BOUNTIES_CONTRACT="bountiesyyyy"

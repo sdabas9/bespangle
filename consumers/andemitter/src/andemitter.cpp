@@ -60,7 +60,8 @@ void andemitter::notifyachiev(name org, asset amount, name from, name to, string
 ACTION andemitter::newemission(
         name org,
         symbol emission_symbol,
-        string description,
+        string offchain_lookup_data, 
+        string onchain_lookup_data, 
         vector<asset> emitter_criteria,
         vector<contract_asset> emit_assets,
         bool cyclic) {
@@ -80,7 +81,8 @@ ACTION andemitter::newemission(
     
     emissions.emplace(get_self(), [&](auto& em) {
         em.emission_symbol = emission_symbol;
-        em.description = description;
+        em.offchain_lookup_data = offchain_lookup_data;
+        em.onchain_lookup_data = onchain_lookup_data;
         em.emitter_criteria = emitter_criteria_map;
         em.emit_assets = emit_assets;
         em.status = name("init");
@@ -216,6 +218,17 @@ void andemitter::invoke_action(name to, vector<contract_asset> emit_assets, uint
                     .to = to,
                     .memo = emission_name }
             ).send();
+        } else if (rec.contract == name(BOUNTY_CONTRACT)) {
+            action(
+                permission_level{get_self(), "active"_n},
+                name(BOUNTY_CONTRACT),
+                "distribute"_n,
+                issue_args {
+                    .org = destination_org,
+                    .badge_asset = badge_asset,
+                    .to = to,
+                    .memo = emission_name }
+            ).send();        
         } else {
         
         }

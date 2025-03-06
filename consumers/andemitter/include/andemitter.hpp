@@ -33,7 +33,8 @@ public:
     ACTION newemission(
         name org,
         symbol emission_symbol,
-        string description,
+        string offchain_lookup_data, 
+        string onchain_lookup_data, 
         vector<asset> emitter_criteria,
         vector<contract_asset> emit_assets,
         bool cyclic
@@ -49,7 +50,8 @@ private:
     // scoped by andemitter contract
     TABLE emissions {
         symbol emission_symbol;
-        string description;
+        string offchain_lookup_data; 
+        string onchain_lookup_data; 
         map<symbol_code, asset> emitter_criteria;
         vector<contract_asset> emit_assets;
         name status; // INIT, ACTIVATE, DEACTIVATE

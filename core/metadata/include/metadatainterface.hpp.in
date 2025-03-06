@@ -1,0 +1,25 @@
+#pragma once
+
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <string>
+
+using namespace eosio;
+using namespace std;
+
+#cmakedefine ORCHESTRATOR_CONTRACT "@ORCHESTRATOR_CONTRACT@"
+
+TABLE badge {
+    symbol badge_symbol;
+    vector<name> notify_accounts;
+    string offchain_lookup_data;
+    string onchain_lookup_data;
+    uint64_t rarity_counts;
+    auto primary_key() const { return badge_symbol.code().raw(); }
+};
+typedef multi_index<name("badge"), badge> badge_table;
+
+bool badge_exists(symbol badge_symbol) {
+    badge_table badges(name(ORCHESTRATOR_CONTRACT), name(ORCHESTRATOR_CONTRACT).value);
+    return badges.find(badge_symbol.code().raw()) != badges.end();
+}

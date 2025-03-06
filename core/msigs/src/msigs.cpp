@@ -1,114 +1,299 @@
 #include <msigs.hpp>
 
+    ACTION consumesimple(
+        name originating_contract,
+        name originating_contract_key,
+        name requester, 
+        vector<name> approvers, 
+        name to, 
+        symbol badge_symbol, 
+        string memo,
+        string request_memo,
+        time_point_sec expiration_time) {
+        
+        require_auth(requester);
+        check(current_time_point().sec_since_epoch() < expiration_time.sec_since_epoch(), "Request expiration time must be in the future");
 
-ACTION msigs::customperm(name perm_name, std::vector<name> accounts) {
-        // Ensure the account has authorized this action
-        require_auth(get_self());
+        // Extract org from badge_symbol
+        name org = get_org_from_internal_symbol(badge_symbol, "consumesimple: ");
 
-        // Check if the accounts vector is not empty
-        check(!accounts.empty(), "Accounts list cannot be empty.");
+        // Scope by org
+        sequence_index seq_table(get_self(), org.value);
+        auto seq_itr = seq_table.find(org.value);
+        uint64_t request_id;
 
-        // Sort accounts
-        std::sort(accounts.begin(), accounts.end());
-
-        // Build the authority object with default weight of 1 for each account
-        std::vector<permission_level_weight> auth_accounts;
-        for (const auto& acc : accounts) {
-            auth_accounts.push_back({
-                .permission = permission_level{acc, "active"_n}, // Default to "active" permission
-                .weight = 1                                    // Default weight of 1
+        if (seq_itr == seq_table.end()) {
+            seq_table.emplace(get_self(), [&](auto& row) {
+                row.next_request_id = 1;
+            });
+            request_id = 1;
+        } else {
+            seq_table.modify(seq_itr, same_payer, [&](auto& row) {
+                request_id = row.next_request_id++;
             });
         }
 
-        // Calculate the threshold as 50% or more of the total accounts
-        uint32_t total_weight = auth_accounts.size();
-        uint32_t threshold = (total_weight % 2 == 0) ? total_weight / 2 : (total_weight / 2) + 1;
+        // Initialize approver status
+        vector<pair<name, name>> approver_statuses;
+        for (const auto& approver : approvers) {
+            approver_statuses.push_back({approver, "pending"_n});
+        }
 
-        // Construct the authority object
-        authority auth_data = {
-            .threshold = threshold,
-            .keys = {}, // No keys
-            .accounts = auth_accounts,
-            .waits = {} // No time delays for this example
-        };
+        // Store in request table
+        request_index req_table(get_self(), org.value);
+        req_table.emplace(get_self(), [&](auto& row) {
+            row.request_id = request_id;
+            row.action = "issuesimple"_n;
+            row.requester = requester;
+            row.originating_contract = originating_contract;
+            row.originating_contract_key = originating_contract_key;
+            row.approvers = approver_statuses;
+            row.status = "pending"_n;
+            row.expiration_time = expiration_time;
+        });
 
-        // Construct the auth struct
-        auth new_auth = {
-            .account = get_self(),
-            .permission_name = perm_name,
-            .parent = "owner"_n,
-            .auth_data = auth_data
-        };
+        // Store in simissue table
+        simissue_index sim_table(get_self(), org.value);
+        sim_table.emplace(get_self(), [&](auto& row) {
+            row.request_id = request_id;
+            row.to = to;
+            row.badge_symbol = badge_symbol;
+            row.memo = memo;
+        });
+    }
+    
+    ACTION processone(name org, uint64_t request_id) {
+        
+        request_index req_table(get_self(), org.value);
+        auto req_itr = req_table.find(request_id);
+        check(req_itr != req_table.end(), "Request ID not found");
 
-        // Use the `updateauth` action to create or update the custom permission
-        action(
-            permission_level{get_self(), "owner"_n}, // Only the "owner" permission can set permissions
-            "eosio"_n,
-            "updateauth"_n,
-            new_auth // Pass the struct as the argument
-        ).send();
+        if (current_time_point().sec_since_epoch() >= req_itr->expiration_time.sec_since_epoch()) {
+            auto sim_itr = sim_table.find(request_id);
+            check(sim_itr != sim_table.end(), "Matching simissue entry not found");                
+            
+            if (req_itr->status == "approved"_n) {
+                action(
+                    permission_level{get_self(), "active"_n},
+                    "simmanager"_n,
+                    "simpleissue"_n,
+                    make_tuple(sim_itr->to, sim_itr->badge_symbol, sim_itr->memo)
+                ).send();
 
-
-        // Define new authority
-        authority new_auth_active = authority{
-            .threshold = 1,  // Define the threshold needed to approve transactions
-            .keys = {},  // Keep existing keys (assumed to be unchanged)
-            .accounts = {new_account_permission},  // Add new account permission
-            .waits = {}  // No time delay restrictions
-        };
-
-        // Send an inline action to update the permission
-        action(
-            permission_level{user, "owner"_n},  // Requires owner permission
-            "eosio"_n, "updateauth"_n,
-            std::make_tuple(user, "active"_n, "owner"_n, new_auth)
-        ).send();
-   
-
-
-
-
-ACTION msigs::simissuemsig(
-                     name proposal_name, 
-                     std::vector<name> actors, 
-                     symbol badge_symbol, 
-                     uint64_t amount, 
-                     name to, 
-                     uint32_t expiry_duration, 
-                     std::string memo) {
-        require_auth(get_self()); // Ensure proposer is authorized
-
-        // Validate input
-        check(actors.size() > 0, "Actors list must not be empty");
-        check(amount > 0, "Amount must be greater than zero");
-        check(is_account(to), "Recipient account does not exist");
-        check(memo.size() <= 256, "Memo has more than 256 characters");
-
-        // Construct the action for `simmanager::givesimple`
-    //    action givesimple_action = 
-        action(
-            permission_level{get_self(), "testperm"_n}, // Permission level
-            "simmanageryy"_n,                           // Target contract
-            "givesimple"_n,                           // Action name
-            std::make_tuple(get_self(), badge_symbol, amount, to, memo) // Arguments
-        ).send();
-
-        // Serialize the action into a transaction
-    /*    transaction trx;
-        trx.actions.emplace_back(givesimple_action);
-        trx.expiration = time_point_sec(current_time_point().sec_since_epoch() + expiry_duration); // Expiration time
-        std::sort(actors.begin(), actors.end());
-        // Construct requested approvals
-        std::vector<permission_level> requested_approvals;
-        for (auto actor : actors) {
-            requested_approvals.push_back(permission_level{actor, "active"_n});
+                action(
+                    permission_level{get_self(), "active"_n},
+                    get_self(),
+                    "notifications"_n,
+                    make_tuple(requester, request_id, "processed"_n)
+                ).send();
+            } 
+            req_table.erase(req_itr);
+            sim_table.erase(sim_itr);
+        } else {
+            check(false, "not time yet to process this request_id");
         }
         
-        // Call eosio.msig's propose action
-        action(
-            permission_level{get_self(), "active"_n},  // Proposer's permission
-            "eosio.msig"_n,                          // eosio.msig system contract
-            "propose"_n,                             // Action name
-            std::make_tuple(get_self(), proposal_name, requested_approvals, trx)
-        ).send(); */
     }
+
+    ACTION process(name org, uint16_t batch_size) {
+        
+        request_index req_table(get_self(), org.value);
+        auto req_itr = req_table.begin();
+        uint16_t processed = 0;
+        
+        simissue_index sim_table(get_self(), org.value);
+        
+        while (req_itr != req_table.end() && processed < batch_size) {
+            uint64_t request_id = req_itr->request_id;
+            if (current_time_point().sec_since_epoch() >= req_itr->expiration_time.sec_since_epoch()) {
+                auto sim_itr = sim_table.find(request_id);
+                check(sim_itr != sim_table.end(), "Matching simissue entry not found");                
+                
+                if (req_itr->status == "approved"_n) {
+                    action(
+                        permission_level{get_self(), "active"_n},
+                        "simmanager"_n,
+                        "simpleissue"_n,
+                        make_tuple(sim_itr->to, sim_itr->badge_symbol, sim_itr->memo)
+                    ).send();
+
+                    action(
+                        permission_level{get_self(), "active"_n},
+                        get_self(),
+                        "notifications"_n,
+                        make_tuple(req_itr->originating_contract, req_itr>originating_contract_key, "processed"_n)
+                    ).send();
+                } 
+
+                sim_table.erase(sim_itr);
+                req_itr = req_table.erase(req_itr);
+                processed++;
+
+            } else {
+                ++req_itr;
+            }
+        }
+    }
+
+    ACTION evidence(name requester, name org, uint64_t request_id, string stream_reason) {
+        require_auth(requester);
+        
+        request_index req_table(get_self(), org.value);
+        auto req_itr = req_table.find(request_id);
+        check(req_itr != req_table.end(), "Request ID not found");
+        check(current_time_point().sec_since_epoch() < req_itr->expiration_time.sec_since_epoch(), "Cannot modify expired request");
+        
+        // Reset approver statuses to pending
+        vector<pair<name, name>> reset_approvers = req_itr->approvers;
+        for (auto& entry : reset_approvers) {
+            entry.second = "pending"_n;
+        }
+        
+        // Modify request status and reset approvers
+        req_table.modify(req_itr, same_payer, [&](auto& row) {
+            row.approvers = reset_approvers;
+            row.status = "pending"_n;
+        });
+        
+        // Notify via notifications action
+        action(
+            permission_level{get_self(), "active"_n},
+            get_self(),
+            "notifications"_n,
+            make_tuple(req_itr->originating_contract, req_itr->originating_contract_key, "pending"_n)
+        ).send();
+    }
+
+    ACTION withdraw(name requester, name org, uint64_t request_id, string stream_reason) {
+        require_auth(requester);
+        
+        request_index req_table(get_self(), org.value);
+        auto req_itr = req_table.find(request_id);
+        check(req_itr != req_table.end(), "Request ID not found");
+        check(current_time_point().sec_since_epoch() < req_itr->expiration_time.sec_since_epoch(), "Cannot withdraw expired request");
+        
+        simissue_index sim_table(get_self(), org.value);
+        auto sim_itr = sim_table.find(request_id);
+        
+        // Erase from request table
+        req_table.erase(req_itr);
+        
+        // Erase from simissue table if exists
+        if (sim_itr != sim_table.end()) {
+            sim_table.erase(sim_itr);
+        }
+        
+        // Notify via notifications action
+        action(
+            permission_level{get_self(), "active"_n},
+            get_self(),
+            "notifications"_n,
+            make_tuple(requester, request_id, "withdrawn"_n)
+        ).send();
+    }
+
+    ACTION notifications(name originating_contract, name originating_contract_key, name status) {
+        require_recipient(originating_contract);
+    }
+
+    ACTION approve(name approver, name org, uint64_t request_id, string stream_reason) {
+        require_auth(approver);
+
+        request_index req_table(get_self(), org.value);
+        auto req_itr = req_table.find(request_id);
+        check(req_itr != req_table.end(), "Request ID not found");
+        check(current_time_point().sec_since_epoch() < req_itr->expiration_time.sec_since_epoch(), "Cannot approve expired request");
+
+        // Update approver status
+        bool updated = false;
+        vector<pair<name, name>> updated_approvers = req_itr->approvers;
+        for (auto& entry : updated_approvers) {
+            if (entry.first == approver && entry.second == "pending"_n) {
+                entry.second = "approved"_n;
+                updated = true;
+                break;
+            }
+        }
+        check(updated, "Approver not found or already approved");
+
+        // Check if majority have approved
+        int approved_count = 0;
+        for (const auto& entry : updated_approvers) {
+            if (entry.second == "approved"_n) {
+                approved_count++;
+            }
+        }
+        bool majority_approved = approved_count > (updated_approvers.size() / 2);
+
+        // Modify request status if necessary
+        req_table.modify(req_itr, same_payer, [&](auto& row) {
+            row.approvers = updated_approvers;
+            if (majority_approved) {
+                row.status = "approved"_n;
+            }
+        });
+
+        // Notify via notifications action if status changes
+        if (majority_approved) {
+            action(
+                permission_level{get_self(), "active"_n},
+                get_self(),
+                "notifications"_n,
+                make_tuple(req_itr->originating_contract, req_itr->originating_contract_key, "approved"_n)
+            ).send();
+        }
+    }
+
+    ACTION reject(name approver, name org, uint64_t request_id, string stream_reason) {
+        require_auth(approver);
+
+        request_index req_table(get_self(), org.value);
+        auto req_itr = req_table.find(request_id);
+        check(req_itr != req_table.end(), "Request ID not found");
+        check(current_time_point().sec_since_epoch() < req_itr->expiration_time.sec_since_epoch(), "Cannot reject expired request");
+
+        // Update approver status
+        bool updated = false;
+        vector<pair<name, name>> updated_approvers = req_itr->approvers;
+        for (auto& entry : updated_approvers) {
+            if (entry.first == approver && entry.second == "pending"_n) {
+                entry.second = "rejected"_n;
+                updated = true;
+                break;
+            }
+        }
+        check(updated, "Approver not found or already rejected");
+
+        // Check if majority have rejected
+        int rejected_count = 0;
+        for (const auto& entry : updated_approvers) {
+            if (entry.second == "rejected"_n) {
+                rejected_count++;
+            }
+        }
+        bool majority_rejected = rejected_count > (updated_approvers.size() / 2);
+
+        // Modify request status if necessary
+        req_table.modify(req_itr, same_payer, [&](auto& row) {
+            row.approvers = updated_approvers;
+            if (majority_rejected) {
+                row.status = "rejected"_n;
+            }
+        });
+
+        // Notify via notifications action if status changes
+        if (majority_rejected) {
+            action(
+                permission_level{get_self(), "active"_n},
+                get_self(),
+                "notifications"_n,
+                make_tuple(req_itr->originating_contract, req_itr->originating_contract_key, "rejected"_n)
+            ).send();
+        }
+    }
+
+
+
+
+
+   

@@ -1,21 +1,19 @@
 #include <aemanager.hpp>
 
-ACTION aemanager::newemissiona(name authorized, 
+ACTION aemanager::bountyemit(name authorized, 
   symbol emission_symbol, 
   vector<asset> emitter_criteria, 
   vector<asset> emit_badges,
-  extended_asset fungible_asset, 
+  symbol badge_symbol, 
   bool cyclic) {
 // authority by bounty contract.
-  string action_name = "newemissiona";
+  string action_name = "bountyemit";
   string failure_identifier = "CONTRACT: aemanager, ACTION: " + action_name + ", MESSAGE: ";
   check_internal_auth(name(action_name), failure_identifier);
 
   name org = get_org_from_internal_symbol(emission_symbol, failure_identifier);
 
-  if(org!=authorized) {
-    require_recipient(name(ANDEMITTER_VALIDATION_CONTRACT));
-  }
+
 
   vector<contract_asset> emit_assets;
 
@@ -33,8 +31,8 @@ ACTION aemanager::newemissiona(name authorized,
     });
   }
   emit_assets.push_back (contract_asset {
-    .contract = name(fungible_asset.contract),
-    .emit_asset = fungible_asset.quantity
+    .contract = name(BOUNTY_CONTRACT),
+    .emit_asset = asset(badge_symbol, 1)
   });
 
   action{
@@ -63,6 +61,16 @@ ACTION aemanager::newemissiona(name authorized,
       }
     }.send();
   }
+
+  action{
+    permission_level{get_self(), name("active")},
+    name(ANDEMITTER_CONTRACT),
+    name("activate"),
+    activate_args{
+      .org = org,
+      .emission_symbol = emission_symbol
+    }
+  }.send();
 }
 
 ACTION aemanager::newemission(name authorized, 

@@ -3,4 +3,7 @@ project(metadata)
 set(BILLING_CONTRACT ${BILLING_CONTRACT})
 set(AUTHORITY_CONTRACT ${AUTHORITY_CONTRACT})
 set(ORG_CONTRACT ${ORG_CONTRACT})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/orginterface.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/orginterface.hpp @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/authorityinterface.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/authorityinterface.hpp @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/metadata.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/metadata.hpp @ONLY)

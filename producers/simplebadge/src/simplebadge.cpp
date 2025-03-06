@@ -15,7 +15,7 @@
       string memo) {
     string action_name = "create";
     string failure_identifier = "CONTRACT: simplebadge, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
     
     action {
       permission_level{get_self(), name("active")},
@@ -42,7 +42,7 @@
   ACTION simplebadge::issue (name org, asset badge_asset, name to, string memo) {
     string action_name = "issue";
     string failure_identifier = "CONTRACT: simplebadge, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);   
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
     
     action {
       permission_level{get_self(), name("active")},

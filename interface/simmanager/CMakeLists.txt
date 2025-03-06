@@ -8,4 +8,5 @@ set(STATISTICS_CONTRACT ${STATISTICS_CONTRACT})
 set(CUMULATIVE_CONTRACT ${CUMULATIVE_CONTRACT})
 set(SUBSCRIPTION_CONTRACT ${SUBSCRIPTION_CONTRACT})
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/orginterface.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/orginterface.hpp @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/simmanager.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/simmanager.hpp @ONLY)

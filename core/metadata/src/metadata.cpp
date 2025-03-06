@@ -11,7 +11,7 @@ ACTION metadata::initbadge(
 
     string action_name = "initbadge";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
 
     badge_table badges(get_self(), org.value);
 
@@ -35,7 +35,7 @@ ACTION metadata::addfeature(
 
     string action_name = "addfeature";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
 
     badge_table _badge(get_self(), org.value);
 
@@ -91,7 +91,7 @@ ACTION metadata::delfeature(
 
     string action_name = "delfeature";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
 
     badge_table _badge(get_self(), org.value);
 
@@ -146,7 +146,7 @@ ACTION metadata::achievement(
 
     string action_name = "achievement";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
 
     badge_table _badge(get_self(), org.value);
 
@@ -181,7 +181,7 @@ ACTION metadata::mergeinfo(
 
     string action_name = "mergeinfo";
     string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
+    check_internal_auth(get_self(), name(action_name), failure_identifier);
 
     badge_table _badge(get_self(), org.value);
 
@@ -228,48 +228,5 @@ ACTION metadata::notifyachiev(
     }
 
 }
-// Action: Generate the next badge symbol
-ACTION metadata::nextbadge(name org) {
-    string action_name = "nextbadge";
-    string failure_identifier = "CONTRACT: metadata, ACTION: " + action_name + ", MESSAGE: ";
-    check_internal_auth(name(action_name), failure_identifier);
 
-    // Access orgcode table to fetch the org_code
-    orgcode_index orgcodes(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
-    auto org_itr = orgcodes.find(org.value);
-    check(org_itr != orgcodes.end(), "Organization not found in orgcode table");
-
-    string org_code = org_itr->org_code.to_string();
-
-    // Access autocode table to fetch or create an entry for the organization
-    autocode_table autocodes(get_self(), get_self().value);
-    auto autocode_itr = autocodes.find(org.value);
-
-    string next_code = "aaa";
-    if (autocode_itr == autocodes.end()) {
-        // Ensure "aaa" doesn't exist in base table
-        while (autocode_exists(org_code + next_code)) {
-            next_code = increment_auto_code(next_code);
-        }
-        // Create the first entry with "aaa" or the next valid code
-        autocodes.emplace(get_self(), [&](auto& row) {
-            row.org = org;
-            row.last_auto_symbol = symbol(org_code + next_code, 0);
-        });
-        return;
-    }
-
-    string last_code = autocode_itr->last_auto_symbol.code().to_string().substr(org_code.size());
-
-    // Generate the next code
-    do {
-        next_code = increment_auto_code(last_code);
-        last_code = next_code;
-    } while (autocode_exists(org_code + next_code));
-
-    // Update autocode table entry
-    autocodes.modify(autocode_itr, get_self(), [&](auto& row) {
-        row.last_auto_symbol = symbol(org_code + next_code, 0);
-    });
-}
 

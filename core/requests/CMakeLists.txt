@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.10)
+project(requests)
+set(ORG_CONTRACT ${ORG_CONTRACT})
+set(SIMPLE_MANAGER_CONTRACT ${SIMPLE_MANAGER_CONTRACT})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/requests.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/requests.hpp @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../org/include/orginterface.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/orginterface.hpp @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/authority.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/authority.hpp @ONLY)

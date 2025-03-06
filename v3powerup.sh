@@ -7,8 +7,14 @@ net_frac=0.1
 cpu_frac=0.1
 max_payment="10.0000 EOS"  # Hardcoded maximum payment
 
-# Path to the accounts file
-accounts_file="accounts.txt"
+# Check if the accounts file input parameter is provided
+if [ -z "$1" ]; then
+    echo "Error: No accounts file specified. Usage: $0 <accounts_file>"
+    exit 1
+fi
+
+# Set the accounts file from the input parameter
+accounts_file="$1"
 
 # Check if the accounts file exists
 if [ ! -f "$accounts_file" ]; then
@@ -33,8 +39,11 @@ powerup_accounts() {
         # Check if the line contains an actual account name
         if [ -n "$account_name" ]; then
             echo "Powering up account: $account_name"
-            #cleos -u $cleos_url system powerup $payer $account_name $days $net_frac $cpu_frac $max_payment
-	    cleos -u $cleos_url push action eosio powerup "[$payer, $account_name, 1, 200000000000, 200000000000, \"2.0000 EOS\"]" -p $payer
+            # Uncomment the following line if you wish to use the system powerup command
+            # cleos -u $cleos_url system powerup $payer $account_name $days $net_frac $cpu_frac $max_payment
+
+            cleos -u $cleos_url push action eosio powerup "[$payer, $account_name, 1, 200000000000, 200000000000, \"2.0000 EOS\"]" -p $payer
+
             if [ $? -eq 0 ]; then
                 echo "Successfully powered up '$account_name'."
             else
@@ -48,3 +57,4 @@ powerup_accounts() {
 powerup_accounts
 
 echo "Finished processing all accounts."
+
