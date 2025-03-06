@@ -17,6 +17,8 @@ Three Consumers Contracts are available -
 - Atomic Assets Consumer - This consumes badges at granular level in atomic asset standard. i.e. for every Badge a non transferrable asset is created in atomic assets standard. 
 - Cumulative Consumer - This consumes badges at cumulative level for an account. Same badges are added and stored as one record.
 - Rounds Consumer - This consumer accumulate badges and their corresponding scores for an account from the start to the end of the round. Start and End of round are triggered by calling actions.
+- Governance Weight Contract - This contract calculates governance weights based on badge balances (specifically the "gov" badge). It applies weighted calculations on cumulative balances and bounded aggregate balances across multiple seasons.
+- Token Staker Contract - This contract allows users to stake tokens for an organization, with staked tokens contributing to governance weight.
 
 ## Usage
 
@@ -157,6 +159,92 @@ ACTION accntoptin(name account);
 ACTION accntoptout(name account, string memo);
 
       account - account opting out of system.
+```
+
+## Governance Weight Contract
+
+The Governance Weight contract allows organizations to calculate governance weights for their members based on badge holdings. It's specifically designed to work with the "gov" badge but can be configured for any badge symbol.
+
+### Features
+
+- Calculate governance weights based on a combination of cumulative balances, bounded aggregate balances, and staked tokens
+- Set configurable weights for each balance type (cumulative vs bounded aggregate vs staked tokens)
+- Define a minimum balance threshold required for governance participation
+- Calculate weights across a configurable number of seasons
+- Cache weight results for efficiency
+
+### Actions
+
+- `init` - Initialize the governance weight calculation parameters for an organization
+- `update` - Update the governance weight parameters for an organization
+- `calcweight` - Calculate and store the governance weight for a specific account
+
+### Example Usage
+
+To initialize the governance weight contract for an organization:
+
+```bash
+cleos push action govweightdev init '["myorg", "4,GOV", 50, 30, 20, 4, 1000, "4,TKN"]' -p govweightdev@active
+```
+
+This sets up governance weights with 50% based on cumulative balance, 30% based on bounded aggregate balance, and 20% based on staked tokens, calculated over 4 seasons, with a minimum balance of 1000.
+
+To calculate a weight for an account:
+
+```bash
+cleos push action govweightdev calcweight '["myorg", "alice"]' -p alice@active
+```
+
+## Token Staker Contract
+
+The Token Staker contract allows users to stake tokens for an organization. Staked tokens can contribute to governance weight.
+
+### Features
+
+- Stake tokens for an organization
+- Unstake tokens with a configurable lock period
+- Claim unstaked tokens after the lock period
+- Configure the governance weight ratio for staked tokens
+- Support for token transfers directly to the contract
+
+### Actions
+
+- `init` - Initialize the staking parameters for an organization
+- `update` - Update the staking parameters for an organization
+- `stake` - Stake tokens to the contract
+- `unstake` - Unstake tokens from the contract (initiates the unstaking process)
+- `claim` - Claim unstaked tokens after the lock period
+
+### Example Usage
+
+To initialize the token staker contract for an organization:
+
+```bash
+cleos push action tokenstakerdev init '["myorg", "4,TKN", 86400, 1.0]' -p tokenstakerdev@active
+```
+
+This sets up token staking with a 24-hour lock period and a 1:1 governance weight ratio.
+
+To stake tokens:
+
+```bash
+# Direct action
+cleos push action tokenstakerdev stake '["myorg", "alice", "100.0000 TKN", "Initial stake"]' -p alice@active
+
+# Or via token transfer
+cleos push action eosio.token transfer '["alice", "tokenstakerdev", "100.0000 TKN", "stake:myorg"]' -p alice@active
+```
+
+To unstake tokens:
+
+```bash
+cleos push action tokenstakerdev unstake '["myorg", "alice", "50.0000 TKN", "Partial unstake"]' -p alice@active
+```
+
+To claim unstaked tokens after the lock period:
+
+```bash
+cleos push action tokenstakerdev claim '["myorg", "alice"]' -p alice@active
 ```
 
 

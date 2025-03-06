@@ -14,8 +14,8 @@ using namespace badgedata_contract;
 using namespace authority_contract;
 using namespace andemitter_contract;
 
-#define SUBSCRIPTION_CONTRACT "subscribedev"
-#define ORG_CONTRACT "organizatdev"
+#cmakedefine SUBSCRIPTION_CONTRACT "@SUBSCRIPTION_CONTRACT@"
+#cmakedefine ORG_CONTRACT "@ORG_CONTRACT@"
 
 CONTRACT org : public contract {
   public:
