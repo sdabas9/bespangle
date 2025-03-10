@@ -215,26 +215,7 @@ CONTRACT org : public contract {
         });
     }
 
-    // Check if an account is authorized for a specific action
-    bool is_action_authorized(name org, name action_name, name account) {
-        // If the account is the organization itself, it's always authorized
-        if (account == org) {
-            return true;
-        }
-        
-        // Check if there's a specific authorization for this action
-        actionauths_table _actionauths(get_self(), org.value);
-        auto itr = _actionauths.find(action_name.value);
-        
-        // If no specific authorization exists, only the org itself is authorized
-        if (itr == _actionauths.end()) {
-            return false;
-        }
-        
-        // Check if the account is in the list of authorized accounts
-        return std::find(itr->authorized_accounts.begin(), itr->authorized_accounts.end(), account) 
-               != itr->authorized_accounts.end();
-    }
+
 
 
 };

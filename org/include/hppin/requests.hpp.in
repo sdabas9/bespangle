@@ -17,7 +17,7 @@ CONTRACT requests : public contract {
 public:
     using contract::contract;
 
-   ACTION consumesimple(
+   ACTION ingestsimple(
     name originating_contract,
     name originating_contract_key,
     name requester, 
@@ -29,13 +29,15 @@ public:
     string request_memo,
     time_point_sec expiration_time);
 
+   ACTION initseq(name org, name key, uint64_t seq_id);
+
    ACTION approve(name approver, name org, uint64_t request_id, string stream_reason);
    ACTION reject(name approver, name org, uint64_t request_id, string stream_reason);
 
    ACTION evidence(name authorized, name org, uint64_t request_id, string stream_reason);
    ACTION withdraw(name authorized, name org, uint64_t request_id, string stream_reason);
 
-   ACTION sharestatus(name requester, uint64_t request_id, name originating_contract, name originating_contract_key, name status);
+   ACTION sharestatus(name requester, uint64_t request_id, name originating_contract, name originating_contract_key, name old_status, name new_status);
    ACTION processone(name org, uint64_t request_id);
    ACTION process(name org, uint16_t batch_size);
 private:
@@ -69,9 +71,10 @@ private:
     typedef multi_index<"simissues"_n, simissue> simissue_index;
 
     TABLE sequence {
-        uint64_t next_request_id;
+        name key;          // Primary key for the sequence
+        uint64_t seq_id;   // The actual sequence ID
 
-        auto primary_key() const { return next_request_id; }
+        auto primary_key() const { return key.value; }
     };
     typedef multi_index<"sequences"_n, sequence> sequence_index;
 

@@ -1,6 +1,6 @@
 #include <requests.hpp>
 
-ACTION requests::consumesimple(
+ACTION requests::ingestsimple(
     name originating_contract,
     name originating_contract_key,
     name requester, 
@@ -12,7 +12,7 @@ ACTION requests::consumesimple(
     string request_memo,
     time_point_sec expiration_time) {
     
-    string action_name = "consumesimple";
+    string action_name = "ingestsimple";
     string failure_identifier = "CONTRACT: requests, ACTION: " + action_name + ", MESSAGE: ";
     check_internal_auth(get_self(), name(action_name), failure_identifier);
 
@@ -23,17 +23,21 @@ ACTION requests::consumesimple(
 
     // Scope by org
     sequence_index seq_table(get_self(), org.value);
-    auto seq_itr = seq_table.find(org.value);
+    auto seq_itr = seq_table.find(name("request").value);
     uint64_t request_id;
 
     if (seq_itr == seq_table.end()) {
         seq_table.emplace(get_self(), [&](auto& row) {
-            row.next_request_id = 1;
+            row.key = name("request");
+            row.seq_id = 1;
         });
         request_id = 1;
     } else {
+        // First get the current value
+        request_id = seq_itr->seq_id + 1;
+        // Then increment the counter in a separate step
         seq_table.modify(seq_itr, same_payer, [&](auto& row) {
-            request_id = row.next_request_id++;
+            row.seq_id = request_id;
         });
     }
 
@@ -78,6 +82,30 @@ ACTION requests::consumesimple(
             .old_status = "blank"_n,
             .new_status = "pending"_n }
     ).send();
+}
+
+ACTION requests::initseq(name org, name key, uint64_t seq_id) {
+    require_auth(get_self());
+    string action_name = "initseq";
+    string failure_identifier = "CONTRACT: requests, ACTION: " + action_name + ", MESSAGE: ";
+    //check_internal_auth(get_self(), name(action_name), failure_identifier);
+    
+    // Check if a sequence with this key already exists
+    sequence_index seq_table(get_self(), org.value);
+    auto seq_itr = seq_table.find(key.value);
+    
+    if (seq_itr == seq_table.end()) {
+        // Create new sequence entry
+        seq_table.emplace(get_self(), [&](auto& row) {
+            row.key = key;
+            row.seq_id = seq_id;
+        });
+    } else {
+        // Update existing sequence entry
+        seq_table.modify(seq_itr, same_payer, [&](auto& row) {
+            row.seq_id = seq_id;
+        });
+    }
 }
 
 ACTION requests::processone(name org, uint64_t request_id) {
@@ -250,7 +278,7 @@ ACTION requests::withdraw(name authorized, name org, uint64_t request_id, string
     ).send();
 }
 
-ACTION requests::sharestatus(name requester, uint64_t request_id, name originating_contract, name originating_contract_key, name status) {
+ACTION requests::sharestatus(name requester, uint64_t request_id, name originating_contract, name originating_contract_key, name old_status, name new_status) {
     require_recipient(originating_contract);
 }
 

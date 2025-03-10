@@ -19,7 +19,6 @@ namespace org_contract {
         name checks_contract;
         string offchain_lookup_data;
         string onchain_lookup_data;
-        map<name, name> action_auths; // Map of action names to authorized accounts
 
         // Specify the primary key
         auto primary_key() const { return org.value; }
@@ -35,6 +34,7 @@ namespace org_contract {
 
     // Function to retrieve organization from symbol
     name get_org_from_internal_symbol(const symbol& _symbol, string failure_identifier) {
+
         string _symbol_str = _symbol.code().to_string(); // Convert symbol to string
         check(_symbol_str.size() >= 4, failure_identifier + "symbol must have at least 4 characters.");
 
@@ -103,20 +103,6 @@ namespace org_contract {
         return next_code;
     }
 
-    // Check if an account is authorized for a specific action
-    bool is_action_authorized(name org, name action_name, name account, string failure_identifier) {
-        orgs_index _orgs(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
-        auto itr = _orgs.find(org.value);
-        check(itr != _orgs.end(), failure_identifier + "org not found");
-        
-        // If no specific authorization is set for this action, only the org itself is authorized
-        if (itr->action_auths.find(action_name) == itr->action_auths.end()) {
-            return account == org;
-        }
-        
-        // Check if the account matches either the org itself or the authorized account
-        return (account == org || account == itr->action_auths.at(action_name));
-    }
 
     string get_onchain_lookup_user_data(name org, string key) {
         orgs_index _orgs(name(ORG_CONTRACT), name(ORG_CONTRACT).value);
